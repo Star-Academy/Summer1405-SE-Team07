@@ -11,3 +11,4 @@ obj/
 # User-specific files
 *.user
 *.suo
+.fake
