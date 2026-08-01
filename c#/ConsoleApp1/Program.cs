@@ -10,14 +10,14 @@ namespace SearchHistoryApp
 
             while (true)
             {
-                string? line = Console.ReadLine();
+                var line = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
 
                 var parts = line.Split(' ', 2);
-                string command = parts[0].Trim().ToUpperInvariant();
-                string? argument = parts.Length > 1 ? parts[1].Trim() : null;
+                var command = parts[0].Trim().ToUpperInvariant();
+                var argument = parts.Length > 1 ? parts[1].Trim() : null;
 
                 switch (command)
                 {

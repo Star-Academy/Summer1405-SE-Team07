@@ -15,8 +15,8 @@ namespace SearchHistoryApp
 
             if (_currentIndex < _history.Count - 1)
             {
-                int removeStart = _currentIndex + 1;
-                int removeCount = _history.Count - removeStart;
+                var removeStart = _currentIndex + 1;
+                var removeCount = _history.Count - removeStart;
                 _history.RemoveRange(removeStart, removeCount);
             }
 
@@ -76,7 +76,7 @@ namespace SearchHistoryApp
 
             var topThree = _counts
                 .OrderByDescending(kv => kv.Value)
-                .ThenBy(kv => kv.Key) // for stable ordering in case of equal counts
+                .ThenBy(kv => kv.Key)
                 .Take(3);
 
             foreach (var kv in topThree)
