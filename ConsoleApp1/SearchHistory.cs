@@ -6,27 +6,27 @@ namespace SearchHistoryApp
 {
     public class SearchHistory
     {
-        private readonly List<string> _history = new List<string>();
+        private readonly List<string> _search_history_list = new List<string>();
         private int _currentIndex = -1;
-        private readonly Dictionary<string, int> _counts = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _search_counts = new Dictionary<string, int>();
 
         public void Search(string query)
         {
 
-            if (_currentIndex < _history.Count - 1)
+            if (_currentIndex < _search_history_list.Count - 1)
             {
                 var removeStart = _currentIndex + 1;
-                var removeCount = _history.Count - removeStart;
-                _history.RemoveRange(removeStart, removeCount);
+                var removeCount = _search_history_list.Count - removeStart;
+             _search_history_list.RemoveRange(removeStart, removeCount);
             }
 
-            _history.Add(query);
-            _currentIndex = _history.Count - 1;
+         _search_history_list.Add(query);
+            _currentIndex = _search_history_list.Count - 1;
 
-            if (_counts.ContainsKey(query))
-                _counts[query]++;
+            if (_search_counts.ContainsKey(query))
+                _search_counts[query]++;
             else
-                _counts[query] = 1;
+                _search_counts[query] = 1;
 
             PrintCurrent();
         }
@@ -45,7 +45,7 @@ namespace SearchHistoryApp
 
         public void Forward()
         {
-            if (_currentIndex >= _history.Count - 1)
+            if (_currentIndex >= _search_history_list.Count - 1)
             {
                 Console.WriteLine("FORWARD is not possible.");
                 return;
@@ -57,24 +57,24 @@ namespace SearchHistoryApp
 
         public void PrintCurrent()
         {
-            if (_currentIndex < 0 || _history.Count == 0)
+            if (_currentIndex < 0 || _search_history_list.Count == 0)
             {
                 Console.WriteLine("current: (empty)");
                 return;
             }
 
-            Console.WriteLine($"current: {_history[_currentIndex]}");
+            Console.WriteLine($"current:  _search_history_list[_currentIndex]}");
         }
 
         public void PrintStats()
         {
-            if (_counts.Count == 0)
+            if (_search_counts.Count == 0)
             {
                 Console.WriteLine("No searches have been recorded.");
                 return;
             }
 
-            var topThree = _counts
+            var topThree = _search_counts
                 .OrderByDescending(kv => kv.Value)
                 .ThenBy(kv => kv.Key)
                 .Take(3);
@@ -87,7 +87,7 @@ namespace SearchHistoryApp
 
         public void PrintUnique()
         {
-            Console.WriteLine(_counts.Count);
+            Console.WriteLine(_search_counts.Count);
         }
     }
 }
