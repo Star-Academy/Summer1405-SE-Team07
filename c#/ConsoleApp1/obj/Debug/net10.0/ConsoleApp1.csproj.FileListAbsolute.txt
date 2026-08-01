@@ -1,0 +1,14 @@
+E:\mohaymenn2\c#\ConsoleApp1\bin\Debug\net10.0\ConsoleApp1.exe
+E:\mohaymenn2\c#\ConsoleApp1\bin\Debug\net10.0\ConsoleApp1.deps.json
+E:\mohaymenn2\c#\ConsoleApp1\bin\Debug\net10.0\ConsoleApp1.runtimeconfig.json
+E:\mohaymenn2\c#\ConsoleApp1\bin\Debug\net10.0\ConsoleApp1.dll
+E:\mohaymenn2\c#\ConsoleApp1\bin\Debug\net10.0\ConsoleApp1.pdb
+E:\mohaymenn2\c#\ConsoleApp1\obj\Debug\net10.0\ConsoleApp1.GeneratedMSBuildEditorConfig.editorconfig
+E:\mohaymenn2\c#\ConsoleApp1\obj\Debug\net10.0\ConsoleApp1.AssemblyInfoInputs.cache
+E:\mohaymenn2\c#\ConsoleApp1\obj\Debug\net10.0\ConsoleApp1.AssemblyInfo.cs
+E:\mohaymenn2\c#\ConsoleApp1\obj\Debug\net10.0\ConsoleApp1.csproj.CoreCompileInputs.cache
+E:\mohaymenn2\c#\ConsoleApp1\obj\Debug\net10.0\ConsoleApp1.dll
+E:\mohaymenn2\c#\ConsoleApp1\obj\Debug\net10.0\refint\ConsoleApp1.dll
+E:\mohaymenn2\c#\ConsoleApp1\obj\Debug\net10.0\ConsoleApp1.pdb
+E:\mohaymenn2\c#\ConsoleApp1\obj\Debug\net10.0\ConsoleApp1.genruntimeconfig.cache
+E:\mohaymenn2\c#\ConsoleApp1\obj\Debug\net10.0\ref\ConsoleApp1.dll
