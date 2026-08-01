@@ -6,22 +6,22 @@ namespace SearchHistoryApp
 {
     public class SearchHistory
     {
-        private readonly List<string> _search_history_list = new List<string>();
+        private readonly List<string> _search_history = new List<string>();
         private int _currentIndex = -1;
         private readonly Dictionary<string, int> _search_counts = new Dictionary<string, int>();
 
         public void Search(string query)
         {
 
-            if (_currentIndex < _search_history_list.Count - 1)
+            if (_currentIndex < _search_history.Count - 1)
             {
                 var removeStart = _currentIndex + 1;
-                var removeCount = _search_history_list.Count - removeStart;
-             _search_history_list.RemoveRange(removeStart, removeCount);
+                var removeCount = _search_history.Count - removeStart;
+             _search_history.RemoveRange(removeStart, removeCount);
             }
 
-         _search_history_list.Add(query);
-            _currentIndex = _search_history_list.Count - 1;
+         _search_history.Add(query);
+            _currentIndex = _search_history.Count - 1;
 
             if (_search_counts.ContainsKey(query))
                 _search_counts[query]++;
@@ -45,7 +45,7 @@ namespace SearchHistoryApp
 
         public void Forward()
         {
-            if (_currentIndex >= _search_history_list.Count - 1)
+            if (_currentIndex >= _search_history.Count - 1)
             {
                 Console.WriteLine("FORWARD is not possible.");
                 return;
@@ -57,13 +57,13 @@ namespace SearchHistoryApp
 
         public void PrintCurrent()
         {
-            if (_currentIndex < 0 || _search_history_list.Count == 0)
+            if (_currentIndex < 0 || _search_history.Count == 0)
             {
                 Console.WriteLine("current: (empty)");
                 return;
             }
 
-            Console.WriteLine($"current:  _search_history_list[_currentIndex]}");
+            Console.WriteLine($"current:  {_search_history[_currentIndex]}");
         }
 
         public void PrintStats()
