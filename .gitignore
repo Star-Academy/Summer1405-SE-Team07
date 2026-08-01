@@ -12,3 +12,6 @@ obj/
 *.user
 *.suo
 .fake
+
+#jetbrains
+.idea/
