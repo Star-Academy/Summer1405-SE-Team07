@@ -22,7 +22,9 @@ string sqlServerConnectionString="Server=localhost,1433;Database=master;User Id=
 
 if (postgresConnectionString is not null)
 {
-    await QueryRunner.RunOnPostgresAsync(postgresResult, postgresConnectionString);
+    // DIP: execution uses the common runner abstraction.
+    IQueryRunner postgresRunner = new PostgresQueryRunner();
+    await postgresRunner.RunAsync(postgresResult, postgresConnectionString);
 }
 else
 {
@@ -31,7 +33,9 @@ else
 
 if (sqlServerConnectionString is not null)
 {
-    await QueryRunner.RunOnSqlServerAsync(sqlServerResult, sqlServerConnectionString);
+    // DIP: the same caller works with a different runner implementation.
+    IQueryRunner sqlServerRunner = new SqlServerQueryRunner();
+    await sqlServerRunner.RunAsync(sqlServerResult, sqlServerConnectionString);
 }
 else
 {

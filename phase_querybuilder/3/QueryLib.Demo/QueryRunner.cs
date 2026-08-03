@@ -1,43 +1,23 @@
-using Npgsql;
 using Microsoft.Data.SqlClient;
+using Npgsql;
 using QueryLib.Compilers;
+using System.Data.Common;
 
 namespace QueryLib.Demo
 {
-
-    
-    public static class QueryRunner
+    // ISP: callers depend on one focused query-execution operation.
+    // DIP: callers use this abstraction instead of a database-specific runner.
+    public interface IQueryRunner
     {
-        public static async Task RunOnPostgresAsync(CompiledQuery compiled, string connectionString)
-        {
-            await using var dataSource = NpgsqlDataSource.Create(connectionString);
-            await using var cmd = dataSource.CreateCommand(compiled.Sql);
+        Task RunAsync(CompiledQuery query, string connectionString);
+    }
 
-            foreach (var value in compiled.Bindings)
-                cmd.Parameters.AddWithValue(value ?? DBNull.Value);
+    // SRP: shared result-row formatting is implemented once for every runner.
+    public abstract class QueryRunnerBase : IQueryRunner
+    {
+        public abstract Task RunAsync(CompiledQuery query, string connectionString);
 
-            await using var reader = await cmd.ExecuteReaderAsync();
-
-            Console.WriteLine("--- PostgreSQL results ---");
-            await PrintRowsAsync(reader);
-        }
-
-        public static async Task RunOnSqlServerAsync(CompiledQuery compiled, string connectionString)
-        {
-            await using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync();
-
-            await using var cmd = new SqlCommand(compiled.Sql, connection);
-
-            for (int i = 0; i < compiled.Bindings.Count; i++)
-                cmd.Parameters.AddWithValue("@p" + i, compiled.Bindings[i] ?? DBNull.Value);
-
-            await using var reader = await cmd.ExecuteReaderAsync();
-
-            Console.WriteLine("--- SQL Server results ---");
-            await PrintRowsAsync(reader);
-        }
-        private static async Task PrintRowsAsync(System.Data.Common.DbDataReader reader)
+        protected static async Task PrintRowsAsync(DbDataReader reader)
         {
             while (await reader.ReadAsync())
             {
@@ -49,6 +29,46 @@ namespace QueryLib.Demo
             }
 
             Console.WriteLine();
+        }
+    }
+
+    // SRP: this runner contains only PostgreSQL-specific execution behavior.
+    // LSP/OCP: it can replace any IQueryRunner without changing its callers.
+    public sealed class PostgresQueryRunner : QueryRunnerBase
+    {
+        public override async Task RunAsync(CompiledQuery query, string connectionString)
+        {
+            await using var dataSource = NpgsqlDataSource.Create(connectionString);
+            await using var command = dataSource.CreateCommand(query.Sql);
+
+            foreach (var value in query.Bindings)
+                command.Parameters.AddWithValue(value ?? DBNull.Value);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            Console.WriteLine("--- PostgreSQL results ---");
+            await PrintRowsAsync(reader);
+        }
+    }
+
+    // SRP: this runner contains only SQL Server-specific execution behavior.
+    // LSP/OCP: it can replace any IQueryRunner without changing its callers.
+    public sealed class SqlServerQueryRunner : QueryRunnerBase
+    {
+        public override async Task RunAsync(CompiledQuery query, string connectionString)
+        {
+            await using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            await using var command = new SqlCommand(query.Sql, connection);
+
+            for (int i = 0; i < query.Bindings.Count; i++)
+                command.Parameters.AddWithValue("@p" + i, query.Bindings[i] ?? DBNull.Value);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            Console.WriteLine("--- SQL Server results ---");
+            await PrintRowsAsync(reader);
         }
     }
 }
