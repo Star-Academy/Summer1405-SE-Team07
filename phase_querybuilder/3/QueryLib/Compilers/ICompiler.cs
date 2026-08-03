@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace QueryLib.Compilers
 {
+    // SRP: this type only carries the SQL text and its parameter bindings.
     public class CompiledQuery
     {
         public string Sql { get; }
@@ -13,6 +14,8 @@ namespace QueryLib.Compilers
         }
     }
 
+    // ISP: consumers depend on one focused operation instead of database-specific APIs.
+    // DIP: callers compile queries through this abstraction rather than concrete compilers.
     public interface ICompiler
     {
         CompiledQuery Compile(Query query);

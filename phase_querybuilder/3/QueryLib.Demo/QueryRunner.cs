@@ -4,6 +4,8 @@ using QueryLib.Compilers;
 
 namespace QueryLib.Demo
 {
+
+    
     public static class QueryRunner
     {
         public static async Task RunOnPostgresAsync(CompiledQuery compiled, string connectionString)

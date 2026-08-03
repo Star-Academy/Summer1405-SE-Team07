@@ -7,13 +7,17 @@ var query = new Query()
     .Select("StudentNumber", "FirstName", "LastName")
     .Where("IsMale", true);
 
-CompiledQuery postgresResult = new PostgresCompiler().Compile(query);
-CompiledQuery sqlServerResult = new SqlServerCompiler().Compile(query);
+// DIP: the demo uses the ICompiler abstraction; concrete compilers are chosen only here.
+ICompiler postgresCompiler = new PostgresCompiler();
+ICompiler sqlServerCompiler = new SqlServerCompiler();
+
+CompiledQuery postgresResult = postgresCompiler.Compile(query);
+CompiledQuery sqlServerResult = sqlServerCompiler.Compile(query);
 
 PrintCompiled("PostgreSQL", postgresResult);
 PrintCompiled("SQL Server", sqlServerResult);
 
-string postgresConnectionString="Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=mohaymen";
+string postgresConnectionString="Host=localhost;Port=5442;Username=postgres;Password=postgres;Database=mohaymen";
 string sqlServerConnectionString="Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True";
 
 if (postgresConnectionString is not null)
