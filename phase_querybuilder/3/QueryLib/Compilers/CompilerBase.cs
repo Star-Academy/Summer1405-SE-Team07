@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using QueryLib.Interfaces;
 
@@ -15,36 +12,47 @@ public abstract class CompilerBase : ICompiler
         var bindings = new List<object?>();
         var sql = new StringBuilder();
 
+        CompileSelect(query, sql);
+        CompileFrom(query, sql);
+        CompileWhere(query, sql, bindings);
+
+        return new CompiledQuery(sql.ToString(), bindings);
+    }
+
+    protected virtual void CompileSelect(Query query, StringBuilder sql)
+    {
         sql.Append("SELECT ");
         sql.Append(query.Columns.Count > 0
             ? string.Join(", ", query.Columns.Select(QuoteIdentifier))
             : "*");
+    }
 
+    protected virtual void CompileFrom(Query query, StringBuilder sql)
+    {
         sql.Append(" FROM ");
         sql.Append(QuoteIdentifier(query.Table));
+    }
 
-        if (query.Conditions.Count > 0)
+    protected virtual void CompileWhere(Query query, StringBuilder sql, List<object?> bindings)
+    {
+        if (query.Conditions.Count == 0) return;
+
+        sql.Append(" WHERE ");
+
+        var clauses = new List<string>();
+        int index = bindings.Count;
+
+        foreach (var condition in query.Conditions)
         {
-            sql.Append(" WHERE ");
-
-            var clauses = new List<string>();
-            int index = 0;
-            
-            foreach (var condition in query.Conditions)
-            {
-                clauses.Add($"{QuoteIdentifier(condition.Column)} = {CreatePlaceholder(index)}");
-                bindings.Add(PrepareBinding(condition.Value));
-                index++;
-            }
-
-            sql.Append(string.Join(" AND ", clauses));
+            clauses.Add($"{QuoteIdentifier(condition.Column)} = {CreatePlaceholder(index)}");
+            bindings.Add(PrepareBinding(condition.Value));
+            index++;
         }
 
-        return new CompiledQuery(sql.ToString(), bindings);
+        sql.Append(string.Join(" AND ", clauses));
     }
 
     protected abstract string QuoteIdentifier(string identifier);
     protected abstract string CreatePlaceholder(int index);
     protected virtual object? PrepareBinding(object? value) => value;
 }
-

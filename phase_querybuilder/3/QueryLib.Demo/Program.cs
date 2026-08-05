@@ -9,16 +9,16 @@ var query = new Query()
 
 IResultPrinter printer = new ConsoleResultPrinter();
 
-var databases = new List<DatabaseConfiguration>
+var databases = new List<DatabaseEngine>
 {
-    new DatabaseConfiguration(
+    new DatabaseEngine(
         "PostgreSQL",
         new PostgresCompiler(),
         new PostgresQueryRunner(),
         new PostgresConnectionFactory("Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=mohaymen")
     ),
 
-    new DatabaseConfiguration(
+    new DatabaseEngine(
         "SQL Server",
         new SqlServerCompiler(),
         new SqlServerQueryRunner(),

@@ -3,7 +3,7 @@ using QueryLib.Interfaces;
 
 namespace QueryLib.Demo;
 
-public record DatabaseConfiguration(
+public record DatabaseEngine(
     string Name,
     ICompiler Compiler,
     IQueryRunner Runner,
