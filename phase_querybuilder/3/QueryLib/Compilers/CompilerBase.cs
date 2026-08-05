@@ -2,49 +2,49 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using QueryLib.Interfaces;
 
 namespace QueryLib.Compilers
 {
-    // SRP: this class owns the database-independent query compilation algorithm.
-    // OCP: new SQL dialects extend the protected hooks without changing this algorithm.
-    public abstract class CompilerBase : ICompiler
+public abstract class CompilerBase : ICompiler
+{
+    public CompiledQuery Compile(Query query)
     {
-        public CompiledQuery Compile(Query query)
+        ArgumentNullException.ThrowIfNull(query);
+
+        var bindings = new List<object?>();
+        var sql = new StringBuilder();
+
+        sql.Append("SELECT ");
+        sql.Append(query.Columns.Count > 0
+            ? string.Join(", ", query.Columns.Select(QuoteIdentifier))
+            : "*");
+
+        sql.Append(" FROM ");
+        sql.Append(QuoteIdentifier(query.Table));
+
+        if (query.Conditions.Count > 0)
         {
-            ArgumentNullException.ThrowIfNull(query);
+            sql.Append(" WHERE ");
 
-            var bindings = new List<object?>();
-            var sql = new StringBuilder();
-
-            sql.Append("SELECT ");
-            sql.Append(query.Columns.Count > 0
-                ? string.Join(", ", query.Columns.Select(QuoteIdentifier))
-                : "*");
-
-            sql.Append(" FROM ");
-            sql.Append(QuoteIdentifier(query.Table));
-
-            if (query.Conditions.Count > 0)
+            var clauses = new List<string>();
+            int index = 0;
+            
+            foreach (var condition in query.Conditions)
             {
-                sql.Append(" WHERE ");
-
-                var clauses = new List<string>();
-                for (int i = 0; i < query.Conditions.Count; i++)
-                {
-                    var condition = query.Conditions[i];
-                    clauses.Add($"{QuoteIdentifier(condition.Column)} = {CreatePlaceholder(i)}");
-                    bindings.Add(PrepareBinding(condition.Value));
-                }
-
-                sql.Append(string.Join(" AND ", clauses));
+                clauses.Add($"{QuoteIdentifier(condition.Column)} = {CreatePlaceholder(index)}");
+                bindings.Add(PrepareBinding(condition.Value));
+                index++;
             }
 
-            return new CompiledQuery(sql.ToString(), bindings);
+            sql.Append(string.Join(" AND ", clauses));
         }
 
-        protected abstract string QuoteIdentifier(string identifier);
-        protected abstract string CreatePlaceholder(int index);
-
-        protected virtual object? PrepareBinding(object? value) => value;
+        return new CompiledQuery(sql.ToString(), bindings);
     }
+
+    protected abstract string QuoteIdentifier(string identifier);
+    protected abstract string CreatePlaceholder(int index);
+    protected virtual object? PrepareBinding(object? value) => value;
+}
 }

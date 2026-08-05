@@ -1,6 +1,8 @@
+using System.ComponentModel;
 using QueryLib;
 using QueryLib.Compilers;
 using QueryLib.Demo;
+using QueryLib.Interfaces;
 
 var query = new Query()
     .From("Student")
@@ -12,14 +14,14 @@ var databases = new List<DatabaseConfiguration>
     new DatabaseConfiguration(
         "PostgreSQL",
         new PostgresCompiler(),
-        new PostgresQueryRunner(),
+        new PostgresQueryRunner(new ConsoleResultPrinter()),
         "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=mohaymen"
     ),
 
     new DatabaseConfiguration(
         "SQL Server",
         new SqlServerCompiler(),
-        new SqlServerQueryRunner(),
+        new SqlServerQueryRunner(new ConsoleResultPrinter()),
         "Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True"
     )
 };
@@ -28,12 +30,10 @@ foreach (var db in databases)
 {
     Console.WriteLine($"========== {db.Name} ==========");
 
-    // Compile
     CompiledQuery compiledQuery = db.Compiler.Compile(query);
 
     PrintCompiled(db.Name, compiledQuery);
 
-    // Execute
     if (!string.IsNullOrWhiteSpace(db.ConnectionString))
     {
         await db.Runner.RunAsync(compiledQuery, db.ConnectionString);
@@ -53,38 +53,12 @@ static void PrintCompiled(string label, CompiledQuery result)
 
     Console.WriteLine("Bindings:");
 
-    for (int i = 0; i < result.Bindings.Count; i++)
+    foreach (var Binding in result.Bindings)
     {
-        Console.WriteLine($"  [{i}] = {result.Bindings[i]}");
+        var index = 0;
+        Console.WriteLine($"  [{index++}] = {Binding}");
     }
 
     Console.WriteLine();
 }
-
-public class DatabaseConfiguration
-{
-    public string Name { get; }
-
-    public ICompiler Compiler { get; }
-
-    public IQueryRunner Runner { get; }
-
-    public string ConnectionString { get; }
-
-    public DatabaseConfiguration(
-        string name,
-        ICompiler compiler,
-        IQueryRunner runner,
-        string connectionString)
-    {
-        Name = name;
-        Compiler = compiler;
-        Runner = runner;
-        ConnectionString = connectionString;
-    }
-}
-
-
-
-
 
