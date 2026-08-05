@@ -1,5 +1,5 @@
-namespace QueryLib.Compilers
-{
+namespace QueryLib.Compilers;
+
 public class SqlServerCompiler : CompilerBase
 {
     protected override string QuoteIdentifier(string identifier) => $"[{identifier}]";
@@ -17,4 +17,4 @@ public class SqlServerCompiler : CompilerBase
         return value;
     }
 }
-}
+

@@ -1,8 +1,8 @@
 using QueryLib.Compilers;
 using QueryLib.Interfaces;
 
-namespace QueryLib.Demo
-{
+namespace QueryLib.Demo;
+
 public class DatabaseConfiguration
 {
     public string Name { get; }
@@ -26,4 +26,3 @@ public class DatabaseConfiguration
     }
 }
 
-}

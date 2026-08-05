@@ -1,7 +1,7 @@
 using System.Data.Common;
 
-namespace QueryLib.Demo
-{
+namespace QueryLib.Demo;
+
 public class ConsoleResultPrinter : IResultPrinter
 {
     public async Task PrintAsync(DbDataReader reader, string header)
@@ -22,5 +22,4 @@ public class ConsoleResultPrinter : IResultPrinter
 
         Console.WriteLine();
     }
-}
 }

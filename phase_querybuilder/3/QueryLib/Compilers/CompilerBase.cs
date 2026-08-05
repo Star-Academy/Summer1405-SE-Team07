@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using QueryLib.Interfaces;
 
-namespace QueryLib.Compilers
-{
+namespace QueryLib.Compilers;
+
 public abstract class CompilerBase : ICompiler
 {
     public CompiledQuery Compile(Query query)
@@ -47,4 +47,4 @@ public abstract class CompilerBase : ICompiler
     protected abstract string CreatePlaceholder(int index);
     protected virtual object? PrepareBinding(object? value) => value;
 }
-}
+

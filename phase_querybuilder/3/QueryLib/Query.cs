@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace QueryLib
-{
+namespace QueryLib;
 
 public class Query
 {
@@ -48,4 +47,4 @@ public class Query
         return this;
     }
 }
-}
+

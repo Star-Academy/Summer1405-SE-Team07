@@ -1,8 +1,8 @@
 using Npgsql;
 using QueryLib.Compilers;
 
-namespace QueryLib.Demo
-{
+namespace QueryLib.Demo;
+
 public sealed class PostgresQueryRunner : IQueryRunner
 {
     private readonly IResultPrinter _printer;
@@ -23,5 +23,4 @@ public sealed class PostgresQueryRunner : IQueryRunner
         await using var reader = await command.ExecuteReaderAsync();
         await _printer.PrintAsync(reader, "PostgreSQL results");
     }
-}
 }

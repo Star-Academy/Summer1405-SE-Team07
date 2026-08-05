@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 
-namespace QueryLib.Compilers
-{
+namespace QueryLib.Compilers;
 public class CompiledQuery
 {
     public string Sql { get; }
@@ -11,5 +10,4 @@ public class CompiledQuery
         Sql = sql;
         Bindings = bindings;
     }
-}
 }

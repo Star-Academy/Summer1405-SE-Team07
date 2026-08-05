@@ -1,8 +1,6 @@
-using System.ComponentModel;
 using QueryLib;
 using QueryLib.Compilers;
 using QueryLib.Demo;
-using QueryLib.Interfaces;
 
 var query = new Query()
     .From("Student")

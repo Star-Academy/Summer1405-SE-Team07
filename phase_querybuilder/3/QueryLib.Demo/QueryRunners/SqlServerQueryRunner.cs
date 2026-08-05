@@ -1,8 +1,8 @@
 using Microsoft.Data.SqlClient;
 using QueryLib.Compilers;
 
-namespace QueryLib.Demo
-{
+namespace QueryLib.Demo;
+
 public sealed class SqlServerQueryRunner : IQueryRunner
 {
     private readonly IResultPrinter _printer;
@@ -27,5 +27,4 @@ public sealed class SqlServerQueryRunner : IQueryRunner
         await using var reader = await command.ExecuteReaderAsync();
         await _printer.PrintAsync(reader, "SQL Server results");
     }
-}
 }

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace QueryLib
-{
+namespace QueryLib;
+
 public sealed class Condition
 {
     public string Column { get; }
@@ -15,4 +15,3 @@ public sealed class Condition
     }
 }
 
-}

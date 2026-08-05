@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using QueryLib.Compilers;
 
-namespace QueryLib.Interfaces
-{
+namespace QueryLib.Interfaces;
+
 public interface ICompiler
 {
     CompiledQuery Compile(Query query);
 }
 
-}
+
