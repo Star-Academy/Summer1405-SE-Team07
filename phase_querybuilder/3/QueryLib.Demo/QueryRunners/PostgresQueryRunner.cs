@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Npgsql;
 using QueryLib.Compilers;
 
@@ -5,22 +6,44 @@ namespace QueryLib.Demo;
 
 public sealed class PostgresQueryRunner : IQueryRunner
 {
-    private readonly IResultPrinter _printer;
-    public PostgresQueryRunner(IResultPrinter printer)
+    public async Task<QueryResult> RunAsync(CompiledQuery query, DbConnection connection, DbTransaction? transaction = null)
     {
-        _printer = printer;
-    }
-    public async Task RunAsync(CompiledQuery query, string connectionString)
-    {
-        await using var dataSource = NpgsqlDataSource.Create(connectionString);
-        await using var command = dataSource.CreateCommand(query.Sql);
+        if (connection.State != System.Data.ConnectionState.Open)
+        {
+            throw  new InvalidOperationException("The provided connection is not open. Ensure the connection is opened before executing the query.");
+        }
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = query.Sql;
+        command.Transaction = transaction;
 
         foreach (var value in query.Bindings)
         {
-            command.Parameters.AddWithValue(value ?? DBNull.Value);
+            var param = command.CreateParameter();
+            param.Value = value ?? DBNull.Value;
+            command.Parameters.Add(param);
         }
 
         await using var reader = await command.ExecuteReaderAsync();
-        await _printer.PrintAsync(reader, "PostgreSQL results");
+
+        var result = new QueryResult();
+
+        for (int col = 0; col < reader.FieldCount; col++)
+        {
+            result.ColumnNames.Add(reader.GetName(col));
+        }
+
+        while (await reader.ReadAsync())
+        {
+            var row = new Dictionary<string, object?>();
+            for (int col = 0; col < reader.FieldCount; col++)
+            {
+                var val = reader.GetValue(col);
+                row[reader.GetName(col)] = val == DBNull.Value ? null : val;
+            }
+            result.Rows.Add(row);
+        }
+
+        return result;
     }
 }

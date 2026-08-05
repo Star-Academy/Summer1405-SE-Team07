@@ -4,22 +4,17 @@ namespace QueryLib.Demo;
 
 public class ConsoleResultPrinter : IResultPrinter
 {
-    public async Task PrintAsync(DbDataReader reader, string header)
+    public Task PrintAsync(QueryResult result, string header)
     {
         Console.WriteLine($"--- {header} ---");
 
-        while (await reader.ReadAsync())
+        foreach (var row in result.Rows)
         {
-            var values = new List<string>();
-
-            for (int col = 0; col < reader.FieldCount; col++)
-            {
-                values.Add($"{reader.GetName(col)}={reader.GetValue(col)}");
-            }
-
+            var values = row.Select(pair => $"{pair.Key}={pair.Value ?? "NULL"}");
             Console.WriteLine(string.Join(", ", values));
         }
 
         Console.WriteLine();
+        return Task.CompletedTask;
     }
 }

@@ -4,6 +4,5 @@ namespace QueryLib.Demo;
 
 public interface IResultPrinter
 {
-    Task PrintAsync(DbDataReader reader, string header);
+    Task PrintAsync(QueryResult result, string header);
 }
-

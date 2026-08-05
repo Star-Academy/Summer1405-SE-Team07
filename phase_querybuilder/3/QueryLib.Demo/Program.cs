@@ -7,20 +7,22 @@ var query = new Query()
     .Select("StudentNumber", "FirstName", "LastName")
     .Where("IsMale", true);
 
+IResultPrinter printer = new ConsoleResultPrinter();
+
 var databases = new List<DatabaseConfiguration>
 {
     new DatabaseConfiguration(
         "PostgreSQL",
         new PostgresCompiler(),
-        new PostgresQueryRunner(new ConsoleResultPrinter()),
-        "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=mohaymen"
+        new PostgresQueryRunner(),
+        new PostgresConnectionFactory("Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=mohaymen")
     ),
 
     new DatabaseConfiguration(
         "SQL Server",
         new SqlServerCompiler(),
-        new SqlServerQueryRunner(new ConsoleResultPrinter()),
-        "Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True"
+        new SqlServerQueryRunner(),
+        new SqlServerConnectionFactory("Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True")
     )
 };
 
@@ -29,16 +31,19 @@ foreach (var db in databases)
     Console.WriteLine($"========== {db.Name} ==========");
 
     CompiledQuery compiledQuery = db.Compiler.Compile(query);
-
     PrintCompiled(db.Name, compiledQuery);
 
-    if (!string.IsNullOrWhiteSpace(db.ConnectionString))
+    try
     {
-        await db.Runner.RunAsync(compiledQuery, db.ConnectionString);
+        await using var connection = await db.ConnectionFactory.CreateConnectionAsync();
+        
+        var reader = await db.Runner.RunAsync(compiledQuery, connection);
+
+        await printer.PrintAsync(reader, $"{db.Name} Results");
     }
-    else
+    catch (Exception ex)
     {
-        Console.WriteLine($"Skipping {db.Name}: Connection string not set.");
+        Console.WriteLine($"Error executing query on {db.Name}: {ex.Message}");
     }
 
     Console.WriteLine();
@@ -51,12 +56,11 @@ static void PrintCompiled(string label, CompiledQuery result)
 
     Console.WriteLine("Bindings:");
 
-    foreach (var Binding in result.Bindings)
+    var index = 0;
+    foreach (var binding in result.Bindings)
     {
-        var index = 0;
-        Console.WriteLine($"  [{index++}] = {Binding}");
+        Console.WriteLine($"  [{index++}] = {binding}");
     }
 
     Console.WriteLine();
 }
-

@@ -1,30 +1,48 @@
-using Microsoft.Data.SqlClient;
+using System.Data.Common;
 using QueryLib.Compilers;
 
 namespace QueryLib.Demo;
-
 public sealed class SqlServerQueryRunner : IQueryRunner
 {
-    private readonly IResultPrinter _printer;
-
-    public SqlServerQueryRunner(IResultPrinter printer)
+    public async Task<QueryResult> RunAsync(CompiledQuery query, DbConnection connection, DbTransaction? transaction = null)
     {
-        _printer = printer;
-    }
-
-    public async Task RunAsync(CompiledQuery query, string connectionString)
-    {
-        await using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync();
-
-        await using var command = new SqlCommand(query.Sql, connection);
+        if (connection.State != System.Data.ConnectionState.Open)
+        {
+            throw new InvalidOperationException("The provided connection is not open. Ensure the connection is opened before executing the query.");  
+        }
+    
+        await using var command = connection.CreateCommand();
+        command.CommandText = query.Sql;
+        command.Transaction = transaction;
 
         for (int param = 0; param < query.Bindings.Count; param++)
         {
-            command.Parameters.AddWithValue("@p" + param, query.Bindings[param] ?? DBNull.Value);
+            var dbParam = command.CreateParameter();
+            dbParam.ParameterName = "@p" + param;
+            dbParam.Value = query.Bindings[param] ?? DBNull.Value;
+            command.Parameters.Add(dbParam);
         }
 
         await using var reader = await command.ExecuteReaderAsync();
-        await _printer.PrintAsync(reader, "SQL Server results");
+
+        var result = new QueryResult();
+
+        for (int col = 0; col < reader.FieldCount; col++)
+        {
+            result.ColumnNames.Add(reader.GetName(col));
+        }
+
+        while (await reader.ReadAsync())
+        {
+            var row = new Dictionary<string, object?>();
+            for (int col = 0; col < reader.FieldCount; col++)
+            {
+                var val = reader.GetValue(col);
+                row[reader.GetName(col)] = val == DBNull.Value ? null : val;
+            }
+            result.Rows.Add(row);
+        }
+
+        return result;
     }
 }
