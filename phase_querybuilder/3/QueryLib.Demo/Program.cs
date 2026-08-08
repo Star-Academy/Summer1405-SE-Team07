@@ -13,14 +13,14 @@ var databases = new List<DatabaseEngine>
 {
     new DatabaseEngine(
         "PostgreSQL",
-        new PostgresCompiler(),
+        SqlCompilerFactory.CreatePostgres(),
         new PostgresQueryRunner(),
-        new PostgresConnectionFactory("Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=mohaymen")
+        new PostgresConnectionFactory("Host=localhost;Port=5442;Username=postgres;Password=postgres;Database=mohaymen")
     ),
 
     new DatabaseEngine(
         "SQL Server",
-        new SqlServerCompiler(),
+        SqlCompilerFactory.CreateSqlServer(),
         new SqlServerQueryRunner(),
         new SqlServerConnectionFactory("Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True")
     )

@@ -1,50 +1,59 @@
-using System;
-using System.Collections.Generic;
+using QueryLib.Dialects;
+using QueryLib.Clauses;
+using QueryLib.Clauses.Interfaces;
+
+
 
 namespace QueryLib;
 
-public class Query
-{
-    private string? _table;
-    private readonly List<string> _columns = new();
-    private readonly List<Condition> _conditions = new();
 
-    public string Table => _table
-        ?? throw new InvalidOperationException("From(...) must be called before compiling the query.");
-
-    public IReadOnlyCollection<string> Columns => _columns;
-    public IReadOnlyCollection<Condition> Conditions => _conditions;
-
-    public Query From(string table)
+    public sealed class Query
     {
-        if (string.IsNullOrWhiteSpace(table))
+        private string? _table;
+        private readonly List<string> _columns = new();
+        private readonly List<IQueryClause> _clauses = new();
+
+        private WhereClause? _whereClause;
+
+        public string Table => _table
+            ?? throw new InvalidOperationException("From(...) must be called before compiling the query.");
+
+        public IReadOnlyCollection<string> Columns => _columns;
+        public IReadOnlyCollection<IQueryClause> Clauses => _clauses;
+
+        public Query From(string table)
         {
-            throw new ArgumentException("Table name cannot be empty.", nameof(table));      
+            if (string.IsNullOrWhiteSpace(table))
+                throw new ArgumentException("Table name cannot be empty.", nameof(table));
+
+            _table = table;
+            return this;
         }
 
-        _table = table;
-        return this;
-    }
-
-    public Query Select(params string[] columns)
-    {
-        if (columns != null && columns.Length > 0)
+        public Query Select(params string[] columns)
         {
-            _columns.AddRange(columns);
+            if (columns != null && columns.Length > 0)
+                _columns.AddRange(columns);
+
+            return this;
         }
 
-        return this;
-    }
-
-    public Query Where(string column, object? value)
-    {
-        if (string.IsNullOrWhiteSpace(column))
+        public Query Where(string column, object? value)
         {
-            throw new ArgumentException("Column name cannot be empty.", nameof(column));
+            _whereClause ??= AddNew(new WhereClause());
+            _whereClause.Add(new Condition(column, value));
+            return this;
+        }
+        
+        public Query AddClause(IQueryClause clause)
+        {
+            _clauses.Add(clause);
+            return this;
         }
 
-        _conditions.Add(new Condition(column, value));
-        return this;
+        private T AddNew<T>(T clause) where T : IQueryClause
+        {
+            _clauses.Add(clause);
+            return clause;
+        }
     }
-}
-

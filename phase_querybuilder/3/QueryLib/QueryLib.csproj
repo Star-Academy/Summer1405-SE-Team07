@@ -7,4 +7,9 @@
     <RootNamespace>QueryLib</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Dialects\Postgres\" />
+    <Folder Include="Dialects\SqlServer\" />
+  </ItemGroup>
+
 </Project>
