@@ -1,24 +1,19 @@
 ﻿
 
-using QueryLib.Dialects.Postgres;
-using QueryLib.Dialects.SqlServer;
+using QueryLib.Compilers.Abstractions;
 using QueryLib.Dialects.Abstractions;
-
-
 
 namespace QueryLib.Compilers;
 
 public static class SqlCompilerFactory
 {
-    public static SqlCompiler CreatePostgres() =>
-        new SqlCompiler(
-            new PostgresIdentifierQuoter(),
-            new PostgresParameterPlaceholderFactory(),
-            new PassthroughValueBinder());
+    public static ICompiler Create(ISqlDialect dialect)
+    {
+        ArgumentNullException.ThrowIfNull(dialect);
 
-    public static SqlCompiler CreateSqlServer() =>
-        new SqlCompiler(
-            new SqlServerIdentifierQuoter(),
-            new SqlServerParameterPlaceholderFactory(),
-            new SqlServerBooleanAsIntValueBinder());
+        return new SqlCompiler(
+            dialect.IdentifierQuoter,
+            dialect.ParameterPlaceholderFactory,
+            dialect.ValueBinder);
+    }
 }

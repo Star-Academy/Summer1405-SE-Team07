@@ -1,4 +1,3 @@
-using QueryLib.Compilers;
 using QueryLib.Compilers.Abstractions;
 using QueryLib.Demo.Interfaces;
 

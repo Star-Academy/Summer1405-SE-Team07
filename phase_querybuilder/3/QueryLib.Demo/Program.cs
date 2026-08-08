@@ -5,6 +5,8 @@ using QueryLib.Demo.Connections;
 using QueryLib.Demo.Interfaces;
 using QueryLib.Demo.Printers;
 using QueryLib.Demo.QueryRunners;
+using QueryLib.Dialects.Postgres;
+using QueryLib.Dialects.SqlServer;
 
 var query = new Query()
     .From("Student")
@@ -17,14 +19,14 @@ var databases = new List<DatabaseEngine>
 {
     new DatabaseEngine(
         "PostgreSQL",
-        SqlCompilerFactory.CreatePostgres(),
+        SqlCompilerFactory.Create(new PostgresDialect()),
         new PostgresQueryRunner(),
         new PostgresConnectionFactory("Host=localhost;Port=5442;Username=postgres;Password=postgres;Database=mohaymen")
     ),
 
     new DatabaseEngine(
         "SQL Server",
-        SqlCompilerFactory.CreateSqlServer(),
+        SqlCompilerFactory.Create(new SqlServerDialect()),
         new SqlServerQueryRunner(),
         new SqlServerConnectionFactory("Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True")
     )
