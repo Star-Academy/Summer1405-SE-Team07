@@ -1,6 +1,6 @@
-using System.Data.Common;
+using QueryLib.Demo.Interfaces;
 
-namespace QueryLib.Demo;
+namespace QueryLib.Demo.Printers;
 
 public class ConsoleResultPrinter : IResultPrinter
 {

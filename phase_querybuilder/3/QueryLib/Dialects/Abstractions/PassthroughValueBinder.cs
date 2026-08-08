@@ -1,4 +1,4 @@
-﻿namespace QueryLib.Dialects;
+﻿namespace QueryLib.Dialects.Abstractions;
 
 
 public sealed class PassthroughValueBinder : IValueBinder

@@ -1,8 +1,8 @@
 using System.Data.Common;
-using Npgsql;
 using QueryLib.Compilers;
+using QueryLib.Demo.Interfaces;
 
-namespace QueryLib.Demo;
+namespace QueryLib.Demo.QueryRunners;
 
 public sealed class PostgresQueryRunner : IQueryRunner
 {

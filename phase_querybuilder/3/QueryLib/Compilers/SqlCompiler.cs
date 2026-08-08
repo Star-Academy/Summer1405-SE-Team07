@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using QueryLib.Dialects;
-using QueryLib.Interfaces;
-using QueryLib.Clauses;
-using QueryLib.Clauses.Interfaces;
+﻿
+using QueryLib.Dialects.Abstractions;
+using QueryLib.Compilers.Abstractions;
 namespace QueryLib.Compilers;
+
 
 public sealed class SqlCompiler : ICompiler
 {

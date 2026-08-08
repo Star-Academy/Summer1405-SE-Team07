@@ -10,6 +10,7 @@
   <ItemGroup>
     <Folder Include="Dialects\Postgres\" />
     <Folder Include="Dialects\SqlServer\" />
+    <Folder Include="Interfaces\" />
   </ItemGroup>
 
 </Project>

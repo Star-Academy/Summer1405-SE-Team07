@@ -1,7 +1,8 @@
 using System.Data.Common;
 using Npgsql;
+using QueryLib.Demo.Interfaces;
 
-namespace QueryLib.Demo;
+namespace QueryLib.Demo.Connections;
 
 public class PostgresConnectionFactory : IDbConnectionFactory
 {

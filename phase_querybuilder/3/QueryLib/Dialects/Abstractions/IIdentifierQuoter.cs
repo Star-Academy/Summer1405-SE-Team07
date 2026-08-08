@@ -1,5 +1,4 @@
-﻿namespace QueryLib.Dialects ;
-
+﻿namespace QueryLib.Dialects.Abstractions;
 
 public interface IIdentifierQuoter
 {

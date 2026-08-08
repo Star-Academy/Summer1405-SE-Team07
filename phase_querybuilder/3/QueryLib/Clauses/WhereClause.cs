@@ -1,5 +1,5 @@
-﻿using QueryLib.Dialects; 
-using QueryLib.Clauses.Interfaces;
+﻿using QueryLib.Dialects.Abstractions;
+using QueryLib.Clauses.Abstractions;
 
 namespace QueryLib.Clauses
 {

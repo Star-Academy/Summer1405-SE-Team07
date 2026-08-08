@@ -1,5 +1,6 @@
 using QueryLib.Compilers;
-using QueryLib.Interfaces;
+using QueryLib.Compilers.Abstractions;
+using QueryLib.Demo.Interfaces;
 
 namespace QueryLib.Demo;
 

@@ -1,7 +1,7 @@
 ﻿
+using QueryLib.Dialects.Abstractions;
 
-using QueryLib.Dialects;
-namespace QueryLib.Clauses.Interfaces;
+namespace QueryLib.Clauses.Abstractions;
 
 public interface IQueryClause
 {

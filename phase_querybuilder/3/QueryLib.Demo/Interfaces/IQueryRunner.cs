@@ -1,7 +1,7 @@
 using QueryLib.Compilers;
 using System.Data.Common;
 
-namespace QueryLib.Demo;
+namespace QueryLib.Demo.Interfaces;
 
 public interface IQueryRunner
 {

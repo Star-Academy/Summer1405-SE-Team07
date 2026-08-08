@@ -1,7 +1,9 @@
 using System.Data.Common;
 using QueryLib.Compilers;
+using QueryLib.Demo.Interfaces;
 
-namespace QueryLib.Demo;
+namespace QueryLib.Demo.QueryRunners;
+
 public sealed class SqlServerQueryRunner : IQueryRunner
 {
     public async Task<QueryResult> RunAsync(CompiledQuery query, DbConnection connection, DbTransaction? transaction = null)

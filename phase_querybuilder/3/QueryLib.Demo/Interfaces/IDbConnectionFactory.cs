@@ -1,7 +1,5 @@
 using System.Data.Common;
-using Microsoft.Data.SqlClient;
-
-namespace QueryLib.Demo;
+namespace QueryLib.Demo.Interfaces;
 
 public interface IDbConnectionFactory
 {

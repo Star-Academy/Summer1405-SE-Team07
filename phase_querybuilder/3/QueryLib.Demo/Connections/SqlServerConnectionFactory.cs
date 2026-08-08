@@ -1,8 +1,9 @@
 
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
+using QueryLib.Demo.Interfaces;
 
-namespace QueryLib.Demo;
+namespace QueryLib.Demo.Connections;
 
 public class SqlServerConnectionFactory : IDbConnectionFactory
 {

@@ -1,13 +1,12 @@
-using QueryLib.Dialects;
 using QueryLib.Clauses;
-using QueryLib.Clauses.Interfaces;
+using QueryLib.Clauses.Abstractions;
 
 
 
 namespace QueryLib;
 
 
-    public sealed class Query
+public sealed class Query
     {
         private string? _table;
         private readonly List<string> _columns = new();
@@ -56,4 +55,4 @@ namespace QueryLib;
             _clauses.Add(clause);
             return clause;
         }
-    }
+}

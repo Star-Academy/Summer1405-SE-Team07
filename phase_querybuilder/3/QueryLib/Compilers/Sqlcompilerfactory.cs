@@ -1,8 +1,8 @@
 ﻿
-using QueryLib.Dialects;
+
 using QueryLib.Dialects.Postgres;
 using QueryLib.Dialects.SqlServer;
-using QueryLib.Interfaces;
+using QueryLib.Dialects.Abstractions;
 
 
 

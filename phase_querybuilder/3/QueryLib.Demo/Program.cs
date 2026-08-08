@@ -1,6 +1,10 @@
 using QueryLib;
 using QueryLib.Compilers;
 using QueryLib.Demo;
+using QueryLib.Demo.Connections;
+using QueryLib.Demo.Interfaces;
+using QueryLib.Demo.Printers;
+using QueryLib.Demo.QueryRunners;
 
 var query = new Query()
     .From("Student")

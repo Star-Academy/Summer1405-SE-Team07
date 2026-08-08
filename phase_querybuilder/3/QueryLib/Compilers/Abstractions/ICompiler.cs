@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using QueryLib.Compilers;
 
-namespace QueryLib.Interfaces;
+namespace QueryLib.Compilers.Abstractions;
 
 public interface ICompiler
 {
