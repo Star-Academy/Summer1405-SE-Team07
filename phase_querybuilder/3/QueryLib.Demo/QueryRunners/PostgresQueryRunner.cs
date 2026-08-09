@@ -28,18 +28,18 @@ public sealed class PostgresQueryRunner : IQueryRunner
 
         var result = new QueryResult();
 
-        for (int col = 0; col < reader.FieldCount; col++)
+        for (int column = 0; column < reader.FieldCount; column++)
         {
-            result.ColumnNames.Add(reader.GetName(col));
+            result.ColumnNames.Add(reader.GetName(column));
         }
 
         while (await reader.ReadAsync())
         {
             var row = new Dictionary<string, object?>();
-            for (int col = 0; col < reader.FieldCount; col++)
+            for (int column = 0; column < reader.FieldCount; column++)
             {
-                var val = reader.GetValue(col);
-                row[reader.GetName(col)] = (val == DBNull.Value) ? null : val;
+                var val = reader.GetValue(column);
+                row[reader.GetName(column)] = (val == DBNull.Value) ? null : val;
             }
             result.Rows.Add(row);
         }
