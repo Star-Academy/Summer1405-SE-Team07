@@ -16,20 +16,24 @@ namespace QueryLib.Clauses
         public RenderOutput Render(
             IIdentifierQuoter quoter,
             IParameterPlaceholderFactory placeholders,
-            List<object?> bindings)
+            IReadOnlyCollection<object?> bindings)
         {
+            var mutableBindings = bindings.ToList();
+
             if (!HasConditions)
-                return new RenderOutput(string.Empty);
+                return new RenderOutput(string.Empty, mutableBindings);
 
             var parts = new List<string>();
             foreach (var condition in _conditions)
             {
-                bindings.Add(condition.Value);
-                var placeholder = placeholders.MakePlaceholder(bindings.Count);
+                mutableBindings.Add(condition.Value);
+                var placeholder = placeholders.MakePlaceholder(mutableBindings.Count);
                 parts.Add($"{quoter.Quote(condition.Column)} = {placeholder}");
             }
 
-            return new RenderOutput("WHERE " + string.Join(" AND ", parts));
+            return new RenderOutput(
+                "WHERE " + string.Join(" AND ", parts),
+                mutableBindings);
         }
     }
 }

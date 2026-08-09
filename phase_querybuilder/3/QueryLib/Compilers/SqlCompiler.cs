@@ -21,7 +21,7 @@ public sealed class SqlCompiler : ICompiler
 
     public CompiledQuery Compile(Query query)
     {
-        var rawBindings = new List<object?>();
+        IReadOnlyCollection<object?> rawBindings = Array.Empty<object?>();
 
         var selectColumns = query.Columns.Count > 0
             ? string.Join(", ", query.Columns.Select(_quoter.Quote))
@@ -36,6 +36,8 @@ public sealed class SqlCompiler : ICompiler
         foreach (var clause in query.Clauses.OrderBy(c => c.Order))
         {
             var rendered = clause.Render(_quoter, _placeholders, rawBindings);
+            rawBindings = rendered.Bindings;
+
             if (!string.IsNullOrEmpty(rendered.Sql))
                 sqlParts.Add(rendered.Sql);
         }

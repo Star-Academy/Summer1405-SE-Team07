@@ -10,5 +10,5 @@ public interface IQueryClause
     RenderOutput Render(
         IIdentifierQuoter quoter,
         IParameterPlaceholderFactory placeholders,
-        List<object?> bindings);
+        IReadOnlyCollection<object?> bindings);
 }

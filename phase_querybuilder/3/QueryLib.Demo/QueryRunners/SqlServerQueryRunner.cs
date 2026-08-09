@@ -31,7 +31,7 @@ public sealed class SqlServerQueryRunner : IQueryRunner
 
         for (int column = 0; column < reader.FieldCount; column++)
         {
-            result.ColumnNames.Add(reader.GetName(column));
+            result.AddColumn(reader.GetName(column));
         }
 
         while (await reader.ReadAsync())
@@ -42,7 +42,7 @@ public sealed class SqlServerQueryRunner : IQueryRunner
                 var val = reader.GetValue(column);
                 row[reader.GetName(column)] = (val == DBNull.Value) ? null : val;
             }
-            result.Rows.Add(row);
+            result.AddRow(row);
         }
 
         return result;

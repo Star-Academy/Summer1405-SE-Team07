@@ -1,4 +1,6 @@
 ﻿
 namespace QueryLib.Clauses.Abstractions;
 
-public sealed record RenderOutput(string Sql);
+public sealed record RenderOutput(
+    string Sql,
+    IReadOnlyCollection<object?> Bindings);
