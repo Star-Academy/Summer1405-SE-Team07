@@ -1,6 +1,6 @@
 using System.Data.Common;
 using QueryLib.Compilers;
-using QueryLib.Demo.Interfaces;
+using QueryLib.Demo.Abstractions;
 
 namespace QueryLib.Demo.QueryRunners;
 
@@ -10,7 +10,7 @@ public sealed class PostgresQueryRunner : IQueryRunner
     {
         if (connection.State != System.Data.ConnectionState.Open)
         {
-            throw  new InvalidOperationException("The provided connection is not open. Ensure the connection is opened before executing the query.");
+            throw new InvalidOperationException("The provided connection is not open. Ensure the connection is opened before executing the query.");
         }
 
         await using var command = connection.CreateCommand();
@@ -39,7 +39,7 @@ public sealed class PostgresQueryRunner : IQueryRunner
             for (int col = 0; col < reader.FieldCount; col++)
             {
                 var val = reader.GetValue(col);
-                row[reader.GetName(col)] = val == DBNull.Value ? null : val;
+                row[reader.GetName(col)] = (val == DBNull.Value) ? null : val;
             }
             result.Rows.Add(row);
         }

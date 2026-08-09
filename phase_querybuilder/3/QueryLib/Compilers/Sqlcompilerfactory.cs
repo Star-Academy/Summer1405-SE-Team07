@@ -5,7 +5,7 @@ using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Compilers;
 
-public static class SqlCompilerFactory
+public class SqlCompilerFactory
 {
     public static ICompiler Create(ISqlDialect dialect)
     {

@@ -5,13 +5,9 @@ namespace QueryLib;
 
 public sealed class Condition
 {
-    public string Column { get; }
-    public object? Value { get; }
-
-    public Condition(string column, object? value)
-    {
-        Column = column;
-        Value = value;
-    }
+    public required string Column { get; init; }
+    public  object? Value { get; init;  }
+    
+    
 }
 

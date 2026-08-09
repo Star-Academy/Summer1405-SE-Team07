@@ -1,9 +1,9 @@
 using QueryLib.Compilers.Abstractions;
-using QueryLib.Demo.Interfaces;
+using QueryLib.Demo.Abstractions;
 
 namespace QueryLib.Demo;
 
-public record DatabaseEngine(
+public record DatabaseTarget(
     string Name,
     ICompiler Compiler,
     IQueryRunner Runner,

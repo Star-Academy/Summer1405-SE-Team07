@@ -1,8 +1,7 @@
-﻿
-using QueryLib.Dialects.Abstractions;
+﻿using QueryLib.Dialects.Abstractions;
 using QueryLib.Compilers.Abstractions;
-namespace QueryLib.Compilers;
 
+namespace QueryLib.Compilers;
 
 public sealed class SqlCompiler : ICompiler
 {

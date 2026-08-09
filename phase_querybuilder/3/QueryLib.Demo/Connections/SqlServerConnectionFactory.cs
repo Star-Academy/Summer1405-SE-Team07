@@ -1,7 +1,7 @@
 
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
-using QueryLib.Demo.Interfaces;
+using QueryLib.Demo.Abstractions;
 
 namespace QueryLib.Demo.Connections;
 

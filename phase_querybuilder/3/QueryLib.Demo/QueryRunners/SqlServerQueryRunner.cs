@@ -1,6 +1,6 @@
 using System.Data.Common;
 using QueryLib.Compilers;
-using QueryLib.Demo.Interfaces;
+using QueryLib.Demo.Abstractions;
 
 namespace QueryLib.Demo.QueryRunners;
 
@@ -40,7 +40,7 @@ public sealed class SqlServerQueryRunner : IQueryRunner
             for (int col = 0; col < reader.FieldCount; col++)
             {
                 var val = reader.GetValue(col);
-                row[reader.GetName(col)] = val == DBNull.Value ? null : val;
+                row[reader.GetName(col)] = (val == DBNull.Value) ? null : val;
             }
             result.Rows.Add(row);
         }

@@ -1,4 +1,4 @@
-namespace QueryLib.Demo.Interfaces;
+namespace QueryLib.Demo.Abstractions;
 
 public interface IResultPrinter
 {

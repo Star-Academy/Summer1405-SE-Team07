@@ -1,11 +1,13 @@
 using System.Data.Common;
 using Npgsql;
-using QueryLib.Demo.Interfaces;
+using QueryLib.Demo.Abstractions;
 
 namespace QueryLib.Demo.Connections;
 
 public class PostgresConnectionFactory : IDbConnectionFactory
 {
+    
+
     private readonly string _connectionString;
 
     public PostgresConnectionFactory(string connectionString)

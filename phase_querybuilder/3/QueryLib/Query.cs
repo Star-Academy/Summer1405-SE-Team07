@@ -1,6 +1,6 @@
+using QueryLib;
 using QueryLib.Clauses;
 using QueryLib.Clauses.Abstractions;
-
 
 
 namespace QueryLib;
@@ -17,21 +17,24 @@ public sealed class Query
         public string Table => _table
             ?? throw new InvalidOperationException("From(...) must be called before compiling the query.");
 
+        
         public IReadOnlyCollection<string> Columns => _columns;
         public IReadOnlyCollection<IQueryClause> Clauses => _clauses;
 
         public Query From(string table)
         {
             if (string.IsNullOrWhiteSpace(table))
+            {
                 throw new ArgumentException("Table name cannot be empty.", nameof(table));
+            }
 
             _table = table;
             return this;
         }
 
-        public Query Select(params string[] columns)
+        public Query Select(params string[]? columns)
         {
-            if (columns != null && columns.Length > 0)
+            if (columns != null)
                 _columns.AddRange(columns);
 
             return this;
@@ -40,9 +43,10 @@ public sealed class Query
         public Query Where(string column, object? value)
         {
             _whereClause ??= AddNew(new WhereClause());
-            _whereClause.Add(new Condition(column, value));
+            _whereClause.Add(new Condition{Column =  column, Value = value});
             return this;
         }
+        
         
         public Query AddClause(IQueryClause clause)
         {

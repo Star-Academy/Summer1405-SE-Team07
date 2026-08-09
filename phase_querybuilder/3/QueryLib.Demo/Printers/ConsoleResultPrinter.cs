@@ -1,4 +1,4 @@
-using QueryLib.Demo.Interfaces;
+using QueryLib.Demo.Abstractions;
 
 namespace QueryLib.Demo.Printers;
 

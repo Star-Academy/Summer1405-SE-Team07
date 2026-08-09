@@ -1,30 +1,39 @@
+
 using QueryLib;
 using QueryLib.Compilers;
 using QueryLib.Demo;
 using QueryLib.Demo.Connections;
-using QueryLib.Demo.Interfaces;
+using QueryLib.Demo.Abstractions;
 using QueryLib.Demo.Printers;
 using QueryLib.Demo.QueryRunners;
 using QueryLib.Dialects.Postgres;
 using QueryLib.Dialects.SqlServer;
 
+
+// var wherecluasee = new WhereClause(); 
+// wherecluasee.Add(new Condition{Column = "FirstName" , Value = "John"});
+// ocp 
+
+
 var query = new Query()
     .From("Student")
     .Select("StudentNumber", "FirstName", "LastName")
     .Where("IsMale", true);
+    //.AddClause(wherecluasee); ocp example
+    
 
 IResultPrinter printer = new ConsoleResultPrinter();
 
-var databases = new List<DatabaseEngine>
+var databases = new List<DatabaseTarget>
 {
-    new DatabaseEngine(
+    new DatabaseTarget(
         "PostgreSQL",
         SqlCompilerFactory.Create(new PostgresDialect()),
         new PostgresQueryRunner(),
         new PostgresConnectionFactory("Host=localhost;Port=5442;Username=postgres;Password=postgres;Database=mohaymen")
     ),
 
-    new DatabaseEngine(
+    new DatabaseTarget(
         "SQL Server",
         SqlCompilerFactory.Create(new SqlServerDialect()),
         new SqlServerQueryRunner(),
