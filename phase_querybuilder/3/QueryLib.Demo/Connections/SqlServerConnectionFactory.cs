@@ -11,7 +11,7 @@ public class SqlServerConnectionFactory : IDbConnectionFactory
 
     public SqlServerConnectionFactory(string connectionString)
     {
-        _connectionString = connectionString;
+        _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
     }
 
     public async Task<DbConnection> CreateConnectionAsync()

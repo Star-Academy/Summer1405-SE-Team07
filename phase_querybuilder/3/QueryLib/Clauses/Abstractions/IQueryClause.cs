@@ -7,7 +7,7 @@ public interface IQueryClause
 {
     int Order { get; }
 
-    string Render(
+    RenderOutput Render(
         IIdentifierQuoter quoter,
         IParameterPlaceholderFactory placeholders,
         List<object?> bindings);

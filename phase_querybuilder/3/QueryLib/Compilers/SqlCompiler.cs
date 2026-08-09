@@ -14,9 +14,9 @@ public sealed class SqlCompiler : ICompiler
         IParameterPlaceholderFactory placeholders,
         IValueBinder binder)
     {
-        _quoter = quoter;
-        _placeholders = placeholders;
-        _binder = binder;
+        _quoter = quoter ?? throw new ArgumentNullException(nameof(quoter));
+        _binder = binder ?? throw new ArgumentNullException(nameof(binder));
+        _placeholders =  placeholders ?? throw new ArgumentNullException(nameof(placeholders));
     }
 
     public CompiledQuery Compile(Query query)
@@ -36,8 +36,8 @@ public sealed class SqlCompiler : ICompiler
         foreach (var clause in query.Clauses.OrderBy(c => c.Order))
         {
             var rendered = clause.Render(_quoter, _placeholders, rawBindings);
-            if (!string.IsNullOrEmpty(rendered))
-                sqlParts.Add(rendered);
+            if (!string.IsNullOrEmpty(rendered.Sql))
+                sqlParts.Add(rendered.Sql);
         }
 
         var boundValues = rawBindings.Select(_binder.Bind).ToList();

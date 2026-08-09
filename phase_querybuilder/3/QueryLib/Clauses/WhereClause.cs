@@ -13,13 +13,13 @@ namespace QueryLib.Clauses
 
         public void Add(Condition condition) => _conditions.Add(condition);
 
-        public string Render(
+        public RenderOutput Render(
             IIdentifierQuoter quoter,
             IParameterPlaceholderFactory placeholders,
             List<object?> bindings)
         {
             if (!HasConditions)
-                return string.Empty;
+                return new RenderOutput(string.Empty);
 
             var parts = new List<string>();
             foreach (var condition in _conditions)
@@ -29,7 +29,7 @@ namespace QueryLib.Clauses
                 parts.Add($"{quoter.Quote(condition.Column)} = {placeholder}");
             }
 
-            return "WHERE " + string.Join(" AND ", parts);
+            return new RenderOutput("WHERE " + string.Join(" AND ", parts));
         }
     }
 }

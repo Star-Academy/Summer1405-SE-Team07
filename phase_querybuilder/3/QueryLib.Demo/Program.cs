@@ -1,81 +1,92 @@
-
-using QueryLib;
 using QueryLib.Compilers;
-using QueryLib.Demo;
 using QueryLib.Demo.Connections;
 using QueryLib.Demo.Abstractions;
 using QueryLib.Demo.Printers;
 using QueryLib.Demo.QueryRunners;
-using QueryLib.Dialects.Postgres;
-using QueryLib.Dialects.SqlServer;
+using QueryLib.Compilers.Abstractions;
 
+namespace QueryLib.Demo;
 
-// var wherecluasee = new WhereClause(); 
-// wherecluasee.Add(new Condition{Column = "FirstName" , Value = "John"});
-// ocp 
-
-
-var query = new Query()
-    .From("Student")
-    .Select("StudentNumber", "FirstName", "LastName")
-    .Where("IsMale", true);
-    //.AddClause(wherecluasee); ocp example
+public static class Program
+{
     
-
-IResultPrinter printer = new ConsoleResultPrinter();
-
-var databases = new List<DatabaseTarget>
-{
-    new DatabaseTarget(
-        "PostgreSQL",
-        SqlCompilerFactory.Create(new PostgresDialect()),
-        new PostgresQueryRunner(),
-        new PostgresConnectionFactory("Host=localhost;Port=5442;Username=postgres;Password=postgres;Database=mohaymen")
-    ),
-
-    new DatabaseTarget(
-        "SQL Server",
-        SqlCompilerFactory.Create(new SqlServerDialect()),
-        new SqlServerQueryRunner(),
-        new SqlServerConnectionFactory("Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True")
-    )
-};
-
-foreach (var db in databases)
-{
-    Console.WriteLine($"========== {db.Name} ==========");
-
-    CompiledQuery compiledQuery = db.Compiler.Compile(query);
-    PrintCompiled(db.Name, compiledQuery);
-
-    try
+    
+    public static async Task Main(string[] args)
     {
-        await using var connection = await db.ConnectionFactory.CreateConnectionAsync();
+        // var wherecluasee = new WhereClause(); 
+        // wherecluasee.Add(new Condition{Column = "FirstName" , Value = "John"});
+        // ocp 
         
-        var reader = await db.Runner.RunAsync(compiledQuery, connection);
+        var query = new Query()
+            .From("Student")
+            .Select("StudentNumber", "FirstName", "LastName")
+            .Where("IsMale", true);
+        // .AddClause(wherecluasee); ocp example
 
-        await printer.PrintAsync(reader, $"{db.Name} Results");
+        IResultPrinter printer = new ConsoleResultPrinter();
+        
+        var dbConfigurations = new List<DbConfiguration>
+        {
+            new DbConfiguration(DbProvider.PostgreSQL , "Host=localhost;Port=5442;Username=postgres;Password=postgres;Database=mohaymen"),
+            new DbConfiguration(DbProvider.Sqlserver , "Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True"),
+        };
+
+        ICompiler compiler;
+        IQueryRunner runner;
+        IDbConnectionFactory connectionFactory;
+        
+        foreach (var dbConfig in dbConfigurations)
+        {
+            switch (dbConfig.provider)
+            {
+                case (DbProvider.PostgreSQL):
+                    compiler = SqlCompilerFactory.Create("postgres");
+                    runner = new PostgresQueryRunner();
+                    connectionFactory = new PostgresConnectionFactory(dbConfig.connectionString);
+                    break;
+                case(DbProvider.Sqlserver):
+                    compiler = SqlCompilerFactory.Create("sqlserver");
+                    runner = new SqlServerQueryRunner();
+                    connectionFactory = new SqlServerConnectionFactory(dbConfig.connectionString);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(dbConfig.provider), dbConfig.provider, null);
+            }
+            
+            Console.WriteLine($"========== {dbConfig.provider} ==========");
+            
+            var compiledQuery = compiler.Compile(query);
+            PrintCompiled(dbConfig.provider.ToString(), compiledQuery);
+
+            try
+            {
+                await using var connection = await connectionFactory.CreateConnectionAsync();
+                var reader = await runner.RunAsync(compiledQuery, connection);
+
+                await printer.PrintAsync(reader, $"{dbConfig.provider.ToString()} Results");
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"Error executing query on {dbConfig.provider.ToString()}: {exception.Message}");
+            }
+
+            Console.WriteLine();
+        }
     }
-    catch (Exception ex)
+
+    public static void PrintCompiled(string label, CompiledQuery result)
     {
-        Console.WriteLine($"Error executing query on {db.Name}: {ex.Message}");
+        Console.WriteLine($"--- {label} (compiled) ---");
+        Console.WriteLine(result.Sql);
+
+        Console.WriteLine("Bindings:");
+
+        var index = 0;
+        foreach (var binding in result.Bindings)
+        {
+            Console.WriteLine($"  [{index++}] = {binding}");
+        }
+
+        Console.WriteLine();
     }
-
-    Console.WriteLine();
-}
-
-static void PrintCompiled(string label, CompiledQuery result)
-{
-    Console.WriteLine($"--- {label} (compiled) ---");
-    Console.WriteLine(result.Sql);
-
-    Console.WriteLine("Bindings:");
-
-    var index = 0;
-    foreach (var binding in result.Bindings)
-    {
-        Console.WriteLine($"  [{index++}] = {binding}");
-    }
-
-    Console.WriteLine();
 }
