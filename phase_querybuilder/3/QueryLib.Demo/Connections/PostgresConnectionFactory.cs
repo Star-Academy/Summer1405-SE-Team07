@@ -18,7 +18,10 @@ public class PostgresConnectionFactory : IDbConnectionFactory
     public async Task<DbConnection> CreateConnectionAsync()
     {
         var connection = new NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
         return connection;
     }
+    
+    
+    
+    
 }

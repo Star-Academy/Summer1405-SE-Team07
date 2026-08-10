@@ -17,7 +17,6 @@ public class SqlServerConnectionFactory : IDbConnectionFactory
     public async Task<DbConnection> CreateConnectionAsync()
     {
         var connection = new SqlConnection(_connectionString);
-        await connection.OpenAsync();
         return connection;
     }
 }

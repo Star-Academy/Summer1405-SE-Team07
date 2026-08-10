@@ -1,17 +1,13 @@
-﻿
-
-using QueryLib.Compilers.Abstractions;
+﻿using QueryLib.Compilers.Abstractions;
 using QueryLib.Dialects.Abstractions;
 using QueryLib.Dialects.Postgres;
 using QueryLib.Dialects.SqlServer;
 
 namespace QueryLib.Compilers;
 
-public class SqlCompilerFactory
+public class SqlCompilerFactory : ISqlCompilerFactory
 {
-    
-    
-    public static ICompiler Create(string compilertype)
+    public ICompiler Create(string compilertype)
     {
         switch (compilertype)
         {
