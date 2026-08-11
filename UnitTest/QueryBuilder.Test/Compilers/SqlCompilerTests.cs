@@ -1,239 +1,184 @@
-﻿using QueryLib.Compilers;
-using QueryLib.Dialects.Abstractions;
-using QueryLib.Compilers.Abstractions;
-using System;
-using System.Collections.Generic;
-using System;
-using NSubstitute;
-using Xunit;
 using FluentAssertions;
+using NSubstitute;
 using QueryLib;
 using QueryLib.Clauses.Abstractions;
+using QueryLib.Compilers;
+using QueryLib.Dialects.Abstractions;
 
 namespace QueryBuilder.Test.Compilers;
 
-public class SqlCompilerTests
+public sealed class SqlCompilerTests
 {
-    private readonly IIdentifierQuoter _quoter;
-    private readonly IParameterPlaceholderFactory _placeholders;
-    private readonly IValueBinder _binder;
+    private readonly IIdentifierQuoter _quoter = Substitute.For<IIdentifierQuoter>();
+    private readonly IParameterPlaceholderFactory _placeholders =
+        Substitute.For<IParameterPlaceholderFactory>();
+    private readonly IValueBinder _binder = Substitute.For<IValueBinder>();
     private readonly SqlCompiler _sut;
-    
+
     public SqlCompilerTests()
     {
-        _quoter = Substitute.For<IIdentifierQuoter>();
-        _placeholders = Substitute.For<IParameterPlaceholderFactory>();
-        _binder = Substitute.For<IValueBinder>();
         _sut = new SqlCompiler(_quoter, _placeholders, _binder);
-        
     }
-    
+
     [Fact]
-    public void Constructor_ShouldThrowExeption_WhenQuoterIsNull()
+    public void Constructor_ShouldThrowException_WhenQuoterIsNull()
     {
-        // Arrange
         var act = () => new SqlCompiler(null!, _placeholders, _binder);
 
-        // Act & Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName("quoter");
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("quoter");
     }
-    
+
     [Fact]
-    public void Constructor_ShouldThrowExeption_WhenPlaceholderIsNull()
+    public void Constructor_ShouldThrowException_WhenPlaceholderFactoryIsNull()
     {
-        // Arrange
         var act = () => new SqlCompiler(_quoter, null!, _binder);
-        // Act & Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName("placeholders");
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("placeholders");
     }
 
     [Fact]
-    public void Constructor_ShouldThrowExeption_WhenBinderIsNull()
+    public void Constructor_ShouldThrowException_WhenBinderIsNull()
     {
-        // Arrange
         var act = () => new SqlCompiler(_quoter, _placeholders, null!);
-        // Act & Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName("binder");
-        
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("binder");
     }
 
-    
     [Fact]
-    public void Compile_ShouldUseStar_WhenQueryHasNoColumns()
+    public void Compile_ShouldThrowException_WhenQueryIsNull()
     {
-        // Arrange
-        var query = new Query()
-            .From("student");
+        var act = () => _sut.Compile(null!);
 
-        _quoter
-            .Quote("student")
-            .Returns("\"student\"");
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("query");
+    }
 
-        // Act
+    [Fact]
+    public void Compile_ShouldRequireAFromClause()
+    {
+        var query = new Query();
+
+        var act = () => _sut.Compile(query);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("From(...) must be called before compiling the query.");
+    }
+
+    [Fact]
+    public void Compile_ShouldUseStar_WhenNoColumnsAreSelected()
+    {
+        var query = new Query().From("student");
+        _quoter.Quote("student").Returns("\"student\"");
+
         var result = _sut.Compile(query);
 
-        // Assert
         result.Sql.Should().Be("SELECT * FROM \"student\"");
-        
-        // _quoter
-        //     .Received(1)
-        //     .Quote("name");
-
+        result.Bindings.Should().BeEmpty();
+        _binder.DidNotReceive().Bind(Arg.Any<object?>());
     }
-  
-    
+
     [Fact]
-    public void Compile_ShouldAddClauseWithBindingsSql_WhenClauseRendersSql()
+    public void Compile_ShouldCompileSelectedColumnsAndWhereConditions()
     {
-        // Arrange
         var query = new Query()
             .From("student")
-            .Select("id", "name");
+            .Select("id", "name")
+            .Where("id", 10)
+            .Where("status", "active");
 
+        _quoter.Quote(Arg.Any<string>())
+            .Returns(call => $"\"{call.Arg<string>()}\"");
+        _placeholders.MakePlaceholder(1).Returns("@p1");
+        _placeholders.MakePlaceholder(2).Returns("@p2");
+        _binder.Bind(10).Returns("bound-id");
+        _binder.Bind("active").Returns("bound-status");
+
+        var result = _sut.Compile(query);
+
+        result.Sql.Should().Be(
+            "SELECT \"id\", \"name\" FROM \"student\" " +
+            "WHERE \"id\" = @p1 AND \"status\" = @p2");
+        result.Bindings.Should().Equal("bound-id", "bound-status");
+    }
+
+    [Fact]
+    public void Compile_ShouldRenderClausesByOrder_NotInsertionOrder()
+    {
+        var query = new Query().From("student");
+        var orderByClause = CreateClause(30, "ORDER BY name");
+        var whereClause = CreateClause(20, "WHERE age > @p1");
+        _quoter.Quote("student").Returns("\"student\"");
+
+        query.AddClause(orderByClause);
+        query.AddClause(whereClause);
+
+        var result = _sut.Compile(query);
+
+        result.Sql.Should().Be(
+            "SELECT * FROM \"student\" WHERE age > @p1 ORDER BY name");
+    }
+
+    [Fact]
+    public void Compile_ShouldPassBindingsFromOneClauseToTheNext()
+    {
+        var query = new Query().From("student");
+        var firstClause = Substitute.For<IQueryClause>();
+        var secondClause = Substitute.For<IQueryClause>();
+        firstClause.Order.Returns(20);
+        secondClause.Order.Returns(30);
+        _quoter.Quote("student").Returns("\"student\"");
+
+        firstClause.Render(
+                _quoter,
+                _placeholders,
+                Arg.Is<IReadOnlyCollection<object?>>(values => values.Count == 0))
+            .Returns(new RenderOutput("FIRST", new object?[] { 10 }));
+
+        secondClause.Render(
+                _quoter,
+                _placeholders,
+                Arg.Is<IReadOnlyCollection<object?>>(values => values.SequenceEqual(new object?[] { 10 })))
+            .Returns(new RenderOutput("SECOND", new object?[] { 10, 20 }));
+
+        _binder.Bind(10).Returns("bound-10");
+        _binder.Bind(20).Returns("bound-20");
+        query.AddClause(secondClause);
+        query.AddClause(firstClause);
+
+        var result = _sut.Compile(query);
+
+        result.Sql.Should().Be("SELECT * FROM \"student\" FIRST SECOND");
+        result.Bindings.Should().Equal("bound-10", "bound-20");
+    }
+
+    [Fact]
+    public void Compile_ShouldIgnoreClausesThatRenderBlankSql()
+    {
+        var query = new Query().From("student");
+        var blankClause = CreateClause(20, "   ");
+        _quoter.Quote("student").Returns("\"student\"");
+        query.AddClause(blankClause);
+
+        var result = _sut.Compile(query);
+
+        result.Sql.Should().Be("SELECT * FROM \"student\"");
+    }
+
+    private IQueryClause CreateClause(int order, string sql)
+    {
         var clause = Substitute.For<IQueryClause>();
-
-        clause.Order.Returns(20);
-
+        clause.Order.Returns(order);
         clause.Render(
                 _quoter,
                 _placeholders,
                 Arg.Any<IReadOnlyCollection<object?>>())
-            .Returns(
-                new RenderOutput(
-                    "WHERE \"id\" = @p1",null
-                    ));
+            .Returns(call => new RenderOutput(
+                sql,
+                call.ArgAt<IReadOnlyCollection<object?>>(2)));
 
-        _quoter.Quote("student").Returns("\"student\"");
-        _quoter.Quote("id").Returns("\"id\"");
-        _quoter.Quote("name").Returns("\"name\"");
-
-        _binder.Bind(10).Returns(10);
-
-        query.AddClause(clause);
-
-        // Act
-        var result = _sut.Compile(query);
-
-        // Assert
-        result.Sql.Should().Be("SELECT \"id\", \"name\" FROM \"student\" WHERE \"id\" = @p1");
-
-        result.Bindings
-            .Should()
-            .ContainSingle()
-            .Which
-            .Should()
-            .Be(10);
-    }
-    
-    
-    
-    [Fact]
-    public void Compile_ShouldRenderClausesInOrder()
-    {
-        // Arrange
-        var query = new Query()
-            .From("student");
-
-        var firstAddedClause = Substitute.For<IQueryClause>();
-        var secondAddedClause = Substitute.For<IQueryClause>();
-
-        firstAddedClause.Order.Returns(20);
-        secondAddedClause.Order.Returns(10);
-
-        firstAddedClause
-            .Render(
-                _quoter,
-                _placeholders,
-                Arg.Any<IReadOnlyCollection<object?>>())
-            .Returns(
-                new RenderOutput(
-                    "WHERE age > @p1",
-                    new object?[] { 18 }));
-
-        secondAddedClause
-            .Render(
-                _quoter,
-                _placeholders,
-                Arg.Any<IReadOnlyCollection<object?>>())
-            .Returns(
-                new RenderOutput(
-                    "ORDER BY name",
-                    Array.Empty<object?>()));
-
-        _quoter
-            .Quote("student")
-            .Returns("\"student\"");
-
-        _binder
-            .Bind(18)
-            .Returns(18);
-
-        // Intentionally add Order 20 first
-        query.AddClause(firstAddedClause);
-        query.AddClause(secondAddedClause);
-
-        // Act
-        var result = _sut.Compile(query);
-
-        // Assert
-        result.Sql.Should()
-            .Be("SELECT * FROM \"student\" ORDER BY name WHERE age > @p1");
-    }
-    
-    
-    [Fact]
-    public void Compile_ShouldCompileWhereClause()
-    {
-        // Arrange
-        var query = new Query()
-            .From("student")
-            .Select("id", "name")
-            .Where("id", 10);
-
-        _quoter
-            .Quote("student")
-            .Returns("\"student\"");
-
-        _quoter
-            .Quote("id")
-            .Returns("\"id\"");
-
-        _placeholders
-            .MakePlaceholder(1)
-            .Returns("@p1");
-
-        _binder
-            .Bind(10)
-            .Returns(10);
-
-        // Act
-        var result = _sut.Compile(query);
-
-        // Assert
-        result.Sql.Should()
-            .Be("SELECT \"id\", \"name\" FROM \"student\" WHERE \"id\" = @p1");
-
-        result.Bindings
-            .Should()
-            .ContainSingle()
-            .Which
-            .Should()
-            .Be(10);
-
-        _quoter
-            .Received(1)
-            .Quote("student");
-
-        _quoter
-            .Received(1)
-            .Quote("id");
-
-        _placeholders
-            .Received(1)
-            .MakePlaceholder(1);
-
-        _binder
-            .Received(1)
-            .Bind(10);
+        return clause;
     }
 }

@@ -1,5 +1,6 @@
-﻿using QueryLib.Dialects.Abstractions;
+using QueryLib.Clauses.Abstractions;
 using QueryLib.Compilers.Abstractions;
+using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Compilers;
 
@@ -15,34 +16,36 @@ public sealed class SqlCompiler : ICompiler
         IValueBinder binder)
     {
         _quoter = quoter ?? throw new ArgumentNullException(nameof(quoter));
+        _placeholders = placeholders ?? throw new ArgumentNullException(nameof(placeholders));
         _binder = binder ?? throw new ArgumentNullException(nameof(binder));
-        _placeholders =  placeholders ?? throw new ArgumentNullException(nameof(placeholders));
     }
 
     public CompiledQuery Compile(Query query)
     {
-        var rawBindings = Array.Empty<object?>();
+        ArgumentNullException.ThrowIfNull(query);
 
-        var selectColumns = query.Columns.Count > 0
-            ? string.Join(", ", query.Columns.Select(_quoter.Quote))
-            : "*";
+        var renderedQuery = Render(query.Clauses);
+        var boundValues = renderedQuery.Bindings.Select(_binder.Bind).ToList();
 
-        var sqlParts = new List<string>
+        return new CompiledQuery(renderedQuery.Sql, boundValues);
+    }
+
+    private RenderOutput Render(IEnumerable<IQueryClause> clauses)
+    {
+        IReadOnlyCollection<object?> bindings = Array.Empty<object?>();
+        var sqlParts = new List<string>();
+
+        foreach (var clause in clauses.OrderBy(clause => clause.Order))
         {
-            $"SELECT {selectColumns}",
-            $"FROM {_quoter.Quote(query.Table)}"
-        };
+            var output = clause.Render(_quoter, _placeholders, bindings);
+            bindings = output.Bindings;
 
-        foreach (var clause in query.Clauses.OrderBy(c => c.Order))
-        {
-            var rendered = clause.Render(_quoter, _placeholders, rawBindings);
-            rawBindings = rendered.Bindings.ToArray();
-
-            if (!string.IsNullOrEmpty(rendered.Sql))
-                sqlParts.Add(rendered.Sql);
+            if (!string.IsNullOrWhiteSpace(output.Sql))
+            {
+                sqlParts.Add(output.Sql);
+            }
         }
 
-        var boundValues = rawBindings.Select(_binder.Bind).ToList();
-        return new CompiledQuery(string.Join(" ", sqlParts), boundValues);
+        return new RenderOutput(string.Join(" ", sqlParts), bindings);
     }
 }
