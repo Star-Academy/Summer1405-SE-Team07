@@ -5,28 +5,32 @@ using QueryLib.Dialects.Abstractions;
 
 namespace QueryBuilder.Test.Clauses;
 
-public sealed class FromClauseTests
+public  class FromClauseTests
 {
-    private readonly IIdentifierQuoter _quoter = Substitute.For<IIdentifierQuoter>();
-    private readonly IParameterPlaceholderFactory _placeholders =
-        Substitute.For<IParameterPlaceholderFactory>();
+    private readonly IIdentifierQuoter _quoter;
+    private readonly IParameterPlaceholderFactory _placeholders ;
+    private readonly FromClause _sut;
+
+    public FromClauseTests()
+    {
+        _quoter = Substitute.For<IIdentifierQuoter>();
+        _placeholders = Substitute.For<IParameterPlaceholderFactory>();
+        _sut = new FromClause();
+    }
 
     [Fact]
     public void SetTable_ShouldRejectAnEmptyTableName()
     {
-        var clause = new FromClause();
-
-        var act = () => clause.SetTable(" ");
-
+        var act = () => _sut.SetTable(" ");
         act.Should().Throw<ArgumentException>().WithParameterName("table");
     }
 
     [Fact]
     public void Render_ShouldRequireATable()
     {
-        var clause = new FromClause();
 
-        var act = () => clause.Render(
+
+        var act = () => _sut.Render(
             _quoter,
             _placeholders,
             Array.Empty<object?>());
@@ -38,11 +42,11 @@ public sealed class FromClauseTests
     [Fact]
     public void Render_ShouldQuoteTheTableName()
     {
-        var clause = new FromClause();
-        clause.SetTable("student");
+
+        _sut.SetTable("student");
         _quoter.Quote("student").Returns("\"student\"");
 
-        var output = clause.Render(_quoter, _placeholders, Array.Empty<object?>());
+        var output = _sut.Render(_quoter, _placeholders, Array.Empty<object?>());
 
         output.Sql.Should().Be("FROM \"student\"");
     }

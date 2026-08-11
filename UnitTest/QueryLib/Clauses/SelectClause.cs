@@ -3,7 +3,7 @@ using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Clauses;
 
-/// <summary>Stores and renders the columns in a SELECT clause.</summary>
+
 public sealed class SelectClause : IQueryClause
 {
     private readonly List<string> _columns = new();

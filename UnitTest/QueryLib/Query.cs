@@ -8,8 +8,9 @@ public sealed class Query
 {
     private readonly SelectClause _selectClause = new();
     private readonly FromClause _fromClause = new();
-    private readonly List<IQueryClause> _clauses = new();
     private WhereClause? _whereClause;
+    private readonly List<IQueryClause> _clauses = new();
+
 
     public Query()
     {

@@ -24,13 +24,13 @@ public sealed class SqlCompiler : ICompiler
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var renderedQuery = Render(query.Clauses);
+        var renderedQuery = ClauseRender(query.Clauses);
         var boundValues = renderedQuery.Bindings.Select(_binder.Bind).ToList();
 
         return new CompiledQuery(renderedQuery.Sql, boundValues);
     }
 
-    private RenderOutput Render(IEnumerable<IQueryClause> clauses)
+    private RenderOutput ClauseRender(IEnumerable<IQueryClause> clauses)
     {
         IReadOnlyCollection<object?> bindings = Array.Empty<object?>();
         var sqlParts = new List<string>();
