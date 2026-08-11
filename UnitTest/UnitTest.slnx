@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="QueryBuilder.Test/QueryBuilder.Test.csproj" />
+  <Project Path="QueryLib.Demo/QueryLib.Demo.csproj" />
+  <Project Path="QueryLib/QueryLib.csproj" />
+</Solution>
