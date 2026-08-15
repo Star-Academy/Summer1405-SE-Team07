@@ -2,7 +2,9 @@ using System.Data.Common;
 using QueryLib.Compilers;
 using QueryLib.Demo.Abstractions;
 
+
 namespace QueryLib.Demo.QueryRunners;
+
 
 public sealed class PostgresQueryRunner : IQueryRunner
 {
