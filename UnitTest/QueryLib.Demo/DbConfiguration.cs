@@ -1,3 +1,3 @@
-﻿namespace QueryLib.Demo;
+namespace QueryLib.Demo;
 
-public record DbConfiguration(DbProvider provider, string connectionString);
+public sealed record DbConfiguration(DbProvider Provider, string ConnectionString);
