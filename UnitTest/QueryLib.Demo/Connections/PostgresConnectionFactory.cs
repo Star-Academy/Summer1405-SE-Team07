@@ -10,7 +10,7 @@ public class PostgresConnectionFactory : IDbConnectionFactory
 
     private readonly string _connectionString;
 
-    public PostgresConnectionFactory(string connectionString)
+    public PostgresConnectionFactory(string? connectionString)
     {
         _connectionString =  connectionString ?? throw new ArgumentNullException(nameof(connectionString));
     }
@@ -20,7 +20,6 @@ public class PostgresConnectionFactory : IDbConnectionFactory
         var connection = new NpgsqlConnection(_connectionString);
         return connection;
     }
-    
     
     
     

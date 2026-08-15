@@ -31,6 +31,7 @@ public sealed class ConsoleQueryExecutionReporter : IQueryExecutionReporter
         ArgumentNullException.ThrowIfNull(exception);
         Console.Error.WriteLine($"Error executing query on {provider}: {exception.Message}");
     }
+    
 
     public void ReportCompleted()
     {
