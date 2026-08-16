@@ -2,6 +2,7 @@ using FluentAssertions;
 using NSubstitute;
 using QueryLib;
 using QueryLib.Clauses;
+using QueryLib.Clauses.Abstractions;
 using QueryLib.Dialects.Abstractions;
 
 namespace QueryBuilder.Test.Clauses;
@@ -20,16 +21,17 @@ public sealed class WhereClauseTests
         _sut.Add(new Condition { Column = "name", Value = "kourosh" });
         _quoter.Quote("name").Returns("\"name\"");
         _placeholders.MakePlaceholder(1).Returns("$1");
+        var expected = new RenderOutput("WHERE \"name\" = $1" , new object?[] { "kourosh" });
 
         // Act
         var output = _sut.Render(
             _quoter,
             _placeholders,
             Array.Empty<object?>());
-
+        
         // Assert
-        output.Sql.Should().Be("WHERE \"name\" = $1");
-        output.Bindings.Should().Equal("kourosh");
+        output.Should().BeEquivalentTo(expected);
+        
     }
 
     [Fact]
@@ -37,13 +39,13 @@ public sealed class WhereClauseTests
     {
         // Arrange
         var existingBindings = new object?[] { 10 };
+        var expected = new RenderOutput("" , existingBindings);
 
         // Act
         var output = _sut.Render(_quoter, _placeholders, existingBindings);
 
         // Assert
-        output.Sql.Should().BeEmpty();
-        output.Bindings.Should().Equal(10);
+        output.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -56,7 +58,9 @@ public sealed class WhereClauseTests
         _quoter.Quote("age").Returns("\"age\"");
         _placeholders.MakePlaceholder(1).Returns("$1");
         _placeholders.MakePlaceholder(2).Returns("$2");
-
+        var expected = new RenderOutput("WHERE \"name\" = $1 AND \"age\" = $2" ,
+            new object?[] { "kourosh", 20 });
+        
         // Act
         var output = _sut.Render(
             _quoter,
@@ -64,8 +68,7 @@ public sealed class WhereClauseTests
             Array.Empty<object?>());
 
         // Assert
-        output.Sql.Should().Be("WHERE \"name\" = $1 AND \"age\" = $2");
-        output.Bindings.Should().Equal("kourosh", 20);
+        output.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -76,13 +79,14 @@ public sealed class WhereClauseTests
         _sut.Add(new Condition { Column = "name", Value = "kourosh" });
         _quoter.Quote("name").Returns("\"name\"");
         _placeholders.MakePlaceholder(2).Returns("$2");
+        var expected = new RenderOutput("WHERE \"name\" = $2" ,
+            new object?[] { 10 , "kourosh" });
 
         // Act
         var output = _sut.Render(_quoter, _placeholders, existingBindings);
 
         // Assert
-        output.Sql.Should().Be("WHERE \"name\" = $2");
-        output.Bindings.Should().Equal(10, "kourosh");
+        output.Should().BeEquivalentTo(expected);
         _placeholders.Received(1).MakePlaceholder(2);
     }
 
@@ -94,14 +98,17 @@ public sealed class WhereClauseTests
         _sut.Add(new Condition { Column = "name", Value = "kourosh" });
         _quoter.Quote("name").Returns("\"name\"");
         _placeholders.MakePlaceholder(2).Returns("$2");
+        var expectedBindings = new object?[] { 10, "kourosh" };
 
         // Act
         var output = _sut.Render(_quoter, _placeholders, existingBindings);
 
         // Assert
         existingBindings.Should().Equal(10);
-        output.Bindings.Should().Equal(10, "kourosh");
-        output.Bindings.Should().NotBeSameAs(existingBindings);
+        output.Bindings.Should()
+            .Equal(expectedBindings)
+            .And.NotBeSameAs(existingBindings);
+        
     }
 
     [Fact]

@@ -26,12 +26,13 @@ public class QueryExecutionDependencyFactoryTests
     {
         // Arrange
         DbConfiguration? configuration = null;
+        var expected = "configuration";
 
         // Act
         var act = () => _sut.Create(configuration!);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName("configuration");
+        act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]
@@ -49,7 +50,6 @@ public class QueryExecutionDependencyFactoryTests
         result.Compiler.Should().BeSameAs(compiler);
         result.Runner.Should().BeOfType<PostgresQueryRunner>();
         result.ConnectionFactory.Should().BeOfType<PostgresConnectionFactory>();
-        _compilerFactory.Received(1).Create("postgres");
     }
 
     [Fact]

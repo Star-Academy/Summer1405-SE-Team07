@@ -39,6 +39,7 @@ public class ConsoleQueryExecutionReporterTests
         using var writer = new StringWriter();
         var originalOutput = Console.Out;
         Console.SetOut(writer);
+        var expected = "========== PostgreSql ==========";
 
         try
         {
@@ -46,7 +47,7 @@ public class ConsoleQueryExecutionReporterTests
             _sut.ReportStarted(DbProvider.PostgreSql);
 
             // Assert
-            writer.ToString().Should().Be("========== PostgreSql ==========" + Environment.NewLine);
+            writer.ToString().Should().Be(expected + Environment.NewLine);
         }
         finally
         {
@@ -81,12 +82,12 @@ public class ConsoleQueryExecutionReporterTests
     {
         // Arrange
         QueryExecutionResult? executionResult = null;
+        var expected = "executionResult";
 
         // Act
         var act = () => _sut.ReportSucceededAsync(DbProvider.PostgreSql, executionResult!);
-
         // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("executionResult");
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]

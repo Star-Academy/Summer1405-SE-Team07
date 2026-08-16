@@ -25,13 +25,14 @@ public sealed class SqlCompilerTests
     {
         // Arrange
         IIdentifierQuoter? quoter = null;
+        var expected = "quoter";
 
         // Act
         var act = () => new SqlCompiler(quoter!, _placeholders, _binder);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("quoter");
+            .WithParameterName(expected);
     }
 
     [Fact]
@@ -39,13 +40,13 @@ public sealed class SqlCompilerTests
     {
         // Arrange
         IParameterPlaceholderFactory? placeholders = null;
-
+        var expected = "placeholders";
         // Act
         var act = () => new SqlCompiler(_quoter, placeholders!, _binder);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("placeholders");
+            .WithParameterName(expected);
     }
 
     [Fact]
@@ -53,13 +54,13 @@ public sealed class SqlCompilerTests
     {
         // Arrange
         IValueBinder? binder = null;
-
+        var expected = "binder";
         // Act
         var act = () => new SqlCompiler(_quoter, _placeholders, binder!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("binder");
+            .WithParameterName(expected);
     }
 
     [Fact]
@@ -67,13 +68,13 @@ public sealed class SqlCompilerTests
     {
         // Arrange
         Query? query = null;
-
+        var expected = "query";
         // Act
         var act = () => _sut.Compile(query!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("query");
+            .WithParameterName(expected);
     }
 
     [Fact]
@@ -81,13 +82,13 @@ public sealed class SqlCompilerTests
     {
         // Arrange
         var query = new Query();
-
+        var expected = "From(...) must be called before compiling the query.";
         // Act
         var act = () => _sut.Compile(query);
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("From(...) must be called before compiling the query.");
+            .WithMessage(expected);
     }
 
     [Fact]
@@ -96,13 +97,13 @@ public sealed class SqlCompilerTests
         // Arrange
         var query = new Query().From("student");
         _quoter.Quote("student").Returns("\"student\"");
+        var expected = new CompiledQuery("SELECT * FROM \"student\"" , new object?[] { });
 
         // Act
         var result = _sut.Compile(query);
 
         // Assert
-        result.Sql.Should().Be("SELECT * FROM \"student\"");
-        result.Bindings.Should().BeEmpty();
+        result.Should().BeEquivalentTo(expected);
         _binder.DidNotReceive().Bind(Arg.Any<object?>());
     }
 
@@ -122,15 +123,14 @@ public sealed class SqlCompilerTests
         _placeholders.MakePlaceholder(2).Returns("@p2");
         _binder.Bind(10).Returns("bound-id");
         _binder.Bind("active").Returns("bound-status");
-
+        var expected = new CompiledQuery("SELECT \"id\", \"name\" FROM \"student\" " +
+                                         "WHERE \"id\" = @p1 AND \"status\" = @p2" ,
+            new object?[] { "bound-id", "bound-status"});
         // Act
         var result = _sut.Compile(query);
 
         // Assert
-        result.Sql.Should().Be(
-            "SELECT \"id\", \"name\" FROM \"student\" " +
-            "WHERE \"id\" = @p1 AND \"status\" = @p2");
-        result.Bindings.Should().Equal("bound-id", "bound-status");
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -141,6 +141,8 @@ public sealed class SqlCompilerTests
         var orderByClause = CreateClause(30, "ORDER BY name");
         var whereClause = CreateClause(20, "WHERE age > @p1");
         _quoter.Quote("student").Returns("\"student\"");
+        var expected = new CompiledQuery("SELECT * FROM \"student\" WHERE age > @p1 ORDER BY name" ,
+            new object?[] { });
 
         query.AddClause(orderByClause);
         query.AddClause(whereClause);
@@ -149,8 +151,7 @@ public sealed class SqlCompilerTests
         var result = _sut.Compile(query);
 
         // Assert
-        result.Sql.Should().Be(
-            "SELECT * FROM \"student\" WHERE age > @p1 ORDER BY name");
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -163,7 +164,9 @@ public sealed class SqlCompilerTests
         firstClause.Order.Returns(20);
         secondClause.Order.Returns(30);
         _quoter.Quote("student").Returns("\"student\"");
-
+        var expected = new CompiledQuery("SELECT * FROM \"student\" FIRST SECOND" ,
+            new object?[] {"bound-10", "bound-20" });
+        
         firstClause.Render(
                 _quoter,
                 _placeholders,
@@ -183,10 +186,8 @@ public sealed class SqlCompilerTests
 
         // Act
         var result = _sut.Compile(query);
-
         // Assert
-        result.Sql.Should().Be("SELECT * FROM \"student\" FIRST SECOND");
-        result.Bindings.Should().Equal("bound-10", "bound-20");
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -197,12 +198,13 @@ public sealed class SqlCompilerTests
         var blankClause = CreateClause(20, "   ");
         _quoter.Quote("student").Returns("\"student\"");
         query.AddClause(blankClause);
+        var expected = "SELECT * FROM \"student\"";
 
         // Act
         var result = _sut.Compile(query);
 
         // Assert
-        result.Sql.Should().Be("SELECT * FROM \"student\"");
+        result.Sql.Should().Be(expected);
     }
 
     private IQueryClause CreateClause(int order, string sql)

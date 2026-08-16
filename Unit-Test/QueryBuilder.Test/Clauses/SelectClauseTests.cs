@@ -22,12 +22,13 @@ public class SelectClauseTests
     {
         // Arrange
         var clause = new SelectClause();
+        var expected = "SELECT *"; 
 
         // Act
         var output = clause.Render(_quoter, _placeholders, Array.Empty<object?>());
 
         // Assert
-        output.Sql.Should().Be("SELECT *");
+        output.Sql.Should().Be(expected);
     }
 
     [Fact]
@@ -37,12 +38,12 @@ public class SelectClauseTests
         _sut.Add(["id", "name"]);
         _quoter.Quote("id").Returns("\"id\"");
         _quoter.Quote("name").Returns("\"name\"");
-
+        var expected = "SELECT \"id\", \"name\""; 
         // Act
         var output = _sut.Render(_quoter, _placeholders, Array.Empty<object?>());
 
         // Assert
-        output.Sql.Should().Be("SELECT \"id\", \"name\"");
+        output.Sql.Should().Be(expected);
     }
 
     [Fact]

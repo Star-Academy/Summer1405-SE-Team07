@@ -23,12 +23,14 @@ public class FromClauseTests
     {
         // Arrange
         const string table = " ";
+        
+        var expected = "table" ;
 
         // Act
         var act = () => _sut.SetTable(table);
 
         // Assert
-        act.Should().Throw<ArgumentException>().WithParameterName("table");
+        act.Should().Throw<ArgumentException>().WithParameterName(expected);
     }
 
     [Fact]
@@ -36,6 +38,7 @@ public class FromClauseTests
     {
         // Arrange
         var clause = new FromClause();
+        var expected = "From(...) must be called before compiling the query." ;
 
         // Act
         var act = () => clause.Render(
@@ -44,8 +47,7 @@ public class FromClauseTests
             Array.Empty<object?>());
 
         // Assert
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("From(...) must be called before compiling the query.");
+        act.Should().Throw<InvalidOperationException>().WithMessage(expected);
     }
 
     [Fact]
@@ -54,11 +56,12 @@ public class FromClauseTests
         // Arrange
         _sut.SetTable("student");
         _quoter.Quote("student").Returns("\"student\"");
+        var expected = "FROM \"student\"";
 
         // Act
         var output = _sut.Render(_quoter, _placeholders, Array.Empty<object?>());
 
         // Assert
-        output.Sql.Should().Be("FROM \"student\"");
+        output.Sql.Should().Be(expected);
     }
 }

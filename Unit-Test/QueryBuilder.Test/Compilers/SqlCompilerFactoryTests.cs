@@ -21,22 +21,15 @@ public class SqlCompilerFactoryTests
             .From("student")
             .Select("id", "name")
             .Where("id", 10);
-
+        var expected = new CompiledQuery("SELECT \"id\", \"name\" FROM \"student\" WHERE \"id\" = $1" ,
+            new object?[] { 10 });  
+        
         // Act
         var compiler = _sut.Create(compilerType);
         var result = compiler.Compile(query);
 
         // Assert
-        compiler.Should().NotBeNull();
-        result.Sql.Should()
-            .Be("SELECT \"id\", \"name\" FROM \"student\" WHERE \"id\" = $1");
-
-        result.Bindings
-            .Should()
-            .ContainSingle()
-            .Which
-            .Should()
-            .Be(10);
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -48,22 +41,15 @@ public class SqlCompilerFactoryTests
             .From("student")
             .Select("id", "name")
             .Where("id", 10);
-
-        // Act
+        var expected = new CompiledQuery("SELECT [id], [name] FROM [student] WHERE [id] = @p0" ,
+            new object?[] { 10 });  
+        
+        //Act
         var compiler = _sut.Create(compilerType);
         var result = compiler.Compile(query);
-
+        
         // Assert
-        compiler.Should().NotBeNull();
-        result.Sql.Should()
-            .Be("SELECT [id], [name] FROM [student] WHERE [id] = @p0");
-
-        result.Bindings
-            .Should()
-            .ContainSingle()
-            .Which
-            .Should()
-            .Be(10);
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Theory]

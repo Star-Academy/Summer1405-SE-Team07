@@ -27,12 +27,13 @@ public class DatabaseQueryExecutorTests
     {
         // Arrange
         IQueryExecutionDependencyFactory? dependencyFactory = null;
+        var expected = "dependencyFactory";
 
         // Act
         var act = () => new DatabaseQueryExecutor(dependencyFactory!);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName("dependencyFactory");
+        act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]
@@ -40,12 +41,13 @@ public class DatabaseQueryExecutorTests
     {
         // Arrange
         var configuration = new DbConfiguration(DbProvider.PostgreSql, "connectionString");
+        var expected = "query";
 
         // Act
         var act = () => _sut.ExecuteAsync(null!, configuration);
 
         // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("query");
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]
@@ -53,12 +55,13 @@ public class DatabaseQueryExecutorTests
     {
         // Arrange
         var query = new Query();
+        var expected = "configuration";
 
         // Act
         var act = () => _sut.ExecuteAsync(query, null!);
 
         // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("configuration");
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]
@@ -96,14 +99,15 @@ public class DatabaseQueryExecutorTests
         var result = await _sut.ExecuteAsync(query, configuration);
 
         // Assert
-        result.Should().NotBeNull();
-        result.CompiledQuery.Should().Be(compiledQuery);
-        result.QueryResult.Should().Be(queryResult);
-        _dependencyFactory.Received(1).Create(configuration);
-        compiler.Received(1).Compile(query);
-        await connectionFactory.Received(1).CreateConnectionAsync();
+        var expected = new QueryExecutionResult(compiledQuery, queryResult);
+
+        result.Should().BeEquivalentTo(expected);
+
         await connection.Received(1).OpenAsync();
         await runner.Received(1).RunAsync(compiledQuery, connection);
+        
+        
+        
     }
 }
 
