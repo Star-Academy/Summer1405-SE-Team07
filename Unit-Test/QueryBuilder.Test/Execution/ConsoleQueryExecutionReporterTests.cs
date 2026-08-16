@@ -19,90 +19,123 @@ public class ConsoleQueryExecutionReporterTests
         _resultPrinter = Substitute.For<IResultPrinter>();
         _sut = new ConsoleQueryExecutionReporter(_resultPrinter);
     }
-    
-    
     [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenResultPrinterIsNull()
+    public void Constructor_WhenResultPrinterIsNull_ShouldThrowArgumentNullException()
     {
-        // Arrange 
-        var act = () => new ConsoleQueryExecutionReporter(null!);
-        // Act & Assert
-        
+        // Arrange
+        IResultPrinter? resultPrinter = null;
+
+        // Act
+        var act = () => new ConsoleQueryExecutionReporter(resultPrinter!);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("resultPrinter");
-    }
-    
-    [Fact]
-    public void ReportStarted_ShouldWriteProviderToConsole()
-    {
-        // Arrange
-        using var writer = new StringWriter();
-        Console.SetOut(writer);
-        // Act
-        _sut.ReportStarted(DbProvider.PostgreSql);
-        // Assert
-        writer.ToString().Should().Be("========== PostgreSql ==========" + Environment.NewLine);
-    }
-    
-    
-    [Fact]
-    public void ReportCompleted_ShouldWriteALine()
-    {
-        // Arrange
-        using var writer = new StringWriter();
-        Console.SetOut(writer);
-        // Act
-        _sut.ReportCompleted();
-        // Assert
-        writer.ToString().Should().Be("" + Environment.NewLine);
     }
 
     [Fact]
-    public async Task ReportSucceededAsync_ShouldThrowArgumentNullException_WhenExecutionResultIsNull()
+    public void ReportStarted_WhenProviderIsSupplied_ShouldWriteProviderHeaderToConsole()
     {
-        // Arrange 
-        var act = () => _sut.ReportSucceededAsync(DbProvider.PostgreSql, null!);
-        // Act & Assert
+        // Arrange
+        using var writer = new StringWriter();
+        var originalOutput = Console.Out;
+        Console.SetOut(writer);
+
+        try
+        {
+            // Act
+            _sut.ReportStarted(DbProvider.PostgreSql);
+
+            // Assert
+            writer.ToString().Should().Be("========== PostgreSql ==========" + Environment.NewLine);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+        }
+    }
+
+    [Fact]
+    public void ReportCompleted_WhenCalled_ShouldWriteBlankLineToConsole()
+    {
+        // Arrange
+        using var writer = new StringWriter();
+        var originalOutput = Console.Out;
+        Console.SetOut(writer);
+
+        try
+        {
+            // Act
+            _sut.ReportCompleted();
+
+            // Assert
+            writer.ToString().Should().Be(Environment.NewLine);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+        }
+    }
+
+    [Fact]
+    public async Task ReportSucceededAsync_WhenExecutionResultIsNull_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        QueryExecutionResult? executionResult = null;
+
+        // Act
+        var act = () => _sut.ReportSucceededAsync(DbProvider.PostgreSql, executionResult!);
+
+        // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("executionResult");
     }
 
     [Fact]
-    public async Task ReportSucceededAsync_ShouldPrintResult_WhenExecutionResultIsValid()
+    public async Task ReportSucceededAsync_WhenExecutionResultIsValid_ShouldPrintQueryResult()
     {
-        using var writer = new StringWriter();
-        Console.SetOut(writer);
-        
         // Arrange
+        using var writer = new StringWriter();
+        var originalOutput = Console.Out;
+        Console.SetOut(writer);
         var provider = DbProvider.PostgreSql;
-
         var compiledQuery = new CompiledQuery(
             "SELECT \"id\" FROM \"student\"",
             new List<object?> { 10 });
-
-
         var queryResult = new QueryResult();
-
         var queryExecutionResult = new QueryExecutionResult(
             compiledQuery,
             queryResult);
 
-        await _sut.ReportSucceededAsync(provider, queryExecutionResult);
+        try
+        {
+            // Act
+            await _sut.ReportSucceededAsync(provider, queryExecutionResult);
 
-        await _resultPrinter.Received(1).PrintAsync(
-            queryResult,
-            "PostgreSql Results");
+            // Assert
+            await _resultPrinter.Received(1).PrintAsync(
+                queryResult,
+                "PostgreSql Results");
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+        }
     }
 
     [Fact]
-    public void reportfailed_ShouldThrowArgumentNullException_WhenExecutionResultIsNull()
+    public void ReportFailed_WhenExceptionIsNull_ShouldThrowArgumentNullException()
     {
-        var act = () => _sut.ReportFailed(DbProvider.SqlServer, null!);
-        
+        // Arrange
+        Exception? exception = null;
+
+        // Act
+        var act = () => _sut.ReportFailed(DbProvider.SqlServer, exception!);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("exception");
     }
 
-   
     [Fact]
-    public void ReportFailed_ShouldWriteErrorToConsole_WhenExceptionIsValid()
+    public void ReportFailed_WhenExceptionIsValid_ShouldWriteErrorToConsole()
     {
         // Arrange
         var provider = DbProvider.PostgreSql;
@@ -129,7 +162,5 @@ public class ConsoleQueryExecutionReporterTests
             Console.SetError(originalError);
         }
     }
-    
-
 }
 

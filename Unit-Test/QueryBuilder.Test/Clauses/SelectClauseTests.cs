@@ -17,34 +17,44 @@ public class SelectClauseTests
         _placeholders = Substitute.For<IParameterPlaceholderFactory>();
         _sut = new SelectClause();
     }
-
-
     [Fact]
-    public void Render_ShouldSelectAllColumns_WhenNoColumnsWereAdded()
+    public void Render_WhenNoColumnsWereAdded_ShouldSelectAllColumns()
     {
+        // Arrange
+        var clause = new SelectClause();
 
-        var output = _sut.Render(_quoter, _placeholders, Array.Empty<object?>());
+        // Act
+        var output = clause.Render(_quoter, _placeholders, Array.Empty<object?>());
 
+        // Assert
         output.Sql.Should().Be("SELECT *");
     }
 
     [Fact]
-    public void Render_ShouldQuoteEverySelectedColumn()
+    public void Render_WhenColumnsWereAdded_ShouldQuoteEverySelectedColumn()
     {
+        // Arrange
         _sut.Add(["id", "name"]);
         _quoter.Quote("id").Returns("\"id\"");
         _quoter.Quote("name").Returns("\"name\"");
 
+        // Act
         var output = _sut.Render(_quoter, _placeholders, Array.Empty<object?>());
 
+        // Assert
         output.Sql.Should().Be("SELECT \"id\", \"name\"");
     }
 
     [Fact]
-    public void Add_ShouldIgnoreNullColumns()
+    public void Add_WhenColumnsAreNull_ShouldLeaveColumnsEmpty()
     {
-        _sut.Add(null);
+        // Arrange
+        string[]? columns = null;
 
+        // Act
+        _sut.Add(columns);
+
+        // Assert
         _sut.Columns.Should().BeEmpty();
     }
 }

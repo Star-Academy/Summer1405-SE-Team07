@@ -21,68 +21,95 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Constructor_ShouldThrowException_WhenQuoterIsNull()
+    public void Constructor_WhenQuoterIsNull_ShouldThrowArgumentNullException()
     {
-        var act = () => new SqlCompiler(null!, _placeholders, _binder);
+        // Arrange
+        IIdentifierQuoter? quoter = null;
 
+        // Act
+        var act = () => new SqlCompiler(quoter!, _placeholders, _binder);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>()
             .WithParameterName("quoter");
     }
 
     [Fact]
-    public void Constructor_ShouldThrowException_WhenPlaceholderFactoryIsNull()
+    public void Constructor_WhenPlaceholderFactoryIsNull_ShouldThrowArgumentNullException()
     {
-        var act = () => new SqlCompiler(_quoter, null!, _binder);
+        // Arrange
+        IParameterPlaceholderFactory? placeholders = null;
 
+        // Act
+        var act = () => new SqlCompiler(_quoter, placeholders!, _binder);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>()
             .WithParameterName("placeholders");
     }
 
     [Fact]
-    public void Constructor_ShouldThrowException_WhenBinderIsNull()
+    public void Constructor_WhenBinderIsNull_ShouldThrowArgumentNullException()
     {
-        var act = () => new SqlCompiler(_quoter, _placeholders, null!);
+        // Arrange
+        IValueBinder? binder = null;
 
+        // Act
+        var act = () => new SqlCompiler(_quoter, _placeholders, binder!);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>()
             .WithParameterName("binder");
     }
 
     [Fact]
-    public void Compile_ShouldThrowException_WhenQueryIsNull()
+    public void Compile_WhenQueryIsNull_ShouldThrowArgumentNullException()
     {
-        var act = () => _sut.Compile(null!);
+        // Arrange
+        Query? query = null;
 
+        // Act
+        var act = () => _sut.Compile(query!);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>()
             .WithParameterName("query");
     }
 
     [Fact]
-    public void Compile_ShouldRequireAFromClause()
+    public void Compile_WhenFromClauseIsMissing_ShouldThrowInvalidOperationException()
     {
+        // Arrange
         var query = new Query();
 
+        // Act
         var act = () => _sut.Compile(query);
 
+        // Assert
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("From(...) must be called before compiling the query.");
     }
 
     [Fact]
-    public void Compile_ShouldUseStar_WhenNoColumnsAreSelected()
+    public void Compile_WhenNoColumnsAreSelected_ShouldUseWildcardAndReturnNoBindings()
     {
+        // Arrange
         var query = new Query().From("student");
         _quoter.Quote("student").Returns("\"student\"");
 
+        // Act
         var result = _sut.Compile(query);
 
+        // Assert
         result.Sql.Should().Be("SELECT * FROM \"student\"");
         result.Bindings.Should().BeEmpty();
         _binder.DidNotReceive().Bind(Arg.Any<object?>());
     }
 
     [Fact]
-    public void Compile_ShouldCompileSelectedColumnsAndWhereConditions()
+    public void Compile_WhenColumnsAndConditionsExist_ShouldCompileSqlAndBindValues()
     {
+        // Arrange
         var query = new Query()
             .From("student")
             .Select("id", "name")
@@ -96,8 +123,10 @@ public sealed class SqlCompilerTests
         _binder.Bind(10).Returns("bound-id");
         _binder.Bind("active").Returns("bound-status");
 
+        // Act
         var result = _sut.Compile(query);
 
+        // Assert
         result.Sql.Should().Be(
             "SELECT \"id\", \"name\" FROM \"student\" " +
             "WHERE \"id\" = @p1 AND \"status\" = @p2");
@@ -105,8 +134,9 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Compile_ShouldRenderClausesByOrder_NotInsertionOrder()
+    public void Compile_WhenClausesAreAddedOutOfOrder_ShouldRenderByClauseOrder()
     {
+        // Arrange
         var query = new Query().From("student");
         var orderByClause = CreateClause(30, "ORDER BY name");
         var whereClause = CreateClause(20, "WHERE age > @p1");
@@ -115,15 +145,18 @@ public sealed class SqlCompilerTests
         query.AddClause(orderByClause);
         query.AddClause(whereClause);
 
+        // Act
         var result = _sut.Compile(query);
 
+        // Assert
         result.Sql.Should().Be(
             "SELECT * FROM \"student\" WHERE age > @p1 ORDER BY name");
     }
 
     [Fact]
-    public void Compile_ShouldPassBindingsFromOneClauseToTheNext()
+    public void Compile_WhenMultipleClausesProduceBindings_ShouldPassBindingsBetweenClauses()
     {
+        // Arrange
         var query = new Query().From("student");
         var firstClause = Substitute.For<IQueryClause>();
         var secondClause = Substitute.For<IQueryClause>();
@@ -148,22 +181,27 @@ public sealed class SqlCompilerTests
         query.AddClause(secondClause);
         query.AddClause(firstClause);
 
+        // Act
         var result = _sut.Compile(query);
 
+        // Assert
         result.Sql.Should().Be("SELECT * FROM \"student\" FIRST SECOND");
         result.Bindings.Should().Equal("bound-10", "bound-20");
     }
 
     [Fact]
-    public void Compile_ShouldIgnoreClausesThatRenderBlankSql()
+    public void Compile_WhenClauseRendersBlankSql_ShouldExcludeClauseFromSql()
     {
+        // Arrange
         var query = new Query().From("student");
         var blankClause = CreateClause(20, "   ");
         _quoter.Quote("student").Returns("\"student\"");
         query.AddClause(blankClause);
 
+        // Act
         var result = _sut.Compile(query);
 
+        // Assert
         result.Sql.Should().Be("SELECT * FROM \"student\"");
     }
 

@@ -14,14 +14,14 @@ namespace QueryBuilder.Test.Runners;
 public class SqlServerQueryRunnerTests
 {
     private readonly IQueryRunner _sut;
-    
+
     public SqlServerQueryRunnerTests()
     {
         _sut = new SqlServerQueryRunner();
     }
 
     [Fact]
-    public async Task RunAsync_ShouldThrowInvalidOperationException_WhenConnectionIsClosed()
+    public async Task RunAsync_WhenConnectionIsClosed_ShouldThrowInvalidOperationException()
     {
         // Arrange
         var query = new CompiledQuery("SELECT * FROM TestTable", new List<object?>());
@@ -39,7 +39,7 @@ public class SqlServerQueryRunnerTests
     }
 
     [Fact]
-    public async Task RunAsync_ShouldExecuteQueryAndMapResult_WhenConnectionIsOpen()
+    public async Task RunAsync_WhenConnectionIsOpen_ShouldExecuteQueryAndMapResult()
     {
         // Arrange
         var query = new CompiledQuery(

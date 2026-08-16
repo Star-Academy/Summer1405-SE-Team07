@@ -14,35 +14,42 @@ public sealed class WhereClauseTests
     private readonly WhereClause _sut = new();
 
     [Fact]
-    public void Render_ShouldGenerateWhereClause_WhenConditionIsAdded()
+    public void Render_WhenOneConditionExists_ShouldGenerateWhereClauseAndBinding()
     {
+        // Arrange
         _sut.Add(new Condition { Column = "name", Value = "kourosh" });
         _quoter.Quote("name").Returns("\"name\"");
         _placeholders.MakePlaceholder(1).Returns("$1");
 
+        // Act
         var output = _sut.Render(
             _quoter,
             _placeholders,
             Array.Empty<object?>());
 
+        // Assert
         output.Sql.Should().Be("WHERE \"name\" = $1");
         output.Bindings.Should().Equal("kourosh");
     }
 
     [Fact]
-    public void Render_ShouldReturnEmptySql_WhenNoConditionsExist()
+    public void Render_WhenNoConditionsExist_ShouldReturnEmptySqlAndPreserveBindings()
     {
+        // Arrange
         var existingBindings = new object?[] { 10 };
 
+        // Act
         var output = _sut.Render(_quoter, _placeholders, existingBindings);
 
+        // Assert
         output.Sql.Should().BeEmpty();
         output.Bindings.Should().Equal(10);
     }
 
     [Fact]
-    public void Render_ShouldJoinConditionsWithAndAndPreserveBindingOrder()
+    public void Render_WhenMultipleConditionsExist_ShouldJoinWithAndAndPreserveBindingOrder()
     {
+        // Arrange
         _sut.Add(new Condition { Column = "name", Value = "kourosh" });
         _sut.Add(new Condition { Column = "age", Value = 20 });
         _quoter.Quote("name").Returns("\"name\"");
@@ -50,52 +57,63 @@ public sealed class WhereClauseTests
         _placeholders.MakePlaceholder(1).Returns("$1");
         _placeholders.MakePlaceholder(2).Returns("$2");
 
+        // Act
         var output = _sut.Render(
             _quoter,
             _placeholders,
             Array.Empty<object?>());
 
+        // Assert
         output.Sql.Should().Be("WHERE \"name\" = $1 AND \"age\" = $2");
         output.Bindings.Should().Equal("kourosh", 20);
     }
 
     [Fact]
-    public void Render_ShouldPreserveExistingBindingsAndContinuePlaceholderNumbering()
+    public void Render_WhenBindingsAlreadyExist_ShouldPreserveThemAndContinuePlaceholderNumbering()
     {
+        // Arrange
         var existingBindings = new object?[] { 10 };
         _sut.Add(new Condition { Column = "name", Value = "kourosh" });
         _quoter.Quote("name").Returns("\"name\"");
         _placeholders.MakePlaceholder(2).Returns("$2");
 
+        // Act
         var output = _sut.Render(_quoter, _placeholders, existingBindings);
 
+        // Assert
         output.Sql.Should().Be("WHERE \"name\" = $2");
         output.Bindings.Should().Equal(10, "kourosh");
         _placeholders.Received(1).MakePlaceholder(2);
     }
 
     [Fact]
-    public void Render_ShouldNotModifyInputBindings()
+    public void Render_WhenBindingsAreProvided_ShouldReturnNewBindingsWithoutModifyingInput()
     {
+        // Arrange
         var existingBindings = new List<object?> { 10 };
         _sut.Add(new Condition { Column = "name", Value = "kourosh" });
         _quoter.Quote("name").Returns("\"name\"");
         _placeholders.MakePlaceholder(2).Returns("$2");
 
+        // Act
         var output = _sut.Render(_quoter, _placeholders, existingBindings);
 
+        // Assert
         existingBindings.Should().Equal(10);
         output.Bindings.Should().Equal(10, "kourosh");
         output.Bindings.Should().NotBeSameAs(existingBindings);
     }
 
     [Fact]
-    public void Add_ShouldSetHasConditionsToTrue()
+    public void Add_WhenConditionIsProvided_ShouldSetHasConditionsToTrue()
     {
-        _sut.HasConditions.Should().BeFalse();
+        // Arrange
+        var condition = new Condition { Column = "name", Value = "kourosh" };
 
-        _sut.Add(new Condition { Column = "name", Value = "kourosh" });
+        // Act
+        _sut.Add(condition);
 
+        // Assert
         _sut.HasConditions.Should().BeTrue();
     }
 }

@@ -13,54 +13,56 @@ namespace QueryBuilder.Test.Execution;
 
 public class DatabaseQueryExecutorTests
 {
-    private readonly IQueryExecutionDependencyFactory _dependencyFactory ;
+    private readonly IQueryExecutionDependencyFactory _dependencyFactory;
     private readonly DatabaseQueryExecutor _sut;
-    
+
     public DatabaseQueryExecutorTests()
     {
         _dependencyFactory = Substitute.For<IQueryExecutionDependencyFactory>();
         _sut = new DatabaseQueryExecutor(_dependencyFactory);
-        
     }
-    
+
     [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenDependencyfactoryIsNull()
+    public void Constructor_WhenDependencyFactoryIsNull_ShouldThrowArgumentNullException()
     {
-        // Arrange 
-        var act = () => new DatabaseQueryExecutor(null!);
-        // Act & Assert
+        // Arrange
+        IQueryExecutionDependencyFactory? dependencyFactory = null;
+
+        // Act
+        var act = () => new DatabaseQueryExecutor(dependencyFactory!);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("dependencyFactory");
     }
 
-
     [Fact]
-    public async Task shouldThrowexeptionWhenQueryIsNull()
+    public async Task ExecuteAsync_WhenQueryIsNull_ShouldThrowArgumentNullException()
     {
-        var query = new Query();
-        var configuration = new DbConfiguration(DbProvider.PostgreSql , "connectionString");
-        
-            
-        var act = () => _sut.ExecuteAsync(null! , configuration);
-        
-        // Act & Assert
+        // Arrange
+        var configuration = new DbConfiguration(DbProvider.PostgreSql, "connectionString");
+
+        // Act
+        var act = () => _sut.ExecuteAsync(null!, configuration);
+
+        // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("query");
     }
-    
+
     [Fact]
-    public async Task shouldThrowexeptionWhenConfigurationIsNull()
+    public async Task ExecuteAsync_WhenConfigurationIsNull_ShouldThrowArgumentNullException()
     {
+        // Arrange
         var query = new Query();
-        var configuration = new DbConfiguration(DbProvider.PostgreSql , "connectionString");
-        
-            
+
+        // Act
         var act = () => _sut.ExecuteAsync(query, null!);
-        
-        // Act & Assert
+
+        // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("configuration");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldCompileOpenExecuteAndReturnResult_WhenInputsAreValid()
+    public async Task ExecuteAsync_WhenInputsAreValid_ShouldCompileOpenExecuteAndReturnResult()
     {
         // Arrange
         var query = new Query().From("student");

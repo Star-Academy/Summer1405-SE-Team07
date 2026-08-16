@@ -13,8 +13,9 @@ public sealed class QueryExecutionServiceTests
     private readonly IQueryExecutionReporter _reporter = Substitute.For<IQueryExecutionReporter>();
 
     [Fact]
-    public async Task ExecuteAsync_ShouldExecuteAndReportEveryConfiguration()
+    public async Task ExecuteAsync_WhenAllExecutionsSucceed_ShouldExecuteAndReportEveryConfiguration()
     {
+        // Arrange
         var query = new Query().From("Student");
         var configurations = new[]
         {
@@ -25,8 +26,10 @@ public sealed class QueryExecutionServiceTests
         _queryExecutor.ExecuteAsync(query, Arg.Any<DbConfiguration>()).Returns(executionResult);
         var service = new QueryExecutionService(_queryExecutor, _reporter);
 
+        // Act
         await service.ExecuteAsync(query, configurations);
 
+        // Assert
         await _queryExecutor.Received(1).ExecuteAsync(query, configurations[0]);
         await _queryExecutor.Received(1).ExecuteAsync(query, configurations[1]);
         await _reporter.Received(1).ReportSucceededAsync(DbProvider.PostgreSql, executionResult);
@@ -35,8 +38,9 @@ public sealed class QueryExecutionServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldContinueWithNextConfiguration_WhenExecutionFails()
+    public async Task ExecuteAsync_WhenAnExecutionFails_ShouldReportFailureAndContinue()
     {
+        // Arrange
         var query = new Query().From("Student");
         var failedConfiguration = new DbConfiguration(DbProvider.PostgreSql, "postgres-connection");
         var successfulConfiguration = new DbConfiguration(DbProvider.SqlServer, "sql-server-connection");
@@ -46,8 +50,10 @@ public sealed class QueryExecutionServiceTests
         _queryExecutor.ExecuteAsync(query, successfulConfiguration).Returns(executionResult);
         var service = new QueryExecutionService(_queryExecutor, _reporter);
 
+        // Act
         await service.ExecuteAsync(query, [failedConfiguration, successfulConfiguration]);
 
+        // Assert
         _reporter.Received(1).ReportFailed(DbProvider.PostgreSql, exception);
         await _queryExecutor.Received(1).ExecuteAsync(query, successfulConfiguration);
         await _reporter.Received(1).ReportSucceededAsync(DbProvider.SqlServer, executionResult);

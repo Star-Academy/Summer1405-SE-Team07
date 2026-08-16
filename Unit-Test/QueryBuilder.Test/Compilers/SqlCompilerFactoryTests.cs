@@ -3,31 +3,31 @@ using QueryLib.Compilers;
 
 namespace QueryLib.Tests.Compilers;
 
-public class SqlCompilerFactoryTests{private readonly SqlCompilerFactory _sut;
+public class SqlCompilerFactoryTests
+{
+    private readonly SqlCompilerFactory _sut;
+
     public SqlCompilerFactoryTests()
     {
         _sut = new SqlCompilerFactory();
     }
 
     [Fact]
-    public void Create_ShouldReturnPostgresCompiler_WhenCompilerTypeIsPostgres()
+    public void Create_WhenCompilerTypeIsPostgres_ShouldReturnPostgresCompiler()
     {
         // Arrange
         const string compilerType = "postgres";
-
-        // Act
-        var compiler = _sut.Create(compilerType);
-
-        // Assert
-        compiler.Should().NotBeNull();
-
         var query = new Query()
             .From("student")
             .Select("id", "name")
             .Where("id", 10);
 
+        // Act
+        var compiler = _sut.Create(compilerType);
         var result = compiler.Compile(query);
 
+        // Assert
+        compiler.Should().NotBeNull();
         result.Sql.Should()
             .Be("SELECT \"id\", \"name\" FROM \"student\" WHERE \"id\" = $1");
 
@@ -40,24 +40,21 @@ public class SqlCompilerFactoryTests{private readonly SqlCompilerFactory _sut;
     }
 
     [Fact]
-    public void Create_ShouldReturnSqlServerCompiler_WhenCompilerTypeIsSqlServer()
+    public void Create_WhenCompilerTypeIsSqlServer_ShouldReturnSqlServerCompiler()
     {
         // Arrange
         const string compilerType = "sqlserver";
-
-        // Act
-        var compiler = _sut.Create(compilerType);
-
-        // Assert
-        compiler.Should().NotBeNull();
-
         var query = new Query()
             .From("student")
             .Select("id", "name")
             .Where("id", 10);
 
+        // Act
+        var compiler = _sut.Create(compilerType);
         var result = compiler.Compile(query);
 
+        // Assert
+        compiler.Should().NotBeNull();
         result.Sql.Should()
             .Be("SELECT [id], [name] FROM [student] WHERE [id] = @p0");
 
@@ -75,15 +72,16 @@ public class SqlCompilerFactoryTests{private readonly SqlCompilerFactory _sut;
     [InlineData("mysql")]
     [InlineData("oracle")]
     [InlineData("unknown")]
-    public void Create_ShouldThrowNotImplementedException_WhenCompilerTypeIsUnsupported(
+    public void Create_WhenCompilerTypeIsUnsupported_ShouldThrowNotImplementedException(
         string? compilerType)
     {
+        // Arrange
+        var unsupportedCompilerType = compilerType!;
+
         // Act
-        var act = () => _sut.Create(compilerType!);
+        var act = () => _sut.Create(unsupportedCompilerType);
 
         // Assert
         act.Should().Throw<NotImplementedException>();
     }
-
-
 }

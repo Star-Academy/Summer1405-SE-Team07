@@ -1,35 +1,35 @@
 ﻿using FluentAssertions;
 using Npgsql;
 using QueryLib.Demo.Connections;
-using Xunit;
 
 namespace QueryLib.Demo.Tests.Connections;
 
 public class PostgresConnectionFactoryTests
 {
-    private readonly PostgresConnectionFactory _sut;
-
-    public PostgresConnectionFactoryTests()
-    {
-        _sut = new PostgresConnectionFactory(
-            "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=test");
-    }
+    private const string ConnectionString =
+        "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=test";
 
     [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenConnectionStringIsNull()
+    public void Constructor_WhenConnectionStringIsNull_ShouldThrowArgumentNullException()
     {
-        // Arrange 
-        var act = () => new PostgresConnectionFactory(null!);
+        // Arrange
+        string? connectionString = null;
 
-        // Act & Assert
+        // Act
+        var act = () => new PostgresConnectionFactory(connectionString!);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("connectionString");
     }
 
     [Fact]
-    public async Task CreateConnectionAsync_ShouldReturnNpgsqlConnection()
+    public async Task CreateConnectionAsync_WhenCalled_ShouldReturnNpgsqlConnection()
     {
+        // Arrange
+        var factory = new PostgresConnectionFactory(ConnectionString);
+
         // Act
-        await using var connection = await _sut.CreateConnectionAsync();
+        await using var connection = await factory.CreateConnectionAsync();
 
         // Assert
         connection.Should().NotBeNull();
@@ -37,12 +37,15 @@ public class PostgresConnectionFactoryTests
     }
 
     [Fact]
-    public async Task CreateConnectionAsync_ShouldUseConfiguredConnectionString()
+    public async Task CreateConnectionAsync_WhenCalled_ShouldUseConfiguredConnectionString()
     {
+        // Arrange
+        var factory = new PostgresConnectionFactory(ConnectionString);
+
         // Act
-        await using var connection = await _sut.CreateConnectionAsync();
+        await using var connection = await factory.CreateConnectionAsync();
 
         // Assert
-        connection.ConnectionString.Should().Be("Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=test");
+        connection.ConnectionString.Should().Be(ConnectionString);
     }
 }

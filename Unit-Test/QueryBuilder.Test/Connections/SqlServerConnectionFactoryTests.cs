@@ -8,39 +8,46 @@ namespace QueryLib.Demo.Tests.Connections;
 
 public class SqlServerConnectionFactoryTests
 {
-    private readonly SqlServerConnectionFactory _sut;
-
-    public SqlServerConnectionFactoryTests()
-    {
-        _sut = new SqlServerConnectionFactory(
-            "Server=v1,1433;Database=v2;User Id=sa;Password=123;Encrypt=False;TrustServerCertificate=True");
-    }
+    private const string ConnectionString =
+        "Server=v1,1433;Database=v2;User Id=sa;Password=123;Encrypt=False;TrustServerCertificate=True";
 
     [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenConnectionStringIsNull()
+    public void Constructor_WhenConnectionStringIsNull_ShouldThrowArgumentNullException()
     {
-        // Arrange 
-        var act = () => new SqlServerConnectionFactory(null!);
-        // Act & Assert
+        // Arrange
+        string? connectionString = null;
+
+        // Act
+        var act = () => new SqlServerConnectionFactory(connectionString!);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("connectionString");
     }
 
     [Fact]
-    public async Task CreateConnectionAsync_ShouldReturnsqlserverConnection()
+    public async Task CreateConnectionAsync_WhenCalled_ShouldReturnSqlConnection()
     {
+        // Arrange
+        var factory = new SqlServerConnectionFactory(ConnectionString);
+
         // Act
-        await using var connection = await _sut.CreateConnectionAsync();
+        await using var connection = await factory.CreateConnectionAsync();
+
         // Assert
         connection.Should().NotBeNull();
         connection.Should().BeOfType<SqlConnection>();
     }
 
     [Fact]
-    public async Task CreateConnectionAsync_ShouldUseConfiguredConnectionString()
+    public async Task CreateConnectionAsync_WhenCalled_ShouldUseConfiguredConnectionString()
     {
+        // Arrange
+        var factory = new SqlServerConnectionFactory(ConnectionString);
+
         // Act
-        await using var connection = await _sut.CreateConnectionAsync();
+        await using var connection = await factory.CreateConnectionAsync();
+
         // Assert
-        connection.ConnectionString.Should().Be("Server=v1,1433;Database=v2;User Id=sa;Password=123;Encrypt=False;TrustServerCertificate=True");
+        connection.ConnectionString.Should().Be(ConnectionString);
     }
-} 
+}

@@ -1,42 +1,41 @@
 ﻿using FluentAssertions;
 using NSubstitute;
 using QueryLib.Compilers;
-using QueryLib.Demo;
-
-namespace QueryBuilder.Test.Execution;
-
 using QueryLib.Compilers.Abstractions;
+using QueryLib.Demo;
 using QueryLib.Demo.Connections;
-using QueryLib.Demo.Execution.Abstractions;
 using QueryLib.Demo.Execution;
+using QueryLib.Demo.Execution.Abstractions;
 using QueryLib.Demo.QueryRunners;
 
-
-
+namespace QueryBuilder.Test.Execution;
 
 public class QueryExecutionDependencyFactoryTests
 {
     private readonly IQueryExecutionDependencyFactory _sut;
-    
     private readonly ISqlCompilerFactory _compilerFactory;
 
     public QueryExecutionDependencyFactoryTests()
     {
         _compilerFactory = Substitute.For<ISqlCompilerFactory>();
-        _sut = new QueryExecutionDependencyFactory(_compilerFactory); 
+        _sut = new QueryExecutionDependencyFactory(_compilerFactory);
     }
 
-
     [Fact]
-    public void Create_ShouldThrowArgumentNullException_WhenConfigurationIsNull()
+    public void Create_WhenConfigurationIsNull_ShouldThrowArgumentNullException()
     {
-        var act = () => _sut.Create(null!);
+        // Arrange
+        DbConfiguration? configuration = null;
 
+        // Act
+        var act = () => _sut.Create(configuration!);
+
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("configuration");
     }
 
     [Fact]
-    public void Create_ShouldReturnPostgresDependencies_WhenProviderIsPostgreSql()
+    public void Create_WhenProviderIsPostgreSql_ShouldReturnPostgresDependencies()
     {
         // Arrange
         var configuration = new DbConfiguration(DbProvider.PostgreSql, "connection-string");
@@ -54,7 +53,7 @@ public class QueryExecutionDependencyFactoryTests
     }
 
     [Fact]
-    public void Create_ShouldReturnSqlServerDependencies_WhenProviderIsSqlServer()
+    public void Create_WhenProviderIsSqlServer_ShouldReturnSqlServerDependencies()
     {
         // Arrange
         var configuration = new DbConfiguration(DbProvider.SqlServer, "connection-string");
@@ -72,7 +71,7 @@ public class QueryExecutionDependencyFactoryTests
     }
 
     [Fact]
-    public void Create_ShouldThrowArgumentOutOfRangeException_WhenProviderIsUnsupported()
+    public void Create_WhenProviderIsUnsupported_ShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
         var provider = (DbProvider)999;
