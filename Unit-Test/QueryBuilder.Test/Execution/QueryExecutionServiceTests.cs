@@ -13,7 +13,7 @@ public sealed class QueryExecutionServiceTests
     private readonly IQueryExecutionReporter _reporter = Substitute.For<IQueryExecutionReporter>();
 
     [Fact]
-    public async Task ExecuteAsync_WhenAllExecutionsSucceed_ShouldExecuteAndReportEveryConfiguration()
+    public async Task ExecuteAsync_ShouldExecuteAndReportEveryConfiguration_WhenAllExecutionsSucceed()
     {
         // Arrange
         var query = new Query().From("Student");
@@ -38,7 +38,7 @@ public sealed class QueryExecutionServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenAnExecutionFails_ShouldReportFailureAndContinue()
+    public async Task ExecuteAsync_ShouldReportFailureAndContinue_WhenAnExecutionFails()
     {
         // Arrange
         var query = new Query().From("Student");

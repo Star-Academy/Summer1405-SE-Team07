@@ -23,7 +23,7 @@ public class DatabaseQueryExecutorTests
     }
 
     [Fact]
-    public void Constructor_WhenDependencyFactoryIsNull_ShouldThrowArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenDependencyFactoryIsNull()
     {
         // Arrange
         IQueryExecutionDependencyFactory? dependencyFactory = null;
@@ -36,7 +36,7 @@ public class DatabaseQueryExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenQueryIsNull_ShouldThrowArgumentNullException()
+    public async Task ExecuteAsync_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Arrange
         var configuration = new DbConfiguration(DbProvider.PostgreSql, "connectionString");
@@ -49,7 +49,7 @@ public class DatabaseQueryExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenConfigurationIsNull_ShouldThrowArgumentNullException()
+    public async Task ExecuteAsync_ShouldThrowArgumentNullException_WhenConfigurationIsNull()
     {
         // Arrange
         var query = new Query();
@@ -62,7 +62,7 @@ public class DatabaseQueryExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenInputsAreValid_ShouldCompileOpenExecuteAndReturnResult()
+    public async Task ExecuteAsync_ShouldCompileOpenExecuteAndReturnResult_WhenInputsAreValid()
     {
         // Arrange
         var query = new Query().From("student");

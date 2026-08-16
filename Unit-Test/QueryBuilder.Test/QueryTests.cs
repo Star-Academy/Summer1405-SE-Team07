@@ -16,7 +16,7 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void Constructor_WhenCalled_ShouldInitializeSelectAndFromClauses()
+    public void Constructor_ShouldInitializeSelectAndFromClauses_WhenCalled()
     {
         // Arrange
         const int expectedClauseCount = 2;
@@ -32,7 +32,7 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void From_WhenCalledMoreThanOnce_ShouldReplacePreviouslySelectedTable()
+    public void From_ShouldReplacePreviouslySelectedTable_WhenCalledMoreThanOnce()
     {
         // Arrange
         _sut.From("student");
@@ -45,7 +45,7 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void Select_WhenColumnsAreProvided_ShouldAddColumnsAndReturnSameQuery()
+    public void Select_ShouldAddColumnsAndReturnSameQuery_WhenColumnsAreProvided()
     {
         // Arrange
         var columns = new[] { "id", "name" };
@@ -59,7 +59,7 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void Select_WhenCalledMoreThanOnce_ShouldAppendColumns()
+    public void Select_ShouldAppendColumns_WhenCalledMoreThanOnce()
     {
         // Arrange
         _sut.Select("id");
@@ -72,7 +72,7 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void Select_WhenColumnsAreNull_ShouldIgnoreColumnsAndReturnSameQuery()
+    public void Select_ShouldIgnoreColumnsAndReturnSameQuery_WhenColumnsAreNull()
     {
         // Arrange
         string[]? columns = null;
@@ -86,7 +86,7 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void Where_WhenCalledForFirstCondition_ShouldAddWhereClauseAndReturnSameQuery()
+    public void Where_ShouldAddWhereClauseAndReturnSameQuery_WhenCalledForFirstCondition()
     {
         // Arrange
         const string column = "id";
@@ -102,7 +102,7 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void Where_WhenCalledMoreThanOnce_ShouldReuseExistingWhereClause()
+    public void Where_ShouldReuseExistingWhereClause_WhenCalledMoreThanOnce()
     {
         // Arrange
         _sut.Where("id", 10);
@@ -116,7 +116,7 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void AddClause_WhenClauseIsProvided_ShouldAddClauseAndReturnSameQuery()
+    public void AddClause_ShouldAddClauseAndReturnSameQuery_WhenClauseIsProvided()
     {
         // Arrange
         var clause = Substitute.For<IQueryClause>();
@@ -130,7 +130,7 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void AddClause_WhenClauseIsNull_ShouldThrowArgumentNullException()
+    public void AddClause_ShouldThrowArgumentNullException_WhenClauseIsNull()
     {
         // Arrange
         IQueryClause? clause = null;

@@ -13,7 +13,7 @@ public class SqlCompilerFactoryTests
     }
 
     [Fact]
-    public void Create_WhenCompilerTypeIsPostgres_ShouldReturnPostgresCompiler()
+    public void Create_ShouldReturnPostgresCompiler_WhenCompilerTypeIsPostgres()
     {
         // Arrange
         const string compilerType = "postgres";
@@ -40,7 +40,7 @@ public class SqlCompilerFactoryTests
     }
 
     [Fact]
-    public void Create_WhenCompilerTypeIsSqlServer_ShouldReturnSqlServerCompiler()
+    public void Create_ShouldReturnSqlServerCompiler_WhenCompilerTypeIsSqlServer()
     {
         // Arrange
         const string compilerType = "sqlserver";
@@ -72,7 +72,7 @@ public class SqlCompilerFactoryTests
     [InlineData("mysql")]
     [InlineData("oracle")]
     [InlineData("unknown")]
-    public void Create_WhenCompilerTypeIsUnsupported_ShouldThrowNotImplementedException(
+    public void Create_ShouldThrowNotImplementedException_WhenCompilerTypeIsUnsupported(
         string? compilerType)
     {
         // Arrange

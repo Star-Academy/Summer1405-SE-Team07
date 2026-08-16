@@ -22,7 +22,7 @@ public class QueryExecutionDependencyFactoryTests
     }
 
     [Fact]
-    public void Create_WhenConfigurationIsNull_ShouldThrowArgumentNullException()
+    public void Create_ShouldThrowArgumentNullException_WhenConfigurationIsNull()
     {
         // Arrange
         DbConfiguration? configuration = null;
@@ -35,7 +35,7 @@ public class QueryExecutionDependencyFactoryTests
     }
 
     [Fact]
-    public void Create_WhenProviderIsPostgreSql_ShouldReturnPostgresDependencies()
+    public void Create_ShouldReturnPostgresDependencies_WhenProviderIsPostgreSql()
     {
         // Arrange
         var configuration = new DbConfiguration(DbProvider.PostgreSql, "connection-string");
@@ -53,7 +53,7 @@ public class QueryExecutionDependencyFactoryTests
     }
 
     [Fact]
-    public void Create_WhenProviderIsSqlServer_ShouldReturnSqlServerDependencies()
+    public void Create_ShouldReturnSqlServerDependencies_WhenProviderIsSqlServer()
     {
         // Arrange
         var configuration = new DbConfiguration(DbProvider.SqlServer, "connection-string");
@@ -71,7 +71,7 @@ public class QueryExecutionDependencyFactoryTests
     }
 
     [Fact]
-    public void Create_WhenProviderIsUnsupported_ShouldThrowArgumentOutOfRangeException()
+    public void Create_ShouldThrowArgumentOutOfRangeException_WhenProviderIsUnsupported()
     {
         // Arrange
         var provider = (DbProvider)999;

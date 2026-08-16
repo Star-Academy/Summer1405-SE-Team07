@@ -12,7 +12,7 @@ public class SqlServerConnectionFactoryTests
         "Server=v1,1433;Database=v2;User Id=sa;Password=123;Encrypt=False;TrustServerCertificate=True";
 
     [Fact]
-    public void Constructor_WhenConnectionStringIsNull_ShouldThrowArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenConnectionStringIsNull()
     {
         // Arrange
         string? connectionString = null;
@@ -25,7 +25,7 @@ public class SqlServerConnectionFactoryTests
     }
 
     [Fact]
-    public async Task CreateConnectionAsync_WhenCalled_ShouldReturnSqlConnection()
+    public async Task CreateConnectionAsync_ShouldReturnSqlConnection_WhenCalled()
     {
         // Arrange
         var factory = new SqlServerConnectionFactory(ConnectionString);
@@ -39,7 +39,7 @@ public class SqlServerConnectionFactoryTests
     }
 
     [Fact]
-    public async Task CreateConnectionAsync_WhenCalled_ShouldUseConfiguredConnectionString()
+    public async Task CreateConnectionAsync_ShouldUseConfiguredConnectionString_WhenCalled()
     {
         // Arrange
         var factory = new SqlServerConnectionFactory(ConnectionString);

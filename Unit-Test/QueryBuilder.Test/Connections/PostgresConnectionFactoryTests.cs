@@ -10,7 +10,7 @@ public class PostgresConnectionFactoryTests
         "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=test";
 
     [Fact]
-    public void Constructor_WhenConnectionStringIsNull_ShouldThrowArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenConnectionStringIsNull()
     {
         // Arrange
         string? connectionString = null;
@@ -23,7 +23,7 @@ public class PostgresConnectionFactoryTests
     }
 
     [Fact]
-    public async Task CreateConnectionAsync_WhenCalled_ShouldReturnNpgsqlConnection()
+    public async Task CreateConnectionAsync_ShouldReturnNpgsqlConnection_WhenCalled()
     {
         // Arrange
         var factory = new PostgresConnectionFactory(ConnectionString);
@@ -37,7 +37,7 @@ public class PostgresConnectionFactoryTests
     }
 
     [Fact]
-    public async Task CreateConnectionAsync_WhenCalled_ShouldUseConfiguredConnectionString()
+    public async Task CreateConnectionAsync_ShouldUseConfiguredConnectionString_WhenCalled()
     {
         // Arrange
         var factory = new PostgresConnectionFactory(ConnectionString);

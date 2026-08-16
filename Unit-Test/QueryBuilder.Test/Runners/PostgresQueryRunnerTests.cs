@@ -20,7 +20,7 @@ public class PostgresQueryRunnerTests
     }
 
     [Fact]
-    public async Task RunAsync_WhenConnectionIsClosed_ShouldThrowInvalidOperationException()
+    public async Task RunAsync_ShouldThrowInvalidOperationException_WhenConnectionIsClosed()
     {
         // Arrange
         var query = new CompiledQuery("SELECT * FROM TestTable", new List<object?>());
@@ -38,7 +38,7 @@ public class PostgresQueryRunnerTests
     }
 
     [Fact]
-    public async Task RunAsync_WhenConnectionIsOpen_ShouldExecuteQueryAndMapResult()
+    public async Task RunAsync_ShouldExecuteQueryAndMapResult_WhenConnectionIsOpen()
     {
         // Arrange
         var query = new CompiledQuery(

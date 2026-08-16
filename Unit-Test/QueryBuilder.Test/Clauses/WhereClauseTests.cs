@@ -14,7 +14,7 @@ public sealed class WhereClauseTests
     private readonly WhereClause _sut = new();
 
     [Fact]
-    public void Render_WhenOneConditionExists_ShouldGenerateWhereClauseAndBinding()
+    public void Render_ShouldGenerateWhereClauseAndBinding_WhenOneConditionExists()
     {
         // Arrange
         _sut.Add(new Condition { Column = "name", Value = "kourosh" });
@@ -33,7 +33,7 @@ public sealed class WhereClauseTests
     }
 
     [Fact]
-    public void Render_WhenNoConditionsExist_ShouldReturnEmptySqlAndPreserveBindings()
+    public void Render_ShouldReturnEmptySqlAndPreserveBindings_WhenNoConditionsExist()
     {
         // Arrange
         var existingBindings = new object?[] { 10 };
@@ -47,7 +47,7 @@ public sealed class WhereClauseTests
     }
 
     [Fact]
-    public void Render_WhenMultipleConditionsExist_ShouldJoinWithAndAndPreserveBindingOrder()
+    public void Render_ShouldJoinWithAndAndPreserveBindingOrder_WhenMultipleConditionsExist()
     {
         // Arrange
         _sut.Add(new Condition { Column = "name", Value = "kourosh" });
@@ -69,7 +69,7 @@ public sealed class WhereClauseTests
     }
 
     [Fact]
-    public void Render_WhenBindingsAlreadyExist_ShouldPreserveThemAndContinuePlaceholderNumbering()
+    public void Render_ShouldPreserveThemAndContinuePlaceholderNumbering_WhenBindingsAlreadyExist()
     {
         // Arrange
         var existingBindings = new object?[] { 10 };
@@ -87,7 +87,7 @@ public sealed class WhereClauseTests
     }
 
     [Fact]
-    public void Render_WhenBindingsAreProvided_ShouldReturnNewBindingsWithoutModifyingInput()
+    public void Render_ShouldReturnNewBindingsWithoutModifyingInput_WhenBindingsAreProvided()
     {
         // Arrange
         var existingBindings = new List<object?> { 10 };
@@ -105,7 +105,7 @@ public sealed class WhereClauseTests
     }
 
     [Fact]
-    public void Add_WhenConditionIsProvided_ShouldSetHasConditionsToTrue()
+    public void Add_ShouldSetHasConditionsToTrue_WhenConditionIsProvided()
     {
         // Arrange
         var condition = new Condition { Column = "name", Value = "kourosh" };

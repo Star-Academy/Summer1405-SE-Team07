@@ -19,7 +19,7 @@ public class FromClauseTests
     }
 
     [Fact]
-    public void SetTable_WhenTableNameIsWhitespace_ShouldThrowArgumentException()
+    public void SetTable_ShouldThrowArgumentException_WhenTableNameIsWhitespace()
     {
         // Arrange
         const string table = " ";
@@ -32,7 +32,7 @@ public class FromClauseTests
     }
 
     [Fact]
-    public void Render_WhenTableIsNotSet_ShouldThrowInvalidOperationException()
+    public void Render_ShouldThrowInvalidOperationException_WhenTableIsNotSet()
     {
         // Arrange
         var clause = new FromClause();
@@ -49,7 +49,7 @@ public class FromClauseTests
     }
 
     [Fact]
-    public void Render_WhenTableIsSet_ShouldReturnQuotedTableName()
+    public void Render_ShouldReturnQuotedTableName_WhenTableIsSet()
     {
         // Arrange
         _sut.SetTable("student");

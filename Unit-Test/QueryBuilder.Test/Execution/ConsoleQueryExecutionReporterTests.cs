@@ -20,7 +20,7 @@ public class ConsoleQueryExecutionReporterTests
         _sut = new ConsoleQueryExecutionReporter(_resultPrinter);
     }
     [Fact]
-    public void Constructor_WhenResultPrinterIsNull_ShouldThrowArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenResultPrinterIsNull()
     {
         // Arrange
         IResultPrinter? resultPrinter = null;
@@ -33,7 +33,7 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public void ReportStarted_WhenProviderIsSupplied_ShouldWriteProviderHeaderToConsole()
+    public void ReportStarted_ShouldWriteProviderHeaderToConsole_WhenProviderIsSupplied()
     {
         // Arrange
         using var writer = new StringWriter();
@@ -55,7 +55,7 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public void ReportCompleted_WhenCalled_ShouldWriteBlankLineToConsole()
+    public void ReportCompleted_ShouldWriteBlankLineToConsole_WhenCalled()
     {
         // Arrange
         using var writer = new StringWriter();
@@ -77,7 +77,7 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public async Task ReportSucceededAsync_WhenExecutionResultIsNull_ShouldThrowArgumentNullException()
+    public async Task ReportSucceededAsync_ShouldThrowArgumentNullException_WhenExecutionResultIsNull()
     {
         // Arrange
         QueryExecutionResult? executionResult = null;
@@ -90,7 +90,7 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public async Task ReportSucceededAsync_WhenExecutionResultIsValid_ShouldPrintQueryResult()
+    public async Task ReportSucceededAsync_ShouldPrintQueryResult_WhenExecutionResultIsValid()
     {
         // Arrange
         using var writer = new StringWriter();
@@ -122,7 +122,7 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public void ReportFailed_WhenExceptionIsNull_ShouldThrowArgumentNullException()
+    public void ReportFailed_ShouldThrowArgumentNullException_WhenExceptionIsNull()
     {
         // Arrange
         Exception? exception = null;
@@ -135,7 +135,7 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public void ReportFailed_WhenExceptionIsValid_ShouldWriteErrorToConsole()
+    public void ReportFailed_ShouldWriteErrorToConsole_WhenExceptionIsValid()
     {
         // Arrange
         var provider = DbProvider.PostgreSql;

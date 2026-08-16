@@ -21,7 +21,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Constructor_WhenQuoterIsNull_ShouldThrowArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenQuoterIsNull()
     {
         // Arrange
         IIdentifierQuoter? quoter = null;
@@ -35,7 +35,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Constructor_WhenPlaceholderFactoryIsNull_ShouldThrowArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenPlaceholderFactoryIsNull()
     {
         // Arrange
         IParameterPlaceholderFactory? placeholders = null;
@@ -49,7 +49,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Constructor_WhenBinderIsNull_ShouldThrowArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenBinderIsNull()
     {
         // Arrange
         IValueBinder? binder = null;
@@ -63,7 +63,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenQueryIsNull_ShouldThrowArgumentNullException()
+    public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Arrange
         Query? query = null;
@@ -77,7 +77,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenFromClauseIsMissing_ShouldThrowInvalidOperationException()
+    public void Compile_ShouldThrowInvalidOperationException_WhenFromClauseIsMissing()
     {
         // Arrange
         var query = new Query();
@@ -91,7 +91,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenNoColumnsAreSelected_ShouldUseWildcardAndReturnNoBindings()
+    public void Compile_ShouldUseWildcardAndReturnNoBindings_WhenNoColumnsAreSelected()
     {
         // Arrange
         var query = new Query().From("student");
@@ -107,7 +107,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenColumnsAndConditionsExist_ShouldCompileSqlAndBindValues()
+    public void Compile_ShouldCompileSqlAndBindValues_WhenColumnsAndConditionsExist()
     {
         // Arrange
         var query = new Query()
@@ -134,7 +134,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenClausesAreAddedOutOfOrder_ShouldRenderByClauseOrder()
+    public void Compile_ShouldRenderByClauseOrder_WhenClausesAreAddedOutOfOrder()
     {
         // Arrange
         var query = new Query().From("student");
@@ -154,7 +154,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenMultipleClausesProduceBindings_ShouldPassBindingsBetweenClauses()
+    public void Compile_ShouldPassBindingsBetweenClauses_WhenMultipleClausesProduceBindings()
     {
         // Arrange
         var query = new Query().From("student");
@@ -190,7 +190,7 @@ public sealed class SqlCompilerTests
     }
 
     [Fact]
-    public void Compile_WhenClauseRendersBlankSql_ShouldExcludeClauseFromSql()
+    public void Compile_ShouldExcludeClauseFromSql_WhenClauseRendersBlankSql()
     {
         // Arrange
         var query = new Query().From("student");
