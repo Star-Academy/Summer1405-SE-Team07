@@ -27,14 +27,14 @@ public class SqlServerQueryRunnerTests
         var query = new CompiledQuery("SELECT * FROM TestTable", new List<object?>());
         var connection = Substitute.For<DbConnection>();
         connection.State.Returns(System.Data.ConnectionState.Closed);
-
+        var expected = "The provided connection is not open.*";
         // Act
         var act = () => _sut.RunAsync(query, connection);
 
         // Assert
         await act.Should()
             .ThrowAsync<InvalidOperationException>()
-            .WithMessage("The provided connection is not open.*");
+            .WithMessage(expected);
         connection.DidNotReceive().CreateCommand();
     }
 

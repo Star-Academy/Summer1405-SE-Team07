@@ -26,11 +26,10 @@ public class DatabaseQueryExecutorTests
     public void Constructor_ShouldThrowArgumentNullException_WhenDependencyFactoryIsNull()
     {
         // Arrange
-        IQueryExecutionDependencyFactory? dependencyFactory = null;
         var expected = "dependencyFactory";
 
         // Act
-        var act = () => new DatabaseQueryExecutor(dependencyFactory!);
+        var act = () => new DatabaseQueryExecutor(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
@@ -94,20 +93,16 @@ public class DatabaseQueryExecutorTests
         compiler.Compile(query).Returns(compiledQuery);
         connectionFactory.CreateConnectionAsync().Returns(connection);
         runner.RunAsync(compiledQuery, connection).Returns(queryResult);
+        var expected = new QueryExecutionResult(compiledQuery, queryResult);
 
         // Act
         var result = await _sut.ExecuteAsync(query, configuration);
 
         // Assert
-        var expected = new QueryExecutionResult(compiledQuery, queryResult);
-
         result.Should().BeEquivalentTo(expected);
 
         await connection.Received(1).OpenAsync();
         await runner.Received(1).RunAsync(compiledQuery, connection);
-        
-        
-        
     }
 }
 

@@ -23,10 +23,9 @@ public class ConsoleQueryExecutionReporterTests
     public void Constructor_ShouldThrowArgumentNullException_WhenResultPrinterIsNull()
     {
         // Arrange
-        IResultPrinter? resultPrinter = null;
 
         // Act
-        var act = () => new ConsoleQueryExecutionReporter(resultPrinter!);
+        var act = () => new ConsoleQueryExecutionReporter(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("resultPrinter");
@@ -81,11 +80,11 @@ public class ConsoleQueryExecutionReporterTests
     public async Task ReportSucceededAsync_ShouldThrowArgumentNullException_WhenExecutionResultIsNull()
     {
         // Arrange
-        QueryExecutionResult? executionResult = null;
         var expected = "executionResult";
 
         // Act
-        var act = () => _sut.ReportSucceededAsync(DbProvider.PostgreSql, executionResult!);
+        var act = () => _sut.ReportSucceededAsync(DbProvider.PostgreSql, null!);
+        
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName(expected);
     }
@@ -126,10 +125,9 @@ public class ConsoleQueryExecutionReporterTests
     public void ReportFailed_ShouldThrowArgumentNullException_WhenExceptionIsNull()
     {
         // Arrange
-        Exception? exception = null;
 
         // Act
-        var act = () => _sut.ReportFailed(DbProvider.SqlServer, exception!);
+        var act = () => _sut.ReportFailed(DbProvider.SqlServer, null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("exception");

@@ -25,11 +25,10 @@ public class QueryExecutionDependencyFactoryTests
     public void Create_ShouldThrowArgumentNullException_WhenConfigurationIsNull()
     {
         // Arrange
-        DbConfiguration? configuration = null;
         var expected = "configuration";
 
         // Act
-        var act = () => _sut.Create(configuration!);
+        var act = () => _sut.Create(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
@@ -48,6 +47,7 @@ public class QueryExecutionDependencyFactoryTests
 
         // Assert
         result.Compiler.Should().BeSameAs(compiler);
+        
         result.Runner.Should().BeOfType<PostgresQueryRunner>();
         result.ConnectionFactory.Should().BeOfType<PostgresConnectionFactory>();
     }
@@ -65,8 +65,10 @@ public class QueryExecutionDependencyFactoryTests
 
         // Assert
         result.Compiler.Should().BeSameAs(compiler);
+        
         result.Runner.Should().BeOfType<SqlServerQueryRunner>();
         result.ConnectionFactory.Should().BeOfType<SqlServerConnectionFactory>();
+        
         _compilerFactory.Received(1).Create("sqlserver");
     }
 

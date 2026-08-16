@@ -35,9 +35,9 @@ public sealed class QueryTests
     public void From_ShouldReplacePreviouslySelectedTable_WhenCalledMoreThanOnce()
     {
         // Arrange
-        _sut.From("student");
 
         // Act
+        _sut.From("student");
         _sut.From("teacher");
 
         // Assert
@@ -62,9 +62,9 @@ public sealed class QueryTests
     public void Select_ShouldAppendColumns_WhenCalledMoreThanOnce()
     {
         // Arrange
-        _sut.Select("id");
 
         // Act
+        _sut.Select("id");
         _sut.Select("name", "age");
 
         // Assert
@@ -75,10 +75,9 @@ public sealed class QueryTests
     public void Select_ShouldIgnoreColumnsAndReturnSameQuery_WhenColumnsAreNull()
     {
         // Arrange
-        string[]? columns = null;
 
         // Act
-        var result = _sut.Select(columns);
+        var result = _sut.Select(null);
 
         // Assert
         result.Should().BeSameAs(_sut);
@@ -133,10 +132,9 @@ public sealed class QueryTests
     public void AddClause_ShouldThrowArgumentNullException_WhenClauseIsNull()
     {
         // Arrange
-        IQueryClause? clause = null;
 
         // Act
-        var act = () => _sut.AddClause(clause!);
+        var act = () => _sut.AddClause(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()

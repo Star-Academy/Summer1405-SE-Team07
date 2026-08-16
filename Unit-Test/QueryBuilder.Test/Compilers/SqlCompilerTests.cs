@@ -24,53 +24,49 @@ public sealed class SqlCompilerTests
     public void Constructor_ShouldThrowArgumentNullException_WhenQuoterIsNull()
     {
         // Arrange
-        IIdentifierQuoter? quoter = null;
         var expected = "quoter";
 
         // Act
-        var act = () => new SqlCompiler(quoter!, _placeholders, _binder);
+        var act = () => new SqlCompiler(null!, _placeholders, _binder);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName(expected);
+        act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]
     public void Constructor_ShouldThrowArgumentNullException_WhenPlaceholderFactoryIsNull()
     {
         // Arrange
-        IParameterPlaceholderFactory? placeholders = null;
         var expected = "placeholders";
+        
         // Act
-        var act = () => new SqlCompiler(_quoter, placeholders!, _binder);
+        var act = () => new SqlCompiler(_quoter, null!, _binder);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName(expected);
+        act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]
     public void Constructor_ShouldThrowArgumentNullException_WhenBinderIsNull()
     {
         // Arrange
-        IValueBinder? binder = null;
         var expected = "binder";
+        
         // Act
-        var act = () => new SqlCompiler(_quoter, _placeholders, binder!);
+        var act = () => new SqlCompiler(_quoter, _placeholders, null!);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName(expected);
+        act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]
     public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Arrange
-        Query? query = null;
         var expected = "query";
+        
         // Act
-        var act = () => _sut.Compile(query!);
+        var act = () => _sut.Compile(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -87,8 +83,7 @@ public sealed class SqlCompilerTests
         var act = () => _sut.Compile(query);
 
         // Assert
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage(expected);
+        act.Should().Throw<InvalidOperationException>().WithMessage(expected);
     }
 
     [Fact]
@@ -126,6 +121,7 @@ public sealed class SqlCompilerTests
         var expected = new CompiledQuery("SELECT \"id\", \"name\" FROM \"student\" " +
                                          "WHERE \"id\" = @p1 AND \"status\" = @p2" ,
             new object?[] { "bound-id", "bound-status"});
+        
         // Act
         var result = _sut.Compile(query);
 
@@ -186,6 +182,7 @@ public sealed class SqlCompilerTests
 
         // Act
         var result = _sut.Compile(query);
+        
         // Assert
         result.Should().BeEquivalentTo(expected);
     }

@@ -108,7 +108,6 @@ public sealed class WhereClauseTests
         output.Bindings.Should()
             .Equal(expectedBindings)
             .And.NotBeSameAs(existingBindings);
-        
     }
 
     [Fact]

@@ -39,6 +39,7 @@ public class SelectClauseTests
         _quoter.Quote("id").Returns("\"id\"");
         _quoter.Quote("name").Returns("\"name\"");
         var expected = "SELECT \"id\", \"name\""; 
+        
         // Act
         var output = _sut.Render(_quoter, _placeholders, Array.Empty<object?>());
 
@@ -50,10 +51,9 @@ public class SelectClauseTests
     public void Add_ShouldLeaveColumnsEmpty_WhenColumnsAreNull()
     {
         // Arrange
-        string[]? columns = null;
 
         // Act
-        _sut.Add(columns);
+        _sut.Add(null);
 
         // Assert
         _sut.Columns.Should().BeEmpty();

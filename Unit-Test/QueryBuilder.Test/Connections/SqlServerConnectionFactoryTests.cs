@@ -36,6 +36,8 @@ public class SqlServerConnectionFactoryTests
     [Fact]
     public async Task CreateConnectionAsync_ShouldReturnSqlConnection_WhenCalled()
     {
+        // Arrange
+        
         // Act
         await using var connection = await _sut.CreateConnectionAsync();
 
@@ -46,6 +48,8 @@ public class SqlServerConnectionFactoryTests
     [Fact]
     public async Task CreateConnectionAsync_ShouldUseConfiguredConnectionString_WhenCalled()
     {
+        // Arrange
+        
         // Act
         await using var connection = await _sut.CreateConnectionAsync();
 

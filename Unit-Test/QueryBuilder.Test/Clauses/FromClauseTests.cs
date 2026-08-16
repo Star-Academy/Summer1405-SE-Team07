@@ -23,7 +23,6 @@ public class FromClauseTests
     {
         // Arrange
         const string table = " ";
-        
         var expected = "table" ;
 
         // Act

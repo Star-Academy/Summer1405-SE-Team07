@@ -26,18 +26,14 @@ public class PostgresConnectionFactoryTests
         // Act
         var act = () => new PostgresConnectionFactory(null!);
         
-        
-
         // Assert
-        act.Should()
-            .Throw<ArgumentNullException>()
-            .WithParameterName(expected);
+        act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]
     public async Task CreateConnectionAsync_ShouldReturnNpgsqlConnection_WhenCalled()
     {
-        
+        // Arrange
         
         // Act
         await using var connection = await _sut.CreateConnectionAsync();
@@ -49,6 +45,8 @@ public class PostgresConnectionFactoryTests
     [Fact]
     public async Task CreateConnectionAsync_ShouldUseConfiguredConnectionString_WhenCalled()
     {
+        // Arrange
+        
         // Act
         await using var connection = await _sut.CreateConnectionAsync();
 
