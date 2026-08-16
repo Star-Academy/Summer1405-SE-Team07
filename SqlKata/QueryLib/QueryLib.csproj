@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>QueryLib</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Dialects\Postgres\" />
+    <Folder Include="Dialects\SqlServer\" />
+  </ItemGroup>
+
+</Project>
