@@ -52,6 +52,10 @@ public sealed class SqlServerQueryRunner : IQueryRunner
             rows.Add(row);
         }
 
-        return new QueryResult(columnNames, rows);
+        return new QueryResult
+        { 
+            ColumnNames =  columnNames,
+            Rows =  rows
+        };    
     }
 }

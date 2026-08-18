@@ -54,6 +54,11 @@ public sealed class PostgresQueryRunner : IQueryRunner
             rows.Add(row);
         }
 
-        return new QueryResult(columnNames, rows);
+        return new QueryResult
+        {
+            ColumnNames =  columnNames,
+            Rows =  rows
+            
+        };
     }
 }
