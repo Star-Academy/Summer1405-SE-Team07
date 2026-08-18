@@ -1,5 +1,4 @@
 using QueryLib.Clauses.Abstractions;
-using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Clauses;
 
@@ -10,22 +9,18 @@ public sealed class FromClause : IQueryClause
     public int Order => 10;
 
     public string Table => _table
-        ?? throw new InvalidOperationException(
-            "From(...) must be called before compiling the query.");
+                           ?? throw new InvalidOperationException(
+                               "From(...) must be called before compiling the query.");
 
     public void SetTable(string table)
     {
         if (string.IsNullOrWhiteSpace(table))
         {
-            throw new ArgumentException("Table name cannot be empty.", nameof(table));
+            throw new ArgumentException(
+                "Table name cannot be empty.",
+                nameof(table));
         }
 
         _table = table;
     }
-
-    public RenderOutput Render(
-        IIdentifierQuoter quoter,
-        IParameterPlaceholderFactory placeholders,
-        IReadOnlyCollection<object?> bindings) =>
-        new($"FROM {quoter.Quote(Table)}", bindings);
 }
