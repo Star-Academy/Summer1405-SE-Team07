@@ -28,22 +28,22 @@ public static class Program
         
         
         var services = new ServiceCollection();
-        services.AddTransient<IDatabaseQueryExecutor, DatabaseQueryExecutor>();
+        services.AddSingleton<IDatabaseQueryExecutor, DatabaseQueryExecutor>();
         
-        services.AddTransient<
+        services.AddSingleton<
             IQueryExecutionDependencyFactory,
             QueryExecutionDependencyFactory>();
         
-        services.AddTransient<ISqlCompilerFactory, SqlCompilerFactory>();
+        services.AddSingleton<ISqlCompilerFactory, SqlCompilerFactory>();
         
-        services.AddTransient<
+        services.AddSingleton<
             IQueryExecutionReporter,
             ConsoleQueryExecutionReporter>();
         
-        services.AddTransient<IResultPrinter, ConsoleResultPrinter>();
+        services.AddSingleton<IResultPrinter, ConsoleResultPrinter>();
         
         
-        services.AddTransient<QueryExecutionService>();
+        services.AddSingleton<QueryExecutionService>();
         
         using var serviceProvider = services.BuildServiceProvider();
         
