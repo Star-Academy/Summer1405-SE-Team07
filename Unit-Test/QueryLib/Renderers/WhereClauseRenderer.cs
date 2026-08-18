@@ -22,10 +22,6 @@ public sealed class WhereClauseRenderer
                 mutableBindings);
         }
         
-        
-        
-        
-        
         var parts = new List<string>();
 
         foreach (var condition in clause.Conditions)
@@ -40,7 +36,6 @@ public sealed class WhereClauseRenderer
         }
 
         return new RenderOutput(
-            "WHERE " + string.Join(" AND ", parts),
-            mutableBindings);
+            "WHERE " + string.Join(" AND ", parts), mutableBindings);
     }
 }

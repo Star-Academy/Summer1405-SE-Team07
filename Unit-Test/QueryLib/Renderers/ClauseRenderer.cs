@@ -16,7 +16,6 @@ public abstract class ClauseRenderer<TClause>
         IParameterPlaceholderFactory placeholders,
         IReadOnlyCollection<object?> bindings);
     
-    
     RenderOutput IClauseRenderer.Render(
         IQueryClause clause,
         IIdentifierQuoter quoter,
@@ -29,7 +28,6 @@ public abstract class ClauseRenderer<TClause>
             placeholders,
             bindings);
     }
-    
 }
 
 

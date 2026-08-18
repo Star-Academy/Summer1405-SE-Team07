@@ -5,19 +5,29 @@ namespace QueryLib;
 
 public sealed class Query
 {
-    private readonly SelectClause _selectClause = new();
-    private readonly FromClause _fromClause = new();
+    private readonly List<string> _columns = [];
+    private readonly List<Condition> _conditions = [];
+
+    private readonly SelectClause _selectClause;
+    private readonly FromClause _fromClause;
     private WhereClause? _whereClause;
-    private readonly List<IQueryClause> _clauses = new();
-    
+
+    private readonly List<IQueryClause> _clauses = [];
+
     public Query()
     {
+        _selectClause = new SelectClause { Columns = _columns };
+
+        _fromClause = new FromClause();
+
         _clauses.Add(_selectClause);
         _clauses.Add(_fromClause);
     }
 
     public string Table => _fromClause.Table;
-    public IReadOnlyCollection<string> Columns => _selectClause.Columns;
+
+    public IReadOnlyCollection<string> Columns => _columns;
+
     public IReadOnlyCollection<IQueryClause> Clauses => _clauses;
 
     public Query From(string table)
@@ -28,14 +38,19 @@ public sealed class Query
 
     public Query Select(params string[]? columns)
     {
-        _selectClause.Add(columns);
+        if (columns is not null)
+        {
+            _columns.AddRange(columns);
+        }
+
         return this;
     }
 
     public Query Where(string column, object? value)
     {
-        _whereClause ??= AddNew(new WhereClause());
-        _whereClause.Add(new Condition { Column = column, Value = value });
+        _conditions.Add(new Condition { Column = column, Value = value });
+        _whereClause ??= AddNew(new WhereClause { Conditions = _conditions });
+
         return this;
     }
 

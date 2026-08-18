@@ -4,16 +4,7 @@ namespace QueryLib.Clauses;
 
 public sealed class WhereClause : IQueryClause
 {
-    private readonly List<Condition> _conditions = new();
-
+    public required IReadOnlyCollection<Condition> Conditions { get; init; }
     public int Order => 20;
-
-    public bool HasConditions => _conditions.Count > 0;
-
-    public IReadOnlyCollection<Condition> Conditions => _conditions;
-
-    public void Add(Condition condition)
-    {
-        _conditions.Add(condition);
-    }
+    public bool HasConditions => Conditions.Count > 0;
 }

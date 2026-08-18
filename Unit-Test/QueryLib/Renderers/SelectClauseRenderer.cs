@@ -18,7 +18,6 @@ public sealed class SelectClauseRenderer
             : string.Join(", ", clause.Columns.Select(quoter.Quote));
 
         return new RenderOutput(
-            $"SELECT {selection}",
-            bindings);
+            $"SELECT {selection}", bindings);
     }
 }

@@ -11,7 +11,6 @@ public interface IClauseRenderer<in TClause>
         IIdentifierQuoter quoter,
         IParameterPlaceholderFactory placeholders,
         IReadOnlyCollection<object?> bindings);
-    
 }
 
 

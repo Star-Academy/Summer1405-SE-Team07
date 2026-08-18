@@ -14,7 +14,6 @@ public sealed class FromClauseRenderer
         IReadOnlyCollection<object?> bindings)
     {
         return new RenderOutput(
-            $"FROM {quoter.Quote(clause.Table)}",
-            bindings);
+            $"FROM {quoter.Quote(clause.Table)}", bindings);
     }
 }

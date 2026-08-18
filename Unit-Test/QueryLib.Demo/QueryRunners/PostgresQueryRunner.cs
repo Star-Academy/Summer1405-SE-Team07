@@ -58,7 +58,6 @@ public sealed class PostgresQueryRunner : IQueryRunner
         {
             ColumnNames =  columnNames,
             Rows =  rows
-            
         };
     }
 }

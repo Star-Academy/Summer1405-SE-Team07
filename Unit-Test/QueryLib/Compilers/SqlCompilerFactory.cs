@@ -17,15 +17,16 @@ public class SqlCompilerFactory : ISqlCompilerFactory
                     postgresdialect.IdentifierQuoter,
                     postgresdialect.ParameterPlaceholderFactory,
                     postgresdialect.ValueBinder);
+            
             case "sqlserver":
                 ISqlDialect sqlserverdialect = new SqlServerDialect();
                 return new SqlCompiler(
                     sqlserverdialect.IdentifierQuoter,
                     sqlserverdialect.ParameterPlaceholderFactory,
                     sqlserverdialect.ValueBinder);
+            
             default:
                 throw new NotImplementedException();
         }
-        
     }
 }
