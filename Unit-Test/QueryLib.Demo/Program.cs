@@ -1,6 +1,11 @@
 using QueryLib.Compilers;
 using QueryLib.Demo.Execution;
 using QueryLib.Demo.Printers;
+using Microsoft.Extensions.DependencyInjection;
+using QueryLib.Compilers.Abstractions;
+using QueryLib.Demo.Abstractions;
+using QueryLib.Demo.Execution.Abstractions;
+
 
 namespace QueryLib.Demo;
 
@@ -12,18 +17,40 @@ public static class Program
             .From("Student")
             .Select("StudentNumber", "FirstName", "LastName")
             .Where("IsMale", true);
-
+        
+        
         var dbConfigurations = new List<DbConfiguration>
         {
             new(DbProvider.PostgreSql, "Host=localhost;Port=5442;Username=postgres;Password=postgres;Database=mohaymen"),
             new(DbProvider.SqlServer, "Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;Encrypt=False;TrustServerCertificate=True"),
         };
-
-        var dependencyFactory = new QueryExecutionDependencyFactory(new SqlCompilerFactory());
-        var queryExecutor = new DatabaseQueryExecutor(dependencyFactory);
-        var reporter = new ConsoleQueryExecutionReporter(new ConsoleResultPrinter());
-        var executionService = new QueryExecutionService(queryExecutor, reporter);
-
+        
+        
+        
+        var services = new ServiceCollection();
+        services.AddTransient<IDatabaseQueryExecutor, DatabaseQueryExecutor>();
+        
+        services.AddTransient<
+            IQueryExecutionDependencyFactory,
+            QueryExecutionDependencyFactory>();
+        
+        services.AddTransient<ISqlCompilerFactory, SqlCompilerFactory>();
+        
+        services.AddTransient<
+            IQueryExecutionReporter,
+            ConsoleQueryExecutionReporter>();
+        
+        services.AddTransient<IResultPrinter, ConsoleResultPrinter>();
+        
+        
+        services.AddTransient<QueryExecutionService>();
+        
+        using var serviceProvider = services.BuildServiceProvider();
+        
+        
+        var executionService =
+            serviceProvider.GetRequiredService<QueryExecutionService>();
+        
         await executionService.ExecuteAsync(query, dbConfigurations);
     }
 }
