@@ -11,11 +11,17 @@ public sealed class SqlCompiler : ICompiler
     private readonly IParameterPlaceholderFactory _placeholders;
     private readonly IValueBinder _binder;
     private readonly ClauseRendererRegistry _rendererRegistry;
+    private readonly SelectClauseRenderer _selectClauseRenderer;
+    private readonly WhereClauseRenderer _whereClauseRenderer;
+    private readonly FromClauseRenderer _fromClauseRenderer;
 
     public SqlCompiler(
         IIdentifierQuoter quoter,
         IParameterPlaceholderFactory placeholders,
-        IValueBinder binder)
+        IValueBinder binder,
+        SelectClauseRenderer selectClauseRenderer,
+        WhereClauseRenderer whereClauseRenderer,
+        FromClauseRenderer fromClauseRenderer)
     {
         _quoter = quoter ?? throw new ArgumentNullException(nameof(quoter));
         _placeholders = placeholders ?? throw new ArgumentNullException(nameof(placeholders));
@@ -23,9 +29,9 @@ public sealed class SqlCompiler : ICompiler
 
         _rendererRegistry = new ClauseRendererRegistry(
         [
-            new SelectClauseRenderer(),
-            new FromClauseRenderer(),
-            new WhereClauseRenderer()
+            _selectClauseRenderer =  selectClauseRenderer ,
+            _fromClauseRenderer = fromClauseRenderer ,
+            _whereClauseRenderer = whereClauseRenderer
         ]);
     }
 

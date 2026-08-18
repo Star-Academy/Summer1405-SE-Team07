@@ -26,12 +26,5 @@ public sealed class ClauseRendererRegistry
         return renderer;
     }
 
-    public bool TryGetRenderer(
-        IQueryClause clause,
-        out IClauseRenderer? renderer)
-    {
-        return _renderers.TryGetValue(
-            clause.GetType(),
-            out renderer);
-    }
+  
 }

@@ -36,6 +36,7 @@ public sealed class Query
         return this;
     }
 
+    
     public Query Select(params string[]? columns)
     {
         if (columns is not null)
