@@ -4,8 +4,7 @@ using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Renderers;
 
-public sealed class SelectClauseRenderer
-    : ClauseRenderer<SelectClause>
+public sealed class SelectClauseRenderer : ClauseRenderer<SelectClause>
 {
     public override RenderOutput Render(
         SelectClause clause,
@@ -17,7 +16,6 @@ public sealed class SelectClauseRenderer
             ? "*"
             : string.Join(", ", clause.Columns.Select(quoter.Quote));
 
-        return new RenderOutput(
-            $"SELECT {selection}", bindings);
+        return new RenderOutput($"SELECT {selection}", bindings);
     }
 }

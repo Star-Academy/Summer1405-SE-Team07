@@ -48,8 +48,7 @@ public sealed class SqlCompiler : ICompiler
         return new CompiledQuery(renderedQuery.Sql, boundValues);
     }
 
-    private RenderOutput ClauseRender(
-        IEnumerable<IQueryClause> clauses)
+    private RenderOutput ClauseRender(IEnumerable<IQueryClause> clauses)
     {
         IReadOnlyCollection<object?> bindings = Array.Empty<object?>();
 
@@ -73,7 +72,6 @@ public sealed class SqlCompiler : ICompiler
             }
         }
 
-        return new RenderOutput(
-            string.Join(" ", sqlParts), bindings);
+        return new RenderOutput(string.Join(" ", sqlParts), bindings);
     }
 }

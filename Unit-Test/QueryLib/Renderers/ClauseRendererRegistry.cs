@@ -9,8 +9,7 @@ public sealed class ClauseRendererRegistry
 
     public ClauseRendererRegistry(IEnumerable<IClauseRenderer> renderers)
     {
-        _renderers = renderers.ToDictionary(
-            renderer => renderer.ClauseType);
+        _renderers = renderers.ToDictionary(renderer => renderer.ClauseType);
     }
 
     public IClauseRenderer GetRenderer(IQueryClause clause)
@@ -19,12 +18,9 @@ public sealed class ClauseRendererRegistry
 
         if (!_renderers.TryGetValue(clauseType, out var renderer))
         {
-            throw new InvalidOperationException(
-                $"No renderer registered for {clauseType.Name}.");
+            throw new InvalidOperationException($"No renderer registered for {clauseType.Name}.");
         }
 
         return renderer;
     }
-
-  
 }

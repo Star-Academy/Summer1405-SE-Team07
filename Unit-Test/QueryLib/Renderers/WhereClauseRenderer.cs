@@ -4,8 +4,7 @@ using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Renderers;
 
-public sealed class WhereClauseRenderer
-    : ClauseRenderer<WhereClause>
+public sealed class WhereClauseRenderer : ClauseRenderer<WhereClause>
 {
     public override RenderOutput Render(
         WhereClause clause,
@@ -35,7 +34,6 @@ public sealed class WhereClauseRenderer
                 $"{quoter.Quote(condition.Column)} = {placeholder}");
         }
 
-        return new RenderOutput(
-            "WHERE " + string.Join(" AND ", parts), mutableBindings);
+        return new RenderOutput("WHERE " + string.Join(" AND ", parts), mutableBindings);
     }
 }

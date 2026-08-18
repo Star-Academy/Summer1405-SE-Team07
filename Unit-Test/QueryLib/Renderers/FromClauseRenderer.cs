@@ -4,8 +4,7 @@ using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Renderers;
 
-public sealed class FromClauseRenderer
-    : ClauseRenderer<FromClause>
+public sealed class FromClauseRenderer : ClauseRenderer<FromClause>
 {
     public override RenderOutput Render(
         FromClause clause,
@@ -13,7 +12,6 @@ public sealed class FromClauseRenderer
         IParameterPlaceholderFactory placeholders,
         IReadOnlyCollection<object?> bindings)
     {
-        return new RenderOutput(
-            $"FROM {quoter.Quote(clause.Table)}", bindings);
+        return new RenderOutput($"FROM {quoter.Quote(clause.Table)}", bindings);
     }
 }
