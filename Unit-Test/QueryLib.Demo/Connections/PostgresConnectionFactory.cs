@@ -6,8 +6,6 @@ namespace QueryLib.Demo.Connections;
 
 public class PostgresConnectionFactory : IDbConnectionFactory
 {
-    
-
     private readonly string _connectionString;
 
     public PostgresConnectionFactory(string? connectionString)
@@ -20,5 +18,4 @@ public class PostgresConnectionFactory : IDbConnectionFactory
         var connection = new NpgsqlConnection(_connectionString);
         return connection;
     }
-    
 }

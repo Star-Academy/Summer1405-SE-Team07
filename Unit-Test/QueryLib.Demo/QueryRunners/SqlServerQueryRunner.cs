@@ -6,14 +6,19 @@ namespace QueryLib.Demo.QueryRunners;
 
 public sealed class SqlServerQueryRunner : IQueryRunner
 {
-    public async Task<QueryResult> RunAsync(CompiledQuery query, DbConnection connection, DbTransaction? transaction = null)
+    public async Task<QueryResult> RunAsync(
+        CompiledQuery query,
+        DbConnection connection,
+        DbTransaction? transaction = null)
     {
         if (connection.State != System.Data.ConnectionState.Open)
         {
-            throw new InvalidOperationException("The provided connection is not open. Ensure the connection is opened before executing the query.");  
+            throw new InvalidOperationException(
+                "The provided connection is not open. Ensure the connection is opened before executing the query.");  
         }
     
         await using var command = connection.CreateCommand();
+        
         command.CommandText = query.Sql;
         command.Transaction = transaction;
 
@@ -27,11 +32,12 @@ public sealed class SqlServerQueryRunner : IQueryRunner
 
         await using var reader = await command.ExecuteReaderAsync();
 
-        var result = new QueryResult();
-
+        var columnNames = new List<string>();
+        var rows = new List<Dictionary<string, object?>>();
+        
         for (int column = 0; column < reader.FieldCount; column++)
         {
-            result.AddColumn(reader.GetName(column));
+            columnNames.Add(reader.GetName(column));
         }
 
         while (await reader.ReadAsync())
@@ -42,9 +48,10 @@ public sealed class SqlServerQueryRunner : IQueryRunner
                 var val = reader.GetValue(column);
                 row[reader.GetName(column)] = (val == DBNull.Value) ? null : val;
             }
-            result.AddRow(row);
+            
+            rows.Add(row);
         }
 
-        return result;
+        return new QueryResult(columnNames, rows);
     }
 }

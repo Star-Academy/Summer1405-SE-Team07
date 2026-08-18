@@ -3,7 +3,6 @@ using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Clauses;
 
-/// <summary>Stores, validates, and renders the table in a FROM clause.</summary>
 public sealed class FromClause : IQueryClause
 {
     private string? _table;

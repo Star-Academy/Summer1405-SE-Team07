@@ -1,5 +1,4 @@
-﻿
-using QueryLib.Dialects.Abstractions;
+﻿using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Clauses.Abstractions;
 

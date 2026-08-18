@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace QueryLib;
+namespace QueryLib.Clauses;
 
 public sealed class Condition
 {

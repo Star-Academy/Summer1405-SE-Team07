@@ -1,6 +1,4 @@
-﻿
-namespace QueryLib.Dialects.Abstractions;
-
+﻿namespace QueryLib.Dialects.Abstractions;
 
 public interface IValueBinder
 {
