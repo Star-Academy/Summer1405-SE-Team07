@@ -4,12 +4,17 @@ namespace QueryLib.Dialects.SqlServer;
 
 public sealed class SqlServerDialect : ISqlDialect
 {
-    public IIdentifierQuoter IdentifierQuoter { get; } =
-        new SqlServerIdentifierQuoter();
+    public IIdentifierQuoter IdentifierQuoter { get; }
+    public IParameterPlaceholderFactory ParameterPlaceholderFactory { get; }
+    public IValueBinder ValueBinder { get; }
 
-    public IParameterPlaceholderFactory ParameterPlaceholderFactory { get; } =
-        new SqlServerParameterPlaceholderFactory();
-
-    public IValueBinder ValueBinder { get; } =
-        new SqlServerBooleanAsIntValueBinder();
+    public SqlServerDialect(
+        IIdentifierQuoter identifierQuoter,
+        IParameterPlaceholderFactory parameterPlaceholderFactory,
+        IValueBinder valueBinder)
+    {
+        IdentifierQuoter = identifierQuoter ?? throw new ArgumentNullException(nameof(identifierQuoter));
+        ParameterPlaceholderFactory = parameterPlaceholderFactory ?? throw new ArgumentNullException(nameof(parameterPlaceholderFactory));
+        ValueBinder = valueBinder ?? throw new ArgumentNullException(nameof(valueBinder));
+    }
 }

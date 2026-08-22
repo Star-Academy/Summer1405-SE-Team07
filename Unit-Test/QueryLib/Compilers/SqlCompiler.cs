@@ -7,32 +7,15 @@ namespace QueryLib.Compilers;
 
 public sealed class SqlCompiler : ICompiler
 {
-    private readonly IIdentifierQuoter _quoter;
-    private readonly IParameterPlaceholderFactory _placeholders;
     private readonly IValueBinder _binder;
     private readonly ClauseRendererRegistry _rendererRegistry;
-    private readonly SelectClauseRenderer _selectClauseRenderer;
-    private readonly WhereClauseRenderer _whereClauseRenderer;
-    private readonly FromClauseRenderer _fromClauseRenderer;
 
     public SqlCompiler(
-        IIdentifierQuoter quoter,
-        IParameterPlaceholderFactory placeholders,
         IValueBinder binder,
-        SelectClauseRenderer selectClauseRenderer,
-        WhereClauseRenderer whereClauseRenderer,
-        FromClauseRenderer fromClauseRenderer)
+        ClauseRendererRegistry rendererRegistry)
     {
-        _quoter = quoter ?? throw new ArgumentNullException(nameof(quoter));
-        _placeholders = placeholders ?? throw new ArgumentNullException(nameof(placeholders));
         _binder = binder ?? throw new ArgumentNullException(nameof(binder));
-
-        _rendererRegistry = new ClauseRendererRegistry(
-        [
-            _selectClauseRenderer =  selectClauseRenderer ,
-            _fromClauseRenderer = fromClauseRenderer ,
-            _whereClauseRenderer = whereClauseRenderer
-        ]);
+        _rendererRegistry = rendererRegistry ?? throw new ArgumentNullException(nameof(rendererRegistry));
     }
 
     public CompiledQuery Compile(Query query)
@@ -58,12 +41,8 @@ public sealed class SqlCompiler : ICompiler
         {
             var renderer = _rendererRegistry.GetRenderer(clause);
 
-            var output = renderer.Render(
-                clause,
-                _quoter,
-                _placeholders,
-                bindings);
-            
+            var output = renderer.Render(clause, bindings);
+
             bindings = output.Bindings;
 
             if (!string.IsNullOrWhiteSpace(output.Sql))
