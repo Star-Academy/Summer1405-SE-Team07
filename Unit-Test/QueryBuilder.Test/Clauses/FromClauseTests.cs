@@ -1,29 +1,18 @@
 using FluentAssertions;
-using NSubstitute;
 using QueryLib.Clauses;
-using QueryLib.Dialects.Abstractions;
 
 namespace QueryBuilder.Test.Clauses;
 
 public class FromClauseTests
 {
-    private readonly IIdentifierQuoter _quoter;
-    private readonly IParameterPlaceholderFactory _placeholders;
-    private readonly FromClause _sut;
-
-    public FromClauseTests()
-    {
-        _quoter = Substitute.For<IIdentifierQuoter>();
-        _placeholders = Substitute.For<IParameterPlaceholderFactory>();
-        _sut = new FromClause();
-    }
+    private readonly FromClause _sut = new();
 
     [Fact]
     public void SetTable_ShouldThrowArgumentException_WhenTableNameIsWhitespace()
     {
         // Arrange
         const string table = " ";
-        var expected = "table" ;
+        const string expected = "table";
 
         // Act
         var act = () => _sut.SetTable(table);
@@ -33,34 +22,39 @@ public class FromClauseTests
     }
 
     [Fact]
-    public void Render_ShouldThrowInvalidOperationException_WhenTableIsNotSet()
+    public void Table_ShouldThrowInvalidOperationException_WhenTableIsNotSet()
     {
         // Arrange
-        var clause = new FromClause();
-        var expected = "From(...) must be called before compiling the query." ;
+        const string expected = "From(...) must be called before compiling the query.";
 
         // Act
-        var act = () => clause.Render(
-            _quoter,
-            _placeholders,
-            Array.Empty<object?>());
+        var act = () => _sut.Table;
 
         // Assert
         act.Should().Throw<InvalidOperationException>().WithMessage(expected);
     }
 
     [Fact]
-    public void Render_ShouldReturnQuotedTableName_WhenTableIsSet()
+    public void Table_ShouldReturnSetValue_WhenSetTableWasCalled()
     {
         // Arrange
         _sut.SetTable("student");
-        _quoter.Quote("student").Returns("\"student\"");
-        var expected = "FROM \"student\"";
 
         // Act
-        var output = _sut.Render(_quoter, _placeholders, Array.Empty<object?>());
+        var table = _sut.Table;
 
         // Assert
-        output.Sql.Should().Be(expected);
+        table.Should().Be("student");
+    }
+
+    [Fact]
+    public void Order_ShouldBe10()
+    {
+        // Arrange
+
+        // Act
+        
+        // Assert
+        _sut.Order.Should().Be(10);
     }
 }

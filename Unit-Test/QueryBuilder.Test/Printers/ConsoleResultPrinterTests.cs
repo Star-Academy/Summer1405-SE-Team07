@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using QueryLib.Demo.Printers;
+using QueryLib.Demo;
 
 namespace QueryBuilder.Test.Printers;
 
