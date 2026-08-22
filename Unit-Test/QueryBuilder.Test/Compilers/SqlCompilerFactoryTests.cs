@@ -1,73 +1,39 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using QueryLib.Compilers;
+using QueryLib.Compilers.Abstractions;
 
-namespace QueryLib.Tests.Compilers;
+namespace QueryBuilder.Test.Compilers;
 
 public class SqlCompilerFactoryTests
 {
-    private readonly SqlCompilerFactory _sut;
-
-    public SqlCompilerFactoryTests()
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenProviderIsNull()
     {
-        _sut = new SqlCompilerFactory();
+        // Arrange
+
+        // Act
+        var act = () => new SqlCompilerFactory(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("provider");
     }
 
     [Fact]
-    public void Create_ShouldReturnPostgresCompiler_WhenCompilerTypeIsPostgres()
+    public void Create_ShouldReturnKeyedCompiler_WhenKeyIsRegistered()
     {
         // Arrange
-        const string compilerType = "postgres";
-        var query = new Query()
-            .From("student")
-            .Select("id", "name")
-            .Where("id", 10);
-        var expected = new CompiledQuery("SELECT \"id\", \"name\" FROM \"student\" WHERE \"id\" = $1" ,
-            new object?[] { 10 });  
-        
-        // Act
-        var compiler = _sut.Create(compilerType);
-        var result = compiler.Compile(query);
-
-        // Assert
-        result.Should().BeEquivalentTo(expected);
-    }
-
-    [Fact]
-    public void Create_ShouldReturnSqlServerCompiler_WhenCompilerTypeIsSqlServer()
-    {
-        // Arrange
-        const string compilerType = "sqlserver";
-        var query = new Query()
-            .From("student")
-            .Select("id", "name")
-            .Where("id", 10);
-        var expected = new CompiledQuery("SELECT [id], [name] FROM [student] WHERE [id] = @p0" ,
-            new object?[] { 10 });  
-        
-        //Act
-        var compiler = _sut.Create(compilerType);
-        var result = compiler.Compile(query);
-        
-        // Assert
-        result.Should().BeEquivalentTo(expected);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    [InlineData("mysql")]
-    [InlineData("oracle")]
-    [InlineData("unknown")]
-    public void Create_ShouldThrowNotImplementedException_WhenCompilerTypeIsUnsupported(
-        string? compilerType)
-    {
-        // Arrange
-        var unsupportedCompilerType = compilerType!;
+        var expectedCompiler = Substitute.For<ICompiler>();
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton("postgres", expectedCompiler);
+        var provider = services.BuildServiceProvider();
+        var sut = new SqlCompilerFactory(provider);
 
         // Act
-        var act = () => _sut.Create(unsupportedCompilerType);
+        var result = sut.Create("postgres");
 
         // Assert
-        act.Should().Throw<NotImplementedException>();
+        result.Should().BeSameAs(expectedCompiler);
     }
 }

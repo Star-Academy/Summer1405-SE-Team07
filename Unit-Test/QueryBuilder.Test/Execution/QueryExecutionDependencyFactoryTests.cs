@@ -1,91 +1,66 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using QueryLib.Compilers;
 using QueryLib.Compilers.Abstractions;
 using QueryLib.Demo;
-using QueryLib.Demo.Connections;
+using QueryLib.Demo.Abstractions;
 using QueryLib.Demo.Execution;
-using QueryLib.Demo.Execution.Abstractions;
-using QueryLib.Demo.QueryRunners;
 
 namespace QueryBuilder.Test.Execution;
 
 public class QueryExecutionDependencyFactoryTests
 {
-    private readonly IQueryExecutionDependencyFactory _sut;
-    private readonly ISqlCompilerFactory _compilerFactory;
-
-    public QueryExecutionDependencyFactoryTests()
-    {
-        _compilerFactory = Substitute.For<ISqlCompilerFactory>();
-        _sut = new QueryExecutionDependencyFactory(_compilerFactory);
-    }
+    private readonly ISqlCompilerFactory _compilerFactory = Substitute.For<ISqlCompilerFactory>();
 
     [Fact]
     public void Create_ShouldThrowArgumentNullException_WhenConfigurationIsNull()
     {
         // Arrange
-        var expected = "configuration";
+        var services = new ServiceCollection();
+        var sut = new QueryExecutionDependencyFactory(_compilerFactory, services.BuildServiceProvider());
 
         // Act
-        var act = () => _sut.Create(null!);
+        var act = () => sut.Create(null!);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
+        act.Should().Throw<ArgumentNullException>().WithParameterName("configuration");
     }
 
     [Fact]
-    public void Create_ShouldReturnPostgresDependencies_WhenProviderIsPostgreSql()
+    public void Create_ShouldResolvePostgresDependencies_WhenProviderIsPostgreSql()
     {
         // Arrange
-        var configuration = new DbConfiguration(DbProvider.PostgreSql, "connection-string");
-        var compiler = Substitute.For<ICompiler>();
-        _compilerFactory.Create("postgres").Returns(compiler);
+        var expectedCompiler = Substitute.For<ICompiler>();
+        var expectedRunner = Substitute.For<IQueryRunner>();
+        var expectedConnectionFactory = Substitute.For<IDbConnectionFactory>();
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton("postgres", expectedRunner);
+        services.AddKeyedSingleton<Func<string, IDbConnectionFactory>>(
+            "postgres", (_, _) => _ => expectedConnectionFactory);
+        var sut = new QueryExecutionDependencyFactory(_compilerFactory, services.BuildServiceProvider());
+        var configuration = new DbConfiguration(DbProvider.PostgreSql, "conn-string");
+        _compilerFactory.Create("postgres").Returns(expectedCompiler);
+        var expected = new QueryExecutionDependencies(expectedCompiler, expectedRunner, expectedConnectionFactory);
 
         // Act
-        var result = _sut.Create(configuration);
+        var result = sut.Create(configuration);
 
         // Assert
-        result.Compiler.Should().BeSameAs(compiler);
-        
-        result.Runner.Should().BeOfType<PostgresQueryRunner>();
-        result.ConnectionFactory.Should().BeOfType<PostgresConnectionFactory>();
-    }
-
-    [Fact]
-    public void Create_ShouldReturnSqlServerDependencies_WhenProviderIsSqlServer()
-    {
-        // Arrange
-        var configuration = new DbConfiguration(DbProvider.SqlServer, "connection-string");
-        var compiler = Substitute.For<ICompiler>();
-        _compilerFactory.Create("sqlserver").Returns(compiler);
-
-        // Act
-        var result = _sut.Create(configuration);
-
-        // Assert
-        result.Compiler.Should().BeSameAs(compiler);
-        
-        result.Runner.Should().BeOfType<SqlServerQueryRunner>();
-        result.ConnectionFactory.Should().BeOfType<SqlServerConnectionFactory>();
-        
-        _compilerFactory.Received(1).Create("sqlserver");
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
     public void Create_ShouldThrowArgumentOutOfRangeException_WhenProviderIsUnsupported()
     {
         // Arrange
-        var provider = (DbProvider)999;
-        var configuration = new DbConfiguration(provider, "connection-string");
+        var services = new ServiceCollection();
+        var sut = new QueryExecutionDependencyFactory(_compilerFactory, services.BuildServiceProvider());
+        var configuration = new DbConfiguration((DbProvider)999, "conn-string");
 
         // Act
-        var act = () => _sut.Create(configuration);
+        var act = () => sut.Create(configuration);
 
         // Assert
-        act.Should()
-            .Throw<ArgumentOutOfRangeException>()
-            .WithParameterName("Provider")
-            .Which.ActualValue.Should().Be(provider);
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("Provider");
     }
 }

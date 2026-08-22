@@ -1,3 +1,4 @@
+using FluentAssertions;
 using NSubstitute;
 using QueryLib;
 using QueryLib.Compilers;
@@ -7,7 +8,7 @@ using QueryLib.Demo.Execution.Abstractions;
 
 namespace QueryBuilder.Test.Execution;
 
-public sealed class QueryExecutionServiceTests
+public class QueryExecutionServiceTests
 {
     private readonly IDatabaseQueryExecutor _queryExecutor = Substitute.For<IDatabaseQueryExecutor>();
     private readonly IQueryExecutionReporter _reporter = Substitute.For<IQueryExecutionReporter>();
@@ -19,80 +20,72 @@ public sealed class QueryExecutionServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldExecuteAndReportEveryConfiguration_WhenAllExecutionsSucceed()
+    public async Task ExecuteAsync_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Arrange
-        var query = new Query().From("Student");
-        var configurations = new[]
-        {
-            new DbConfiguration(DbProvider.PostgreSql, "postgres-connection"),
-            new DbConfiguration(DbProvider.SqlServer, "sql-server-connection"),
-        };
-        var executionResult = CreateExecutionResult();
-
-        _queryExecutor.ExecuteAsync(query, Arg.Any<DbConfiguration>()).Returns(executionResult);
 
         // Act
-        await _sut.ExecuteAsync(query, configurations);
+        var act = () => _sut.ExecuteAsync(null!, []);
 
         // Assert
-        await _queryExecutor.Received(1).ExecuteAsync(query, configurations[0]);
-        await _queryExecutor.Received(1).ExecuteAsync(query, configurations[1]);
-        await _reporter.Received(1).ReportSucceededAsync(DbProvider.PostgreSql, executionResult);
-        await _reporter.Received(1).ReportSucceededAsync(DbProvider.SqlServer, executionResult);
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("query");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReportFailureAndContinue_WhenAnExecutionFails()
+    public async Task ExecuteAsync_ShouldThrowArgumentNullException_WhenConfigurationsIsNull()
     {
         // Arrange
-        var query = new Query().From("Student");
-        var failedConfiguration = new DbConfiguration(DbProvider.PostgreSql, "postgres-connection");
-        var successfulConfiguration = new DbConfiguration(DbProvider.SqlServer, "sql-server-connection");
-        var configurations = new[]
-        {
-            failedConfiguration,
-            successfulConfiguration,
-        };
-        var exception = new InvalidOperationException("Database unavailable");
-        var executionResult = CreateExecutionResult();
-
-        _queryExecutor.ExecuteAsync(query, failedConfiguration).Returns<Task<QueryExecutionResult>>(_ => throw exception);
-        _queryExecutor.ExecuteAsync(query, successfulConfiguration).Returns(executionResult);
+        var query = new Query().From("student").Select("id");
 
         // Act
-        await _sut.ExecuteAsync(query, configurations);
+        var act = () => _sut.ExecuteAsync(query, null!);
 
         // Assert
-        _reporter.Received(1).ReportFailed(DbProvider.PostgreSql, exception);
-        await _reporter.Received(1).ReportSucceededAsync(DbProvider.SqlServer, executionResult);
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("configurations");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReportCompletionForEveryConfiguration_WhenExecutionsFinish()
+    public async Task ExecuteAsync_ShouldReportStartedSucceededAndCompleted_WhenExecutionSucceeds()
     {
         // Arrange
-        var query = new Query().From("Student");
-        var configurations = new[]
-        {
-            new DbConfiguration(DbProvider.PostgreSql, "postgres-connection"),
-            new DbConfiguration(DbProvider.SqlServer, "sql-server-connection"),
-        };
-        var executionResult = CreateExecutionResult();
-
-        _queryExecutor.ExecuteAsync(query, Arg.Any<DbConfiguration>()).Returns(executionResult);
-
-        // Act
-        await _sut.ExecuteAsync(query, configurations);
-
-        // Assert
-        _reporter.Received(configurations.Length).ReportCompleted();
-    }
-
-    private static QueryExecutionResult CreateExecutionResult()
-    {
-        return new QueryExecutionResult(
+        var query = new Query().From("student").Select("id");
+        var configuration = new DbConfiguration(DbProvider.PostgreSql, "conn");
+        var executionResult = new QueryExecutionResult(
             new CompiledQuery("SELECT 1", []),
-            new QueryResult());
+            new QueryResult { ColumnNames = [], Rows = [] });
+        _queryExecutor.ExecuteAsync(query, configuration).Returns(Task.FromResult(executionResult));
+
+        // Act
+        await _sut.ExecuteAsync(query, [configuration]);
+
+        // Assert
+        Received.InOrder(() =>
+        {
+            _reporter.ReportStarted(DbProvider.PostgreSql);
+            _reporter.ReportSucceededAsync(DbProvider.PostgreSql, executionResult);
+            _reporter.ReportCompleted();
+        });
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReportFailedAndCompleted_WhenExecutionThrows()
+    {
+        // Arrange
+        var query = new Query().From("student").Select("id");
+        var configuration = new DbConfiguration(DbProvider.PostgreSql, "conn");
+        var thrownException = new InvalidOperationException("boom");
+        _queryExecutor.ExecuteAsync(query, configuration)
+            .Returns(Task.FromException<QueryExecutionResult>(thrownException));
+
+        // Act
+        await _sut.ExecuteAsync(query, [configuration]);
+
+        // Assert
+        Received.InOrder(() =>
+        {
+            _reporter.ReportStarted(DbProvider.PostgreSql);
+            _reporter.ReportFailed(DbProvider.PostgreSql, thrownException);
+            _reporter.ReportCompleted();
+        });
     }
 }

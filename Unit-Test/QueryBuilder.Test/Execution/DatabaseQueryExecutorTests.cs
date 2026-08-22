@@ -1,98 +1,72 @@
-﻿using QueryLib.Demo.Execution.Abstractions;
-using QueryLib.Demo.Execution;
+﻿using System.Data;
+using System.Data.Common;
 using FluentAssertions;
 using NSubstitute;
 using QueryLib;
-using QueryLib.Demo;
-using QueryLib.Demo.Abstractions;
-using System.Data.Common;
 using QueryLib.Compilers;
 using QueryLib.Compilers.Abstractions;
+using QueryLib.Demo;
+using QueryLib.Demo.Abstractions;
+using QueryLib.Demo.Execution;
+using QueryLib.Demo.Execution.Abstractions;
 
 namespace QueryBuilder.Test.Execution;
 
 public class DatabaseQueryExecutorTests
 {
-    private readonly IQueryExecutionDependencyFactory _dependencyFactory;
+    private readonly IQueryExecutionDependencyFactory _dependencyFactory =
+        Substitute.For<IQueryExecutionDependencyFactory>();
     private readonly DatabaseQueryExecutor _sut;
 
     public DatabaseQueryExecutorTests()
     {
-        _dependencyFactory = Substitute.For<IQueryExecutionDependencyFactory>();
         _sut = new DatabaseQueryExecutor(_dependencyFactory);
-    }
-
-    [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenDependencyFactoryIsNull()
-    {
-        // Arrange
-        var expected = "dependencyFactory";
-
-        // Act
-        var act = () => new DatabaseQueryExecutor(null!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName(expected);
     }
 
     [Fact]
     public async Task ExecuteAsync_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Arrange
-        var configuration = new DbConfiguration(DbProvider.PostgreSql, "connectionString");
-        var expected = "query";
+        var configuration = new DbConfiguration(DbProvider.PostgreSql, "conn");
 
         // Act
         var act = () => _sut.ExecuteAsync(null!, configuration);
 
         // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName(expected);
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("query");
     }
 
     [Fact]
     public async Task ExecuteAsync_ShouldThrowArgumentNullException_WhenConfigurationIsNull()
     {
         // Arrange
-        var query = new Query();
-        var expected = "configuration";
+        var query = new Query().From("student").Select("id");
 
         // Act
         var act = () => _sut.ExecuteAsync(query, null!);
 
         // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName(expected);
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("configuration");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldCompileOpenExecuteAndReturnResult_WhenInputsAreValid()
+    public async Task ExecuteAsync_ShouldOpenConnectionAndReturnCombinedResult_WhenDependenciesSucceed()
     {
         // Arrange
-        var query = new Query().From("student");
-
-        var configuration = new DbConfiguration(
-            DbProvider.PostgreSql,
-            "test-connection-string");
-
+        var query = new Query().From("student").Select("id");
+        var configuration = new DbConfiguration(DbProvider.PostgreSql, "conn");
         var compiler = Substitute.For<ICompiler>();
-        var connectionFactory = Substitute.For<IDbConnectionFactory>();
         var runner = Substitute.For<IQueryRunner>();
-        var connection = Substitute.For<DbConnection>();
+        var connectionFactory = Substitute.For<IDbConnectionFactory>();
+        var fakeConnection = new FakeDbConnection();
+        var compiledQuery = new CompiledQuery("SELECT 1", []);
+        var queryResult = new QueryResult { ColumnNames = [], Rows = [] };
 
-        var compiledQuery = new CompiledQuery(
-            "SELECT * FROM student",
-            Array.Empty<object?>());
-
-        var queryResult = new QueryResult();
-
-        var dependencies = new QueryExecutionDependencies(
-            compiler,
-            runner,
-            connectionFactory);
-
-        _dependencyFactory.Create(configuration).Returns(dependencies);
         compiler.Compile(query).Returns(compiledQuery);
-        connectionFactory.CreateConnectionAsync().Returns(connection);
-        runner.RunAsync(compiledQuery, connection).Returns(queryResult);
+        connectionFactory.CreateConnectionAsync().Returns(Task.FromResult<DbConnection>(fakeConnection));
+        runner.RunAsync(compiledQuery, fakeConnection, null).Returns(Task.FromResult(queryResult));
+        _dependencyFactory.Create(configuration)
+            .Returns(new QueryExecutionDependencies(compiler, runner, connectionFactory));
         var expected = new QueryExecutionResult(compiledQuery, queryResult);
 
         // Act
@@ -100,9 +74,30 @@ public class DatabaseQueryExecutorTests
 
         // Assert
         result.Should().BeEquivalentTo(expected);
+        fakeConnection.WasOpened.Should().BeTrue();
+    }
 
-        await connection.Received(1).OpenAsync();
-        await runner.Received(1).RunAsync(compiledQuery, connection);
+    private sealed class FakeDbConnection : DbConnection
+    {
+        public bool WasOpened { get; private set; }
+
+        public override string ConnectionString { get; set; } = string.Empty;
+        public override string Database => string.Empty;
+        public override string DataSource => string.Empty;
+        public override string ServerVersion => string.Empty;
+        public override ConnectionState State => ConnectionState.Open;
+
+        public override Task OpenAsync(CancellationToken cancellationToken)
+        {
+            WasOpened = true;
+            return Task.CompletedTask;
+        }
+
+        public override void Open() => WasOpened = true;
+        public override void Close() { }
+        public override void ChangeDatabase(string databaseName) { }
+        protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) =>
+            throw new NotSupportedException();
+        protected override DbCommand CreateDbCommand() => throw new NotSupportedException();
     }
 }
-

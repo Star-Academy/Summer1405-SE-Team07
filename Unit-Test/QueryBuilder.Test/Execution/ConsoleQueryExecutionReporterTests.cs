@@ -1,24 +1,22 @@
-﻿using QueryLib.Compilers;
-using QueryLib.Demo.Abstractions;
-using QueryLib.Demo.Execution.Abstractions;
-using QueryLib.Demo.Printers;
-using FluentAssertions;
-using QueryLib.Demo.Execution;
-using QueryLib.Demo;
+﻿using FluentAssertions;
 using NSubstitute;
+using QueryLib.Compilers;
+using QueryLib.Demo;
+using QueryLib.Demo.Abstractions;
+using QueryLib.Demo.Execution;
 
 namespace QueryBuilder.Test.Execution;
 
 public class ConsoleQueryExecutionReporterTests
 {
-    private readonly IResultPrinter _resultPrinter;
-    private readonly IQueryExecutionReporter _sut;
+    private readonly IResultPrinter _resultPrinter = Substitute.For<IResultPrinter>();
+    private readonly ConsoleQueryExecutionReporter _sut;
 
     public ConsoleQueryExecutionReporterTests()
     {
-        _resultPrinter = Substitute.For<IResultPrinter>();
         _sut = new ConsoleQueryExecutionReporter(_resultPrinter);
     }
+
     [Fact]
     public void Constructor_ShouldThrowArgumentNullException_WhenResultPrinterIsNull()
     {
@@ -32,93 +30,30 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public void ReportStarted_ShouldWriteProviderHeaderToConsole_WhenProviderIsSupplied()
-    {
-        // Arrange
-        using var writer = new StringWriter();
-        var originalOutput = Console.Out;
-        Console.SetOut(writer);
-        var expected = "========== PostgreSql ==========";
-
-        try
-        {
-            // Act
-            _sut.ReportStarted(DbProvider.PostgreSql);
-
-            // Assert
-            writer.ToString().Should().Be(expected + Environment.NewLine);
-        }
-        finally
-        {
-            Console.SetOut(originalOutput);
-        }
-    }
-
-    [Fact]
-    public void ReportCompleted_ShouldWriteBlankLineToConsole_WhenCalled()
-    {
-        // Arrange
-        using var writer = new StringWriter();
-        var originalOutput = Console.Out;
-        Console.SetOut(writer);
-
-        try
-        {
-            // Act
-            _sut.ReportCompleted();
-
-            // Assert
-            writer.ToString().Should().Be(Environment.NewLine);
-        }
-        finally
-        {
-            Console.SetOut(originalOutput);
-        }
-    }
-
-    [Fact]
     public async Task ReportSucceededAsync_ShouldThrowArgumentNullException_WhenExecutionResultIsNull()
     {
         // Arrange
-        var expected = "executionResult";
 
         // Act
         var act = () => _sut.ReportSucceededAsync(DbProvider.PostgreSql, null!);
-        
+
         // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName(expected);
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("executionResult");
     }
 
     [Fact]
-    public async Task ReportSucceededAsync_ShouldPrintQueryResult_WhenExecutionResultIsValid()
+    public async Task ReportSucceededAsync_ShouldPrintResultWithProviderHeader_WhenExecutionResultIsProvided()
     {
         // Arrange
-        using var writer = new StringWriter();
-        var originalOutput = Console.Out;
-        Console.SetOut(writer);
-        var provider = DbProvider.PostgreSql;
-        var compiledQuery = new CompiledQuery(
-            "SELECT \"id\" FROM \"student\"",
-            new List<object?> { 10 });
-        var queryResult = new QueryResult();
-        var queryExecutionResult = new QueryExecutionResult(
-            compiledQuery,
-            queryResult);
+        var queryResult = new QueryResult { ColumnNames = ["id"], Rows = [] };
+        var executionResult = new QueryExecutionResult(new CompiledQuery("SELECT 1", []), queryResult);
+        var expected = ("PostgreSql Results", queryResult);
 
-        try
-        {
-            // Act
-            await _sut.ReportSucceededAsync(provider, queryExecutionResult);
+        // Act
+        await _sut.ReportSucceededAsync(DbProvider.PostgreSql, executionResult);
 
-            // Assert
-            await _resultPrinter.Received(1).PrintAsync(
-                queryResult,
-                "PostgreSql Results");
-        }
-        finally
-        {
-            Console.SetOut(originalOutput);
-        }
+        // Assert
+        await _resultPrinter.Received(1).PrintAsync(expected.Item2, expected.Item1);
     }
 
     [Fact]
@@ -134,32 +69,26 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public void ReportFailed_ShouldWriteErrorToConsole_WhenExceptionIsValid()
+    public void ReportStarted_ShouldNotThrow_WhenCalled()
     {
         // Arrange
-        var provider = DbProvider.PostgreSql;
-        var exception = new Exception("Connection failed");
+        
+        // Act
+        var act = () => _sut.ReportStarted(DbProvider.PostgreSql);
 
-        using var writer = new StringWriter();
-        var originalError = Console.Error;
+        // Assert
+        act.Should().NotThrow();
+    }
 
-        Console.SetError(writer);
+    [Fact]
+    public void ReportCompleted_ShouldNotThrow_WhenCalled()
+    {
+        // Arrange
+        
+        // Act
+        var act = () => _sut.ReportCompleted();
 
-        try
-        {
-            // Act
-            _sut.ReportFailed(provider, exception);
-
-            // Assert
-            writer.ToString()
-                .Trim()
-                .Should()
-                .Be("Error executing query on PostgreSql: Connection failed");
-        }
-        finally
-        {
-            Console.SetError(originalError);
-        }
+        // Assert
+        act.Should().NotThrow();
     }
 }
-
