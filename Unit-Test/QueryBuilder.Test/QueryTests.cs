@@ -1,143 +1,125 @@
 using FluentAssertions;
-using NSubstitute;
 using QueryLib;
 using QueryLib.Clauses;
 using QueryLib.Clauses.Abstractions;
 
 namespace QueryBuilder.Test;
 
-public sealed class QueryTests
+public class QueryTests
 {
     private readonly Query _sut;
 
     public QueryTests()
     {
-        _sut = new Query();
+        _sut =  new Query();
     }
 
     [Fact]
-    public void Constructor_ShouldInitializeSelectAndFromClauses_WhenCalled()
+    public void Table_ShouldReturnSetTableName_WhenFromWasCalled()
     {
         // Arrange
-        const int expectedClauseCount = 2;
-
-        // Act
-        var query = new Query();
-
-        // Assert
-        query.Clauses.Should().HaveCount(expectedClauseCount);
-        query.Clauses.ElementAt(0).Should().BeOfType<SelectClause>();
-        query.Clauses.ElementAt(1).Should().BeOfType<FromClause>();
-        query.Columns.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void From_ShouldReplacePreviouslySelectedTable_WhenCalledMoreThanOnce()
-    {
-        // Arrange
-
-        // Act
         _sut.From("student");
-        _sut.From("teacher");
+
+        // Act
+        var table = _sut.Table;
 
         // Assert
-        _sut.Table.Should().Be("teacher");
+        table.Should().Be("student");
     }
 
     [Fact]
-    public void Select_ShouldAddColumnsAndReturnSameQuery_WhenColumnsAreProvided()
+    public void Columns_ShouldContainAddedColumns_WhenSelectIsCalledWithColumns()
     {
         // Arrange
-        var columns = new[] { "id", "name" };
+        _sut.Select("id", "name");
 
         // Act
-        var result = _sut.Select(columns);
+        var columns = _sut.Columns;
 
         // Assert
-        result.Should().BeSameAs(_sut);
-        _sut.Columns.Should().Equal("id", "name");
+        columns.Should().Equal("id", "name");
     }
 
     [Fact]
-    public void Select_ShouldAppendColumns_WhenCalledMoreThanOnce()
+    public void Columns_ShouldRemainEmpty_WhenSelectIsCalledWithNull()
     {
         // Arrange
+        _sut.Select(null);
 
         // Act
-        _sut.Select("id");
-        _sut.Select("name", "age");
+        var columns = _sut.Columns;
 
         // Assert
-        _sut.Columns.Should().Equal("id", "name", "age");
+        columns.Should().BeEmpty();
     }
 
     [Fact]
-    public void Select_ShouldIgnoreColumnsAndReturnSameQuery_WhenColumnsAreNull()
+    public void Clauses_ShouldContainSelectAndFromClause_WhenQueryIsConstructed()
     {
         // Arrange
+        var expected = new[] { typeof(SelectClause), typeof(FromClause) };
 
         // Act
-        var result = _sut.Select(null);
+        var clauseTypes = _sut.Clauses.Select(clause => clause.GetType());
 
         // Assert
-        result.Should().BeSameAs(_sut);
-        _sut.Columns.Should().BeEmpty();
+        clauseTypes.Should().Equal(expected);
     }
 
     [Fact]
-    public void Where_ShouldAddWhereClauseAndReturnSameQuery_WhenCalledForFirstCondition()
+    public void Where_ShouldAddSingleWhereClauseWithAllConditions_WhenCalledMultipleTimes()
     {
         // Arrange
-        const string column = "id";
-        const int value = 10;
+        _sut.Where("name", "kourosh").Where("age", 20);
 
         // Act
-        var result = _sut.Where(column, value);
+        var whereClause = (WhereClause)_sut.Clauses.Single(clause => clause is WhereClause);
 
         // Assert
-        result.Should().BeSameAs(_sut);
-        _sut.Clauses.Should().HaveCount(3);
-        _sut.Clauses.OfType<WhereClause>().Should().ContainSingle();
-    }
-
-    [Fact]
-    public void Where_ShouldReuseExistingWhereClause_WhenCalledMoreThanOnce()
-    {
-        // Arrange
-        _sut.Where("id", 10);
-
-        // Act
-        _sut.Where("name", "kourosh");
-
-        // Assert
-        _sut.Clauses.Should().HaveCount(3);
-        _sut.Clauses.OfType<WhereClause>().Should().ContainSingle();
-    }
-
-    [Fact]
-    public void AddClause_ShouldAddClauseAndReturnSameQuery_WhenClauseIsProvided()
-    {
-        // Arrange
-        var clause = Substitute.For<IQueryClause>();
-
-        // Act
-        var result = _sut.AddClause(clause);
-
-        // Assert
-        result.Should().BeSameAs(_sut);
-        _sut.Clauses.Should().Contain(clause);
+        whereClause.Conditions.Should()
+            .BeEquivalentTo(new[]
+            {
+                new Condition { Column = "name", Value = "kourosh" },
+                new Condition { Column = "age", Value = 20 }
+            });
     }
 
     [Fact]
     public void AddClause_ShouldThrowArgumentNullException_WhenClauseIsNull()
     {
         // Arrange
+        IQueryClause? clause = null;
 
         // Act
-        var act = () => _sut.AddClause(null!);
+        var act = () => _sut.AddClause(clause!);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("clause");
+        act.Should().Throw<ArgumentNullException>().WithParameterName("clause");
+    }
+
+    [Fact]
+    public void AddClause_ShouldAppendClauseToClauses_WhenClauseIsProvided()
+    {
+        // Arrange
+        var customClause = new FromClause();
+
+        // Act
+        _sut.AddClause(customClause);
+
+        // Assert
+        _sut.Clauses.Should().Contain(customClause);
+    }
+
+    [Fact]
+    public void From_Select_Where_ShouldReturnSameInstance_ForFluentChaining()
+    {
+        // Arrange
+        var expected = _sut;
+
+        // Act
+        var result = _sut.From("student").Select("id").Where("id", 1);
+
+        // Assert
+        result.Should().BeSameAs(expected);
     }
 }

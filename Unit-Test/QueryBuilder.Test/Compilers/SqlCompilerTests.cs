@@ -42,12 +42,18 @@ public class SqlCompilerTests
         // Arrange
         var query = new Query().From("student").Select("id");
         _selectRenderer.Render(Arg.Any<IQueryClause>(), Arg.Any<IReadOnlyCollection<object?>>())
-            .Returns(new RenderOutput("SELECT *", new object?[] { "raw" }));
+            .Returns(new RenderOutput("SELECT *", new object?[] { "raw-select" }));
         _fromRenderer.Render(Arg.Any<IQueryClause>(), Arg.Any<IReadOnlyCollection<object?>>())
-            .Returns(new RenderOutput("FROM \"student\"", new object?[] { "raw" }));
-        _binder.Bind("raw").Returns("bound");
+            .Returns(callInfo =>
+            {
+                var incomingBindings = callInfo.ArgAt<IReadOnlyCollection<object?>>(1);
+                var combined = incomingBindings.Append("raw-from").ToArray();
+                return new RenderOutput("FROM \"student\"", combined);
+            });
+        _binder.Bind("raw-select").Returns("bound-select");
+        _binder.Bind("raw-from").Returns("bound-from");
         var sut = new SqlCompiler(_binder, new ClauseRendererRegistry([_selectRenderer, _fromRenderer]));
-        var expected = new CompiledQuery("SELECT * FROM \"student\"", new object?[] { "bound", "bound" });
+        var expected = new CompiledQuery("SELECT * FROM \"student\"", new object?[] { "bound-select", "bound-from" });
 
         // Act
         var result = sut.Compile(query);

@@ -1,43 +1,65 @@
 ﻿using FluentAssertions;
-using QueryLib.Demo.Printers;
 using QueryLib.Demo;
+using QueryLib.Demo.Printers;
 
 namespace QueryBuilder.Test.Printers;
 
 public class ConsoleResultPrinterTests
 {
-    [Fact]
-    public async Task PrintAsync_WhenRowsAreEmpty_ShouldComplete()
+    private readonly ConsoleResultPrinter _sut;
+    
+    public ConsoleResultPrinterTests()
     {
-        // Arrange
-        var printer = new ConsoleResultPrinter();
-        var result = new QueryResult();
-
-        // Act
-        var act = () => printer.PrintAsync(result, "Test");
-
-        // Assert
-        await act.Should().NotThrowAsync();
+        _sut = new ConsoleResultPrinter();
     }
 
     [Fact]
-    public async Task PrintAsync_WhenRowContainsValues_ShouldPrintSuccessfully()
+    public async Task PrintAsync_ShouldWriteHeaderAndRowValuesWithNullAsNULL_WhenResultHasRows()
     {
         // Arrange
-        var printer = new ConsoleResultPrinter();
-        var result = new QueryResult();
-
-        result.AddRow(new Dictionary<string, object?>
+        var result = new QueryResult
         {
-            ["Name"] = "Kourosh",
-            ["Age"] = 23,
-            ["Address"] = null
-        });
+            ColumnNames = ["id", "name"],
+            Rows =
+            [
+                new Dictionary<string, object?> { ["id"] = 1, ["name"] = "kourosh" },
+                new Dictionary<string, object?> { ["id"] = 2, ["name"] = null }
+            ]
+        };
+        var expected =
+            "--- Students ---" + Environment.NewLine +
+            "id=1, name=kourosh" + Environment.NewLine +
+            "id=2, name=NULL" + Environment.NewLine +
+            Environment.NewLine;
+
+        await using var writer = new StringWriter();
+        var originalOut = Console.Out;
+        Console.SetOut(writer);
 
         // Act
-        var act = () => printer.PrintAsync(result, "Test");
+        await _sut.PrintAsync(result, "Students");
+        Console.SetOut(originalOut);
 
         // Assert
-        await act.Should().NotThrowAsync();
+        writer.ToString().Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task PrintAsync_ShouldWriteOnlyHeader_WhenResultHasNoRows()
+    {
+        // Arrange
+        var result = new QueryResult { ColumnNames = [], Rows = [] };
+        var expected = "--- Empty ---" + Environment.NewLine + Environment.NewLine;
+
+        await using var writer = new StringWriter();
+        var originalOut = Console.Out;
+        Console.SetOut(writer);
+
+        // Act
+        await _sut.PrintAsync(result, "Empty");
+        Console.SetOut(originalOut);
+
+        // Assert
+        writer.ToString().Should().Be(expected);
     }
 }

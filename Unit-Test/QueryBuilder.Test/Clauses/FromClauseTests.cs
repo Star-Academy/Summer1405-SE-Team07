@@ -5,8 +5,13 @@ namespace QueryBuilder.Test.Clauses;
 
 public class FromClauseTests
 {
-    private readonly FromClause _sut = new();
+    private readonly FromClause _sut;
 
+    public FromClauseTests()
+    {
+        _sut =  new FromClause();
+    }
+        
     [Fact]
     public void SetTable_ShouldThrowArgumentException_WhenTableNameIsWhitespace()
     {
