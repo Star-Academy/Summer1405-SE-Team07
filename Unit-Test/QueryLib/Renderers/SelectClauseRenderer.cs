@@ -14,7 +14,7 @@ public sealed class SelectClauseRenderer : IClauseRenderer
         _quoter = quoter ?? throw new ArgumentNullException(nameof(quoter));
     }
 
-    public Type ClauseType => typeof(SelectClause);
+    public ClauseKind ClauseKind => ClauseKind.Select;
 
     public RenderOutput Render(IQueryClause clause)
     {

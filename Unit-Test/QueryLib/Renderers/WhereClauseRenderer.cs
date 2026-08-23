@@ -16,7 +16,7 @@ public sealed class WhereClauseRenderer : IClauseRenderer
         _placeholders = placeholders ?? throw new ArgumentNullException(nameof(placeholders));
     }
 
-    public Type ClauseType => typeof(WhereClause);
+    public ClauseKind ClauseKind => ClauseKind.Where;
 
     public RenderOutput Render(IQueryClause clause)
     {

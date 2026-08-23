@@ -4,7 +4,7 @@ namespace QueryLib.Renderers.Abstractions;
 
 public interface IClauseRenderer
 {
-    Type ClauseType { get; }
+    ClauseKind ClauseKind { get; }
 
     RenderOutput Render(IQueryClause clause);
 }

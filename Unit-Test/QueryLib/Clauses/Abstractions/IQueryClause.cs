@@ -3,4 +3,5 @@
 public interface IQueryClause
 {
     int Order { get; }
+    ClauseKind Kind { get; }
 }

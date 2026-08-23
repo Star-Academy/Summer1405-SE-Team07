@@ -5,8 +5,8 @@ namespace QueryLib.Clauses;
 public sealed class FromClause : IQueryClause
 {
     private string? _table;
-
     public int Order => 10;
+    public ClauseKind Kind => ClauseKind.From;
 
     public string Table => _table
                            ?? throw new InvalidOperationException(
