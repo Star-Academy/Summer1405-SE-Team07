@@ -7,9 +7,10 @@ public sealed class Query
 {
     private readonly List<string> _columns = [];
     private readonly List<Condition> _conditions = [];
-
-    private readonly SelectClause _selectClause;
-    private readonly FromClause _fromClause;
+    private readonly string _table;
+    
+    private SelectClause _selectClause;
+    private FromClause _fromClause;
     private WhereClause? _whereClause;
 
     private readonly List<IQueryClause> _clauses = [];
@@ -18,8 +19,6 @@ public sealed class Query
     {
         _selectClause = new SelectClause { Columns = _columns };
 
-        _fromClause = new FromClause();
-
         _clauses.Add(_selectClause);
         _clauses.Add(_fromClause);
     }
@@ -27,15 +26,13 @@ public sealed class Query
     public string Table => _fromClause.Table;
 
     public IReadOnlyCollection<string> Columns => _columns;
-
     public IReadOnlyCollection<IQueryClause> Clauses => _clauses;
 
     public Query From(string table)
     {
-        _fromClause.SetTable(table);
+        _fromClause = new FromClause { Table = table };
         return this;
     }
-
     
     public Query Select(params string[]? columns)
     {

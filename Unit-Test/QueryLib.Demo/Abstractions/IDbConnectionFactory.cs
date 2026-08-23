@@ -4,5 +4,5 @@ namespace QueryLib.Demo.Abstractions;
 
 public interface IDbConnectionFactoryProvider
 {
-    DbConnection CreateConnection(string connectionString);
+    DbConnection CreateConnection(DbConfiguration configuration);
 }

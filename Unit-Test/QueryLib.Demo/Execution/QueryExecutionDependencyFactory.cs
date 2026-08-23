@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Microsoft.Extensions.DependencyInjection;
 using QueryLib.Compilers.Abstractions;
 using QueryLib.Demo.Execution.Abstractions;
@@ -19,7 +20,7 @@ public sealed class QueryExecutionDependencyFactory : IQueryExecutionDependencyF
         _provider = provider ?? throw new ArgumentNullException(nameof(provider));
     }
 
-    public QueryExecutionDependencies Create(DbConfiguration configuration)
+    public DbConnection Create(DbConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
@@ -36,10 +37,8 @@ public sealed class QueryExecutionDependencyFactory : IQueryExecutionDependencyF
         var runner = _provider.GetRequiredKeyedService<IQueryRunner>(key);
 
         var connectionFactoryProvider = _provider.GetRequiredKeyedService<IDbConnectionFactoryProvider>(key);
-        var connection = connectionFactoryProvider.CreateConnection(configuration.ConnectionString);
-
-       
-
-        return new QueryExecutionDependencies(runner, connection);
+        var connection = connectionFactoryProvider.CreateConnection(configuration);
+        
+        return connection;
     }
 }

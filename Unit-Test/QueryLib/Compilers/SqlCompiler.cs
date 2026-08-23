@@ -11,7 +11,7 @@ public sealed class SqlCompiler : ICompiler
 {
     private readonly IValueBinderFactory _valueBinderFactory;
     private readonly ClauseRendererRegistry _rendererRegistry;
-
+    
     public SqlCompiler(
         IValueBinderFactory valueBinderFactory,
         ClauseRendererRegistry rendererRegistry)
@@ -33,7 +33,7 @@ public sealed class SqlCompiler : ICompiler
         return new CompiledQuery(renderedQuery.Sql, boundValues);
     }
 
-    public DbProvider DbProvider => DbProvider.SqlServer;
+    public DbProvider dbprovider => DbProvider.SqlServer;
 
     private RenderOutput ClauseRender(IEnumerable<IQueryClause> clauses)
     {

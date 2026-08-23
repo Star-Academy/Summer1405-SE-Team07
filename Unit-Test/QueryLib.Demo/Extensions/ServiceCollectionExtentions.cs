@@ -41,18 +41,6 @@ public static class ServiceCollectionExtensions
         services.AddKeyedSingleton<IIdentifierQuoter, SqlServerIdentifierQuoter>("sqlserver");
         services.AddKeyedSingleton<IParameterPlaceholderFactory, SqlServerParameterPlaceholderFactory>("sqlserver");
         services.AddSingleton<IValueBinder, SqlServerValueBinder>();
-
-        // services.AddKeyedSingleton<ISqlDialect, PostgresDialect>("postgres", (sp, key) =>
-        //     new PostgresDialect(
-        //         sp.GetRequiredKeyedService<IIdentifierQuoter>("postgres"),
-        //         sp.GetRequiredKeyedService<IParameterPlaceholderFactory>("postgres"),
-        //         sp.GetRequiredKeyedService<IValueBinder>("postgres")));
-        //
-        // services.AddKeyedSingleton<ISqlDialect, SqlServerDialect>("sqlserver", (sp, key) =>
-        //     new SqlServerDialect(
-        //         sp.GetRequiredKeyedService<IIdentifierQuoter>("sqlserver"),
-        //         sp.GetRequiredKeyedService<IParameterPlaceholderFactory>("sqlserver"),
-        //         sp.GetRequiredKeyedService<IValueBinder>("sqlserver")));
     }
 
     private static void AddRenderers(IServiceCollection services)
@@ -91,12 +79,6 @@ public static class ServiceCollectionExtensions
 
     private static void AddConnectionFactories(IServiceCollection services)
     {
-        services.AddKeyedSingleton<Func<string, DbConnection>>("postgres",
-            (sp, key) => connectionString => new NpgsqlConnection(connectionString));
-
-        services.AddKeyedSingleton<Func<string, DbConnection>>("sqlserver",
-            (sp, key) => connectionString => new SqlConnection(connectionString));
-
         services.AddKeyedSingleton<IDbConnectionFactoryProvider>("postgres", (sp, key) =>
             new ConnectionFactoryProvider(
                 sp.GetRequiredKeyedService<Func<string, DbConnection>>("postgres")));
