@@ -1,6 +1,10 @@
-﻿namespace QueryLib.Dialects.Abstractions;
+﻿using QueryLib.Demo;
+
+namespace QueryLib.Dialects.Abstractions;
 
 public interface IValueBinder
 {
     object? Bind(object? value);
+
+    DbProvider DbType { get; }
 }

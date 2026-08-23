@@ -1,5 +1,7 @@
 using QueryLib.Clauses.Abstractions;
 using QueryLib.Compilers.Abstractions;
+using QueryLib.Demo;
+using QueryLib.Demo.Abstractions;
 using QueryLib.Dialects.Abstractions;
 using QueryLib.Renderers;
 
@@ -7,29 +9,31 @@ namespace QueryLib.Compilers;
 
 public sealed class SqlCompiler : ICompiler
 {
-    private readonly IValueBinder _binder;
+    private readonly IValueBinderFactory _valueBinderFactory;
     private readonly ClauseRendererRegistry _rendererRegistry;
 
     public SqlCompiler(
-        IValueBinder binder,
+        IValueBinderFactory valueBinderFactory,
         ClauseRendererRegistry rendererRegistry)
     {
-        _binder = binder ?? throw new ArgumentNullException(nameof(binder));
+        _valueBinderFactory = valueBinderFactory ?? throw new ArgumentNullException(nameof(valueBinderFactory));
         _rendererRegistry = rendererRegistry ?? throw new ArgumentNullException(nameof(rendererRegistry));
     }
 
-    public CompiledQuery Compile(Query query)
+    public CompiledQuery Compile(Query query, DbProvider dbProvider)
     {
         ArgumentNullException.ThrowIfNull(query);
 
         var renderedQuery = ClauseRender(query.Clauses);
 
         var boundValues = renderedQuery.Bindings
-            .Select(_binder.Bind)
+            .Select(_valueBinderFactory.GetBinder("postgres").Bind)
             .ToList();
 
         return new CompiledQuery(renderedQuery.Sql, boundValues);
     }
+
+    public DbProvider DbProvider => DbProvider.SqlServer;
 
     private RenderOutput ClauseRender(IEnumerable<IQueryClause> clauses)
     {

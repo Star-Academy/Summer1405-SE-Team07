@@ -38,14 +38,8 @@ public sealed class QueryExecutionDependencyFactory : IQueryExecutionDependencyF
         var connectionFactoryProvider = _provider.GetRequiredKeyedService<IDbConnectionFactoryProvider>(key);
         var connection = connectionFactoryProvider.CreateConnection(configuration.ConnectionString);
 
-        if (!_compilers.TryGetValue(configuration.Provider, out var compiler))
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(configuration.Provider),
-                configuration.Provider,
-                "Unsupported database provider.");
-        }
+       
 
-        return new QueryExecutionDependencies(compiler, runner, connection);
+        return new QueryExecutionDependencies(runner, connection);
     }
 }

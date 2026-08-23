@@ -36,23 +36,23 @@ public static class ServiceCollectionExtensions
     {
         services.AddKeyedSingleton<IIdentifierQuoter, PostgresIdentifierQuoter>("postgres");
         services.AddKeyedSingleton<IParameterPlaceholderFactory, PostgresParameterPlaceholderFactory>("postgres");
-        services.AddKeyedSingleton<IValueBinder, PassthroughValueBinder>("postgres");
-
+        services.AddSingleton<IValueBinder, PostgresValueBinder>();
+        services.AddSingleton<IValueBinderFactory, ValueBinderFactory>();
         services.AddKeyedSingleton<IIdentifierQuoter, SqlServerIdentifierQuoter>("sqlserver");
         services.AddKeyedSingleton<IParameterPlaceholderFactory, SqlServerParameterPlaceholderFactory>("sqlserver");
-        services.AddKeyedSingleton<IValueBinder, SqlServerBooleanAsIntValueBinder>("sqlserver");
+        services.AddSingleton<IValueBinder, SqlServerValueBinder>();
 
-        services.AddKeyedSingleton<ISqlDialect, PostgresDialect>("postgres", (sp, key) =>
-            new PostgresDialect(
-                sp.GetRequiredKeyedService<IIdentifierQuoter>("postgres"),
-                sp.GetRequiredKeyedService<IParameterPlaceholderFactory>("postgres"),
-                sp.GetRequiredKeyedService<IValueBinder>("postgres")));
-
-        services.AddKeyedSingleton<ISqlDialect, SqlServerDialect>("sqlserver", (sp, key) =>
-            new SqlServerDialect(
-                sp.GetRequiredKeyedService<IIdentifierQuoter>("sqlserver"),
-                sp.GetRequiredKeyedService<IParameterPlaceholderFactory>("sqlserver"),
-                sp.GetRequiredKeyedService<IValueBinder>("sqlserver")));
+        // services.AddKeyedSingleton<ISqlDialect, PostgresDialect>("postgres", (sp, key) =>
+        //     new PostgresDialect(
+        //         sp.GetRequiredKeyedService<IIdentifierQuoter>("postgres"),
+        //         sp.GetRequiredKeyedService<IParameterPlaceholderFactory>("postgres"),
+        //         sp.GetRequiredKeyedService<IValueBinder>("postgres")));
+        //
+        // services.AddKeyedSingleton<ISqlDialect, SqlServerDialect>("sqlserver", (sp, key) =>
+        //     new SqlServerDialect(
+        //         sp.GetRequiredKeyedService<IIdentifierQuoter>("sqlserver"),
+        //         sp.GetRequiredKeyedService<IParameterPlaceholderFactory>("sqlserver"),
+        //         sp.GetRequiredKeyedService<IValueBinder>("sqlserver")));
     }
 
     private static void AddRenderers(IServiceCollection services)
@@ -80,22 +80,7 @@ public static class ServiceCollectionExtensions
 
     private static void AddCompilers(IServiceCollection services)
     {
-        services.AddKeyedSingleton<ICompiler>("postgres", (sp, key) =>
-            new SqlCompiler(
-                sp.GetRequiredKeyedService<IValueBinder>("postgres"),
-                sp.GetRequiredKeyedService<ClauseRendererRegistry>("postgres")));
-
-        services.AddKeyedSingleton<ICompiler>("sqlserver", (sp, key) =>
-            new SqlCompiler(
-                sp.GetRequiredKeyedService<IValueBinder>("sqlserver"),
-                sp.GetRequiredKeyedService<ClauseRendererRegistry>("sqlserver")));
-
-        services.AddSingleton<IReadOnlyDictionary<DbProvider, ICompiler>>(sp =>
-            new Dictionary<DbProvider, ICompiler>
-            {
-                [DbProvider.PostgreSql] = sp.GetRequiredKeyedService<ICompiler>("postgres"),
-                [DbProvider.SqlServer]  = sp.GetRequiredKeyedService<ICompiler>("sqlserver"),
-            });
+        services.AddSingleton<ICompiler, SqlCompiler>();
     }
 
     private static void AddQueryRunners(IServiceCollection services)

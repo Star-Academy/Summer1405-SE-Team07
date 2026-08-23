@@ -7,6 +7,4 @@ using System.Data.Common;
 namespace QueryLib.Demo.Execution;
 
 public sealed record QueryExecutionDependencies(
-    ICompiler Compiler,
-    IQueryRunner Runner,
     DbConnection Connection);

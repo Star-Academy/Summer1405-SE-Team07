@@ -8,9 +8,7 @@ public sealed class FromClause : IQueryClause
     public int Order => 1;
     public ClauseKind Kind => ClauseKind.From;
 
-    public string Table => _table
-                           ?? throw new InvalidOperationException(
-                               "From(...) must be called before compiling the query.");
+    public string Table { get; init; }
 
     public void SetTable(string table)
     {

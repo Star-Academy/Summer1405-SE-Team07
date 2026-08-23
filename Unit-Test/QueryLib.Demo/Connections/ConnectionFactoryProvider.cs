@@ -12,5 +12,8 @@ public sealed class ConnectionFactoryProvider : IDbConnectionFactoryProvider
         _factory = factory ?? throw new ArgumentNullException(nameof(factory));
     }
 
-    public DbConnection CreateConnection(string connectionString) => _factory(connectionString);
+    public DbConnection CreateConnection(string connectionString)
+    {
+        
+    };
 }
