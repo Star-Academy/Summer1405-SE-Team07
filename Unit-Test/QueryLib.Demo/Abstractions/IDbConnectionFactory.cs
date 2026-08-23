@@ -1,7 +1,8 @@
 using System.Data.Common;
+
 namespace QueryLib.Demo.Abstractions;
 
-public interface IDbConnectionFactory
+public interface IDbConnectionFactoryProvider
 {
-    Task<DbConnection> CreateConnectionAsync();
+    DbConnection CreateConnection(string connectionString);
 }

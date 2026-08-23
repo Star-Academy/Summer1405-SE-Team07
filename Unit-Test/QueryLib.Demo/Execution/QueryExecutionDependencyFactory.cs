@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using QueryLib.Compilers.Abstractions;
-using QueryLib.Demo.Connections;
 using QueryLib.Demo.Execution.Abstractions;
 using QueryLib.Demo.QueryRunners;
 using QueryLib.Demo.Abstractions;
@@ -9,12 +8,14 @@ namespace QueryLib.Demo.Execution;
 
 public sealed class QueryExecutionDependencyFactory : IQueryExecutionDependencyFactory
 {
-    private readonly ISqlCompilerFactory _compilerFactory;
+    private readonly IReadOnlyDictionary<DbProvider, ICompiler> _compilers;
     private readonly IServiceProvider _provider;
 
-    public QueryExecutionDependencyFactory(ISqlCompilerFactory compilerFactory, IServiceProvider provider)
+    public QueryExecutionDependencyFactory(
+        IReadOnlyDictionary<DbProvider, ICompiler> compilers,
+        IServiceProvider provider)
     {
-        _compilerFactory = compilerFactory ?? throw new ArgumentNullException(nameof(compilerFactory));
+        _compilers = compilers ?? throw new ArgumentNullException(nameof(compilers));
         _provider = provider ?? throw new ArgumentNullException(nameof(provider));
     }
 
@@ -33,12 +34,18 @@ public sealed class QueryExecutionDependencyFactory : IQueryExecutionDependencyF
         };
 
         var runner = _provider.GetRequiredKeyedService<IQueryRunner>(key);
-        var connectionFactoryBuilder = _provider.GetRequiredKeyedService<Func<string, IDbConnectionFactory>>(key);
-        var connectionFactory = connectionFactoryBuilder(configuration.ConnectionString);
 
-        return new QueryExecutionDependencies(
-            _compilerFactory.Create(key),
-            runner,
-            connectionFactory);
+        var connectionFactoryProvider = _provider.GetRequiredKeyedService<IDbConnectionFactoryProvider>(key);
+        var connection = connectionFactoryProvider.CreateConnection(configuration.ConnectionString);
+
+        if (!_compilers.TryGetValue(configuration.Provider, out var compiler))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(configuration.Provider),
+                configuration.Provider,
+                "Unsupported database provider.");
+        }
+
+        return new QueryExecutionDependencies(compiler, runner, connection);
     }
 }

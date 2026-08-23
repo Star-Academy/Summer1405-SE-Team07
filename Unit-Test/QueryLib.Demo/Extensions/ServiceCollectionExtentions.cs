@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Data.Common;
+using Npgsql;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using QueryLib.Compilers;
 using QueryLib.Compilers.Abstractions;
 using QueryLib.Demo.Abstractions;
@@ -87,7 +90,12 @@ public static class ServiceCollectionExtensions
                 sp.GetRequiredKeyedService<IValueBinder>("sqlserver"),
                 sp.GetRequiredKeyedService<ClauseRendererRegistry>("sqlserver")));
 
-        services.AddSingleton<ISqlCompilerFactory, SqlCompilerFactory>();
+        services.AddSingleton<IReadOnlyDictionary<DbProvider, ICompiler>>(sp =>
+            new Dictionary<DbProvider, ICompiler>
+            {
+                [DbProvider.PostgreSql] = sp.GetRequiredKeyedService<ICompiler>("postgres"),
+                [DbProvider.SqlServer]  = sp.GetRequiredKeyedService<ICompiler>("sqlserver"),
+            });
     }
 
     private static void AddQueryRunners(IServiceCollection services)
@@ -98,11 +106,19 @@ public static class ServiceCollectionExtensions
 
     private static void AddConnectionFactories(IServiceCollection services)
     {
-        services.AddKeyedSingleton<Func<string, IDbConnectionFactory>>("postgres",
-            (sp, key) => connectionString => new PostgresConnectionFactory(connectionString));
+        services.AddKeyedSingleton<Func<string, DbConnection>>("postgres",
+            (sp, key) => connectionString => new NpgsqlConnection(connectionString));
 
-        services.AddKeyedSingleton<Func<string, IDbConnectionFactory>>("sqlserver",
-            (sp, key) => connectionString => new SqlServerConnectionFactory(connectionString));
+        services.AddKeyedSingleton<Func<string, DbConnection>>("sqlserver",
+            (sp, key) => connectionString => new SqlConnection(connectionString));
+
+        services.AddKeyedSingleton<IDbConnectionFactoryProvider>("postgres", (sp, key) =>
+            new ConnectionFactoryProvider(
+                sp.GetRequiredKeyedService<Func<string, DbConnection>>("postgres")));
+
+        services.AddKeyedSingleton<IDbConnectionFactoryProvider>("sqlserver", (sp, key) =>
+            new ConnectionFactoryProvider(
+                sp.GetRequiredKeyedService<Func<string, DbConnection>>("sqlserver")));
     }
 
     private static void AddExecutionServices(IServiceCollection services)

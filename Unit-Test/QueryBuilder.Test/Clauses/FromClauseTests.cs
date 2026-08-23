@@ -1,12 +1,12 @@
 using FluentAssertions;
 using QueryLib.Clauses;
+using QueryLib.Clauses.Abstractions;
 
 namespace QueryBuilder.Test.Clauses;
 
 public class FromClauseTests
 {
     private readonly FromClause _sut;
-
     public FromClauseTests()
     {
         _sut =  new FromClause();

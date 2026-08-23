@@ -18,25 +18,25 @@ public sealed class WhereClauseRenderer : IClauseRenderer
 
     public Type ClauseType => typeof(WhereClause);
 
-    public RenderOutput Render(IQueryClause clause, IReadOnlyCollection<object?> bindings)
+    public RenderOutput Render(IQueryClause clause)
     {
         var whereClause = (WhereClause)clause;
-        var mutableBindings = bindings.ToList();
 
         if (!whereClause.HasConditions)
         {
-            return new RenderOutput(string.Empty, mutableBindings);
+            return new RenderOutput(string.Empty, Array.Empty<object?>());
         }
 
+        var localBindings = new List<object?>();
         var parts = new List<string>();
 
         foreach (var condition in whereClause.Conditions)
         {
-            mutableBindings.Add(condition.Value);
-            var placeholder = _placeholders.MakePlaceholder(mutableBindings.Count);
+            localBindings.Add(condition.Value);
+            var placeholder = _placeholders.MakePlaceholder(localBindings.Count);
             parts.Add($"{_quoter.Quote(condition.Column)} = {placeholder}");
         }
 
-        return new RenderOutput("WHERE " + string.Join(" AND ", parts), mutableBindings);
+        return new RenderOutput("WHERE " + string.Join(" AND ", parts), localBindings);
     }
 }

@@ -19,7 +19,7 @@ public sealed class DatabaseQueryExecutor : IDatabaseQueryExecutor
         var dependencies = _dependencyFactory.Create(configuration);
         var compiledQuery = dependencies.Compiler.Compile(query);
 
-        await using var connection = await dependencies.ConnectionFactory.CreateConnectionAsync();
+        await using var connection = dependencies.Connection;
         await connection.OpenAsync();
 
         var queryResult = await dependencies.Runner.RunAsync(compiledQuery, connection);

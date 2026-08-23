@@ -16,7 +16,7 @@ public sealed class SelectClauseRenderer : IClauseRenderer
 
     public Type ClauseType => typeof(SelectClause);
 
-    public RenderOutput Render(IQueryClause clause, IReadOnlyCollection<object?> bindings)
+    public RenderOutput Render(IQueryClause clause)
     {
         var selectClause = (SelectClause)clause;
 
@@ -24,6 +24,6 @@ public sealed class SelectClauseRenderer : IClauseRenderer
             ? "*"
             : string.Join(", ", selectClause.Columns.Select(_quoter.Quote));
 
-        return new RenderOutput($"SELECT {selection}", bindings);
+        return new RenderOutput($"SELECT {selection}", Array.Empty<object?>());
     }
 }

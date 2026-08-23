@@ -15,10 +15,10 @@ public sealed class FromClauseRenderer : IClauseRenderer
     }
 
     public Type ClauseType => typeof(FromClause);
-
-    public RenderOutput Render(IQueryClause clause, IReadOnlyCollection<object?> bindings)
+    
+    public RenderOutput Render(IQueryClause clause)
     {
         var fromClause = (FromClause)clause;
-        return new RenderOutput($"FROM {_quoter.Quote(fromClause.Table)}", bindings);
+        return new RenderOutput($"FROM {_quoter.Quote(fromClause.Table)}", Array.Empty<object?>());
     }
 }

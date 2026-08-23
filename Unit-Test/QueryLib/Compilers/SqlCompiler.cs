@@ -33,17 +33,15 @@ public sealed class SqlCompiler : ICompiler
 
     private RenderOutput ClauseRender(IEnumerable<IQueryClause> clauses)
     {
-        IReadOnlyCollection<object?> bindings = Array.Empty<object?>();
-
+        var allBindings = new List<object?>();
         var sqlParts = new List<string>();
 
         foreach (var clause in clauses.OrderBy(clause => clause.Order))
         {
             var renderer = _rendererRegistry.GetRenderer(clause);
+            var output = renderer.Render(clause);
 
-            var output = renderer.Render(clause, bindings);
-
-            bindings = output.Bindings;
+            allBindings.AddRange(output.Bindings);
 
             if (!string.IsNullOrWhiteSpace(output.Sql))
             {
@@ -51,6 +49,6 @@ public sealed class SqlCompiler : ICompiler
             }
         }
 
-        return new RenderOutput(string.Join(" ", sqlParts), bindings);
+        return new RenderOutput(string.Join(" ", sqlParts), allBindings);
     }
 }

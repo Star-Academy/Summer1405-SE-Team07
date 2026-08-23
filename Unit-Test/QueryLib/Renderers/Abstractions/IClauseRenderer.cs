@@ -6,5 +6,5 @@ public interface IClauseRenderer
 {
     Type ClauseType { get; }
 
-    RenderOutput Render(IQueryClause clause, IReadOnlyCollection<object?> bindings);
+    RenderOutput Render(IQueryClause clause);
 }
