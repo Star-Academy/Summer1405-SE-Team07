@@ -6,6 +6,8 @@ namespace QueryLib.Demo.QueryRunners;
 
 public sealed class SqlServerQueryRunner : IQueryRunner
 {
+    public DbProvider Provider => DbProvider.SqlServer;
+
     public async Task<QueryResult> RunAsync(
         CompiledQuery query,
         DbConnection connection,
@@ -59,4 +61,3 @@ public sealed class SqlServerQueryRunner : IQueryRunner
         };
     }
 }
-

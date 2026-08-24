@@ -6,6 +6,8 @@ namespace QueryLib.Demo.QueryRunners;
 
 public sealed class PostgresQueryRunner : IQueryRunner
 {
+    public DbProvider Provider => DbProvider.PostgreSql;
+
     public async Task<QueryResult> RunAsync(
         CompiledQuery query,
         DbConnection connection,
@@ -58,4 +60,3 @@ public sealed class PostgresQueryRunner : IQueryRunner
         };
     }
 }
-

@@ -1,7 +1,4 @@
-﻿using QueryLib.Demo.Abstractions;
-using QueryLib.Dialects.Abstractions;
-
-namespace QueryLib.Demo;
+﻿namespace QueryLib.Dialects.Abstractions;
 
 public class ValueBinderFactory: IValueBinderFactory
 {

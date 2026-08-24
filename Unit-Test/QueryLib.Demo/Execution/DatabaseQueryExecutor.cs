@@ -6,17 +6,17 @@ namespace QueryLib.Demo.Execution;
 
 public sealed class DatabaseQueryExecutor : IDatabaseQueryExecutor
 {
-    private readonly IReadOnlyDictionary<DbProvider, IDbConnectionFactory> _connectionFactories;
-    private readonly IReadOnlyDictionary<DbProvider, IQueryRunner> _runners;
+    private readonly IDbConnectionFactoryResolver _connectionFactoryResolver;
+    private readonly IQueryRunnerFactory _runnerFactory;
     private readonly ICompiler _compiler;
 
     public DatabaseQueryExecutor(
-        IReadOnlyDictionary<DbProvider, IDbConnectionFactory> connectionFactories,
-        IReadOnlyDictionary<DbProvider, IQueryRunner> runners,
+        IDbConnectionFactoryResolver connectionFactoryResolver,
+        IQueryRunnerFactory runnerFactory,
         ICompiler compiler)
     {
-        _connectionFactories = connectionFactories ?? throw new ArgumentNullException(nameof(connectionFactories));
-        _runners = runners ?? throw new ArgumentNullException(nameof(runners));
+        _connectionFactoryResolver = connectionFactoryResolver ?? throw new ArgumentNullException(nameof(connectionFactoryResolver));
+        _runnerFactory = runnerFactory ?? throw new ArgumentNullException(nameof(runnerFactory));
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
     }
 
@@ -25,21 +25,8 @@ public sealed class DatabaseQueryExecutor : IDatabaseQueryExecutor
         ArgumentNullException.ThrowIfNull(query);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        if (!_connectionFactories.TryGetValue(configuration.Provider, out var factory))
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(configuration.Provider),
-                configuration.Provider,
-                "Unsupported database provider.");
-        }
-
-        if (!_runners.TryGetValue(configuration.Provider, out var runner))
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(configuration.Provider),
-                configuration.Provider,
-                "Unsupported database provider.");
-        }
+        var factory = _connectionFactoryResolver.GetFactory(configuration.Provider);
+        var runner = _runnerFactory.GetRunner(configuration.Provider);
 
         await using var connection = factory.Create(configuration.ConnectionString);
         var compiledQuery = _compiler.Compile(query, configuration.Provider);

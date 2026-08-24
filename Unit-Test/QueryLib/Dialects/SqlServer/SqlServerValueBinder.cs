@@ -1,4 +1,3 @@
-using QueryLib.Demo;
 using QueryLib.Dialects.Abstractions;
 
 namespace QueryLib.Dialects.SqlServer;

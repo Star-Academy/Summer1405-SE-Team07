@@ -42,11 +42,12 @@ public static class ServiceCollectionExtensions
 
     private static void AddRenderers(IServiceCollection services)
     {
-        RegisterRenderersFor(services, "postgres");
-        RegisterRenderersFor(services, "sqlserver");
+        RegisterRenderersFor(services, "postgres", DbProvider.PostgreSql);
+        RegisterRenderersFor(services, "sqlserver", DbProvider.SqlServer);
+        services.AddSingleton<IClauseRendererRegistryFactory, ClauseRendererRegistryFactory>();
     }
 
-    private static void RegisterRenderersFor(IServiceCollection services, string dialectKey)
+    private static void RegisterRenderersFor(IServiceCollection services, string dialectKey, DbProvider provider)
     {
         services.AddKeyedSingleton<IClauseRenderer>(dialectKey, (sp, key) =>
             new SelectClauseRenderer(sp.GetRequiredKeyedService<IIdentifierQuoter>(dialectKey)));
@@ -59,46 +60,27 @@ public static class ServiceCollectionExtensions
                 sp.GetRequiredKeyedService<IIdentifierQuoter>(dialectKey),
                 sp.GetRequiredKeyedService<IParameterPlaceholderFactory>(dialectKey)));
 
-        services.AddKeyedSingleton<ClauseRendererRegistry>(dialectKey, (sp, key) =>
-            new ClauseRendererRegistry(sp.GetKeyedServices<IClauseRenderer>(dialectKey)));
+        services.AddSingleton<ClauseRendererRegistry>(sp =>
+            new ClauseRendererRegistry(provider, sp.GetKeyedServices<IClauseRenderer>(dialectKey)));
     }
 
     private static void AddCompilers(IServiceCollection services)
     {
-        services.AddSingleton<IReadOnlyDictionary<DbProvider, ClauseRendererRegistry>>(sp =>
-            new Dictionary<DbProvider, ClauseRendererRegistry>
-            {
-                [DbProvider.PostgreSql] = sp.GetRequiredKeyedService<ClauseRendererRegistry>("postgres"),
-                [DbProvider.SqlServer] = sp.GetRequiredKeyedService<ClauseRendererRegistry>("sqlserver"),
-            });
-
         services.AddSingleton<ICompiler, SqlCompiler>();
     }
 
     private static void AddQueryRunners(IServiceCollection services)
     {
-        services.AddKeyedSingleton<IQueryRunner, PostgresQueryRunner>("postgres");
-        services.AddKeyedSingleton<IQueryRunner, SqlServerQueryRunner>("sqlserver");
-
-        services.AddSingleton<IReadOnlyDictionary<DbProvider, IQueryRunner>>(sp =>
-            new Dictionary<DbProvider, IQueryRunner>
-            {
-                [DbProvider.PostgreSql] = sp.GetRequiredKeyedService<IQueryRunner>("postgres"),
-                [DbProvider.SqlServer] = sp.GetRequiredKeyedService<IQueryRunner>("sqlserver"),
-            });
+        services.AddSingleton<IQueryRunner, PostgresQueryRunner>();
+        services.AddSingleton<IQueryRunner, SqlServerQueryRunner>();
+        services.AddSingleton<IQueryRunnerFactory, QueryRunnerFactory>();
     }
 
     private static void AddConnectionFactories(IServiceCollection services)
     {
-        services.AddKeyedSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>("postgres");
-        services.AddKeyedSingleton<IDbConnectionFactory, SqlServerConnectionFactory>("sqlserver");
-
-        services.AddSingleton<IReadOnlyDictionary<DbProvider, IDbConnectionFactory>>(sp =>
-            new Dictionary<DbProvider, IDbConnectionFactory>
-            {
-                [DbProvider.PostgreSql] = sp.GetRequiredKeyedService<IDbConnectionFactory>("postgres"),
-                [DbProvider.SqlServer] = sp.GetRequiredKeyedService<IDbConnectionFactory>("sqlserver"),
-            });
+        services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
+        services.AddSingleton<IDbConnectionFactory, SqlServerConnectionFactory>();
+        services.AddSingleton<IDbConnectionFactoryResolver, DbConnectionFactoryResolver>();
     }
 
     private static void AddExecutionServices(IServiceCollection services)

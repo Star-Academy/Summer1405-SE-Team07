@@ -1,6 +1,6 @@
-﻿using QueryLib.Demo;
+﻿using QueryLib.Dialects.Abstractions;
 
-namespace QueryLib.Dialects.Abstractions;
+namespace QueryLib.Dialects.Postgres;
 
 public sealed class PostgresValueBinder : IValueBinder
 {

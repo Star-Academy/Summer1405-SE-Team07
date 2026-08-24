@@ -1,15 +1,22 @@
-﻿using QueryLib.Clauses.Abstractions;
+using QueryLib.Clauses.Abstractions;
 using QueryLib.Renderers.Abstractions;
 
 namespace QueryLib.Renderers;
 
 public sealed class ClauseRendererRegistry
 {
+    public DbProvider Provider { get; }
     private readonly Dictionary<ClauseKind, IClauseRenderer> _renderers;
 
-    public ClauseRendererRegistry(IEnumerable<IClauseRenderer> renderers)
+    public ClauseRendererRegistry(DbProvider provider, IEnumerable<IClauseRenderer> renderers)
     {
+        Provider = provider;
         _renderers = renderers.ToDictionary(renderer => renderer.ClauseKind);
+    }
+
+    public ClauseRendererRegistry(IEnumerable<IClauseRenderer> renderers)
+        : this(DbProvider.SqlServer, renderers)
+    {
     }
 
     public IClauseRenderer GetRenderer(IQueryClause clause)

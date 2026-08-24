@@ -1,5 +1,3 @@
-using QueryLib.Demo;
-
 namespace QueryLib.Compilers.Abstractions;
 
 public interface ICompiler

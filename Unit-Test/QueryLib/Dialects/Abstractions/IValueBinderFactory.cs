@@ -1,6 +1,6 @@
 ﻿using QueryLib.Dialects.Abstractions;
 
-namespace QueryLib.Demo.Abstractions;
+namespace QueryLib.Dialects.Abstractions;
 
 public interface IValueBinderFactory
 {

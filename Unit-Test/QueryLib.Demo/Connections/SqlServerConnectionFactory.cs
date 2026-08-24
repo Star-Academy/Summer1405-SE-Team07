@@ -6,7 +6,8 @@ namespace QueryLib.Demo.Connections;
 
 public sealed class SqlServerConnectionFactory : IDbConnectionFactory
 {
+    public DbProvider Provider => DbProvider.SqlServer;
+
     public DbConnection Create(string connectionString)
         => new SqlConnection(connectionString);
 }
-

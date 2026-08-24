@@ -1,41 +1,34 @@
 using QueryLib.Clauses.Abstractions;
 using QueryLib.Compilers.Abstractions;
-using QueryLib.Demo;
-using QueryLib.Demo.Abstractions;
 using QueryLib.Dialects.Abstractions;
 using QueryLib.Renderers;
+using QueryLib.Renderers.Abstractions;
 
 namespace QueryLib.Compilers;
 
 public sealed class SqlCompiler : ICompiler
 {
     private readonly IValueBinderFactory _valueBinderFactory;
-    private readonly IReadOnlyDictionary<DbProvider, ClauseRendererRegistry> _rendererRegistries;
+    private readonly IClauseRendererRegistryFactory _registryFactory;
 
     public SqlCompiler(
         IValueBinderFactory valueBinderFactory,
-        IReadOnlyDictionary<DbProvider, ClauseRendererRegistry> rendererRegistries)
+        IClauseRendererRegistryFactory registryFactory)
     {
         _valueBinderFactory = valueBinderFactory ?? throw new ArgumentNullException(nameof(valueBinderFactory));
-        _rendererRegistries = rendererRegistries ?? throw new ArgumentNullException(nameof(rendererRegistries));
+        _registryFactory = registryFactory ?? throw new ArgumentNullException(nameof(registryFactory));
     }
 
     public CompiledQuery Compile(Query query, DbProvider dbProvider)
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        if (!_rendererRegistries.TryGetValue(dbProvider, out var rendererRegistry))
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(dbProvider),
-                dbProvider,
-                "Unsupported database provider.");
-        }
-
+        var rendererRegistry = _registryFactory.GetRegistry(dbProvider);
         var renderedQuery = ClauseRender(query.Clauses, rendererRegistry);
 
+        var binder = _valueBinderFactory.GetBinder(dbProvider);
         var boundValues = renderedQuery.Bindings
-            .Select(_valueBinderFactory.GetBinder(dbProvider).Bind)
+            .Select(binder.Bind)
             .ToList();
 
         return new CompiledQuery(renderedQuery.Sql, boundValues);
