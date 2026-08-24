@@ -12,6 +12,8 @@ using QueryLib.Dialects.Postgres;
 using QueryLib.Dialects.SqlServer;
 using QueryLib.Renderers;
 using QueryLib.Renderers.Abstractions;
+using QueryLib.Renderers.Postgres;
+using QueryLib.Renderers.SqlServer;
 
 namespace QueryLib.Demo.Extensions;
 
@@ -44,6 +46,13 @@ public static class ServiceCollectionExtensions
 
     private static void AddRenderers(IServiceCollection services)
     {
+        services.AddSingleton<IClauseRenderer, PostgresSelectClauseRenderer>();
+        services.AddSingleton<IClauseRenderer, PostgresFromClauseRenderer>();
+        services.AddSingleton<IClauseRenderer, PostgresWhereClauseRenderer>();
+
+        services.AddSingleton<IClauseRenderer, SqlServerSelectClauseRenderer>();
+        services.AddSingleton<IClauseRenderer, SqlServerFromClauseRenderer>();
+        services.AddSingleton<IClauseRenderer, SqlServerWhereClauseRenderer>();
 
         services.AddSingleton<IClauseRendererRegistryFactory, ClauseRendererRegistryFactory>();
     }
