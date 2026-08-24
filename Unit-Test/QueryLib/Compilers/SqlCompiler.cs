@@ -10,40 +10,45 @@ namespace QueryLib.Compilers;
 public sealed class SqlCompiler : ICompiler
 {
     private readonly IValueBinderFactory _valueBinderFactory;
-    private readonly ClauseRendererRegistry _rendererRegistry;
-    
+    private readonly IReadOnlyDictionary<DbProvider, ClauseRendererRegistry> _rendererRegistries;
+
     public SqlCompiler(
         IValueBinderFactory valueBinderFactory,
-        ClauseRendererRegistry rendererRegistry)
+        IReadOnlyDictionary<DbProvider, ClauseRendererRegistry> rendererRegistries)
     {
         _valueBinderFactory = valueBinderFactory ?? throw new ArgumentNullException(nameof(valueBinderFactory));
-        _rendererRegistry = rendererRegistry ?? throw new ArgumentNullException(nameof(rendererRegistry));
+        _rendererRegistries = rendererRegistries ?? throw new ArgumentNullException(nameof(rendererRegistries));
     }
 
     public CompiledQuery Compile(Query query, DbProvider dbProvider)
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var renderedQuery = ClauseRender(query.Clauses);
+        if (!_rendererRegistries.TryGetValue(dbProvider, out var rendererRegistry))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(dbProvider),
+                dbProvider,
+                "Unsupported database provider.");
+        }
+
+        var renderedQuery = ClauseRender(query.Clauses, rendererRegistry);
 
         var boundValues = renderedQuery.Bindings
-            .Select(_valueBinderFactory.GetBinder("postgres").Bind)
             .Select(_valueBinderFactory.GetBinder(dbProvider).Bind)
             .ToList();
 
         return new CompiledQuery(renderedQuery.Sql, boundValues);
     }
 
-    public DbProvider dbprovider => DbProvider.SqlServer;
-
-    private RenderOutput ClauseRender(IEnumerable<IQueryClause> clauses)
+    private static RenderOutput ClauseRender(IEnumerable<IQueryClause> clauses, ClauseRendererRegistry rendererRegistry)
     {
         var allBindings = new List<object?>();
         var sqlParts = new List<string>();
 
         foreach (var clause in clauses.OrderBy(clause => clause.Order))
         {
-            var renderer = _rendererRegistry.GetRenderer(clause);
+            var renderer = rendererRegistry.GetRenderer(clause);
             var output = renderer.Render(clause);
 
             allBindings.AddRange(output.Bindings);

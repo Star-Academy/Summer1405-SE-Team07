@@ -65,12 +65,27 @@ public static class ServiceCollectionExtensions
 
     private static void AddCompilers(IServiceCollection services)
     {
+        services.AddSingleton<IReadOnlyDictionary<DbProvider, ClauseRendererRegistry>>(sp =>
+            new Dictionary<DbProvider, ClauseRendererRegistry>
+            {
+                [DbProvider.PostgreSql] = sp.GetRequiredKeyedService<ClauseRendererRegistry>("postgres"),
+                [DbProvider.SqlServer] = sp.GetRequiredKeyedService<ClauseRendererRegistry>("sqlserver"),
+            });
+
         services.AddSingleton<ICompiler, SqlCompiler>();
     }
 
     private static void AddQueryRunners(IServiceCollection services)
     {
-        services.AddSingleton<IQueryRunner, QueryRunner>();
+        services.AddKeyedSingleton<IQueryRunner, PostgresQueryRunner>("postgres");
+        services.AddKeyedSingleton<IQueryRunner, SqlServerQueryRunner>("sqlserver");
+
+        services.AddSingleton<IReadOnlyDictionary<DbProvider, IQueryRunner>>(sp =>
+            new Dictionary<DbProvider, IQueryRunner>
+            {
+                [DbProvider.PostgreSql] = sp.GetRequiredKeyedService<IQueryRunner>("postgres"),
+                [DbProvider.SqlServer] = sp.GetRequiredKeyedService<IQueryRunner>("sqlserver"),
+            });
     }
 
     private static void AddConnectionFactories(IServiceCollection services)

@@ -4,7 +4,7 @@ using QueryLib.Demo.Abstractions;
 
 namespace QueryLib.Demo.QueryRunners;
 
-public sealed class QueryRunner : IQueryRunner
+public sealed class SqlServerQueryRunner : IQueryRunner
 {
     public async Task<QueryResult> RunAsync(
         CompiledQuery query,
@@ -18,15 +18,15 @@ public sealed class QueryRunner : IQueryRunner
         }
 
         await using var command = connection.CreateCommand();
-
         command.CommandText = query.Sql;
         command.Transaction = transaction;
 
-        foreach (var value in query.Bindings)
+        for (int param = 0; param < query.Bindings.Count; param++)
         {
-            var param = command.CreateParameter();
-            param.Value = value ?? DBNull.Value;
-            command.Parameters.Add(param);
+            var dbParam = command.CreateParameter();
+            dbParam.ParameterName = $"@p{param}";
+            dbParam.Value = query.Bindings[param] ?? DBNull.Value;
+            command.Parameters.Add(dbParam);
         }
 
         await using var reader = await command.ExecuteReaderAsync();

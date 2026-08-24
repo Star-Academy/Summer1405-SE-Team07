@@ -7,17 +7,17 @@ namespace QueryLib.Demo.Execution;
 public sealed class DatabaseQueryExecutor : IDatabaseQueryExecutor
 {
     private readonly IReadOnlyDictionary<DbProvider, IDbConnectionFactory> _connectionFactories;
+    private readonly IReadOnlyDictionary<DbProvider, IQueryRunner> _runners;
     private readonly ICompiler _compiler;
-    private readonly IQueryRunner _runner;
 
     public DatabaseQueryExecutor(
         IReadOnlyDictionary<DbProvider, IDbConnectionFactory> connectionFactories,
-        ICompiler compiler,
-        IQueryRunner runner)
+        IReadOnlyDictionary<DbProvider, IQueryRunner> runners,
+        ICompiler compiler)
     {
         _connectionFactories = connectionFactories ?? throw new ArgumentNullException(nameof(connectionFactories));
+        _runners = runners ?? throw new ArgumentNullException(nameof(runners));
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
-        _runner = runner ?? throw new ArgumentNullException(nameof(runner));
     }
 
     public async Task<QueryExecutionResult> ExecuteAsync(Query query, DbConfiguration configuration)
@@ -33,12 +33,20 @@ public sealed class DatabaseQueryExecutor : IDatabaseQueryExecutor
                 "Unsupported database provider.");
         }
 
+        if (!_runners.TryGetValue(configuration.Provider, out var runner))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(configuration.Provider),
+                configuration.Provider,
+                "Unsupported database provider.");
+        }
+
         await using var connection = factory.Create(configuration.ConnectionString);
         var compiledQuery = _compiler.Compile(query, configuration.Provider);
 
         await connection.OpenAsync();
 
-        var queryResult = await _runner.RunAsync(compiledQuery, connection);
+        var queryResult = await runner.RunAsync(compiledQuery, connection);
         return new QueryExecutionResult(compiledQuery, queryResult);
     }
 }
