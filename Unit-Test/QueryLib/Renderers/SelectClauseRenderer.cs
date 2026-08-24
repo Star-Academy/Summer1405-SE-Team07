@@ -1,17 +1,25 @@
-﻿using QueryLib.Clauses;
+using QueryLib.Clauses;
 using QueryLib.Clauses.Abstractions;
 using QueryLib.Dialects.Abstractions;
 using QueryLib.Renderers.Abstractions;
 
 namespace QueryLib.Renderers;
 
-public sealed class SelectClauseRenderer : IClauseRenderer
+public class SelectClauseRenderer : IClauseRenderer
 {
     private readonly IIdentifierQuoter _quoter;
 
-    public SelectClauseRenderer(IIdentifierQuoter quoter)
+    public DbProvider Provider { get; }
+
+    public SelectClauseRenderer(DbProvider provider, IIdentifierQuoter quoter)
     {
+        Provider = provider;
         _quoter = quoter ?? throw new ArgumentNullException(nameof(quoter));
+    }
+
+    public SelectClauseRenderer(IIdentifierQuoter quoter)
+        : this(DbProvider.SqlServer, quoter)
+    {
     }
 
     public ClauseKind ClauseKind => ClauseKind.Select;

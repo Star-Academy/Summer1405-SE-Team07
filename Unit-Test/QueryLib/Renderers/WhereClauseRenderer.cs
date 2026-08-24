@@ -1,19 +1,30 @@
-﻿using QueryLib.Clauses;
+using QueryLib.Clauses;
 using QueryLib.Clauses.Abstractions;
 using QueryLib.Dialects.Abstractions;
 using QueryLib.Renderers.Abstractions;
 
 namespace QueryLib.Renderers;
 
-public sealed class WhereClauseRenderer : IClauseRenderer
+public class WhereClauseRenderer : IClauseRenderer
 {
     private readonly IIdentifierQuoter _quoter;
     private readonly IParameterPlaceholderFactory _placeholders;
 
-    public WhereClauseRenderer(IIdentifierQuoter quoter, IParameterPlaceholderFactory placeholders)
+    public DbProvider Provider { get; }
+
+    public WhereClauseRenderer(
+        DbProvider provider,
+        IIdentifierQuoter quoter,
+        IParameterPlaceholderFactory placeholders)
     {
+        Provider = provider;
         _quoter = quoter ?? throw new ArgumentNullException(nameof(quoter));
         _placeholders = placeholders ?? throw new ArgumentNullException(nameof(placeholders));
+    }
+
+    public WhereClauseRenderer(IIdentifierQuoter quoter, IParameterPlaceholderFactory placeholders)
+        : this(DbProvider.SqlServer, quoter, placeholders)
+    {
     }
 
     public ClauseKind ClauseKind => ClauseKind.Where;

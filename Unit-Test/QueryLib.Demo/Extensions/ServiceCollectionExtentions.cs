@@ -12,6 +12,8 @@ using QueryLib.Dialects.Postgres;
 using QueryLib.Dialects.SqlServer;
 using QueryLib.Renderers;
 using QueryLib.Renderers.Abstractions;
+using QueryLib.Renderers.Postgres;
+using QueryLib.Renderers.SqlServer;
 
 namespace QueryLib.Demo.Extensions;
 
@@ -31,37 +33,28 @@ public static class ServiceCollectionExtensions
 
     private static void AddDialects(IServiceCollection services)
     {
-        services.AddKeyedSingleton<IIdentifierQuoter, PostgresIdentifierQuoter>("postgres");
-        services.AddKeyedSingleton<IParameterPlaceholderFactory, PostgresParameterPlaceholderFactory>("postgres");
+        services.AddSingleton<PostgresIdentifierQuoter>();
+        services.AddSingleton<PostgresParameterPlaceholderFactory>();
         services.AddSingleton<IValueBinder, PostgresValueBinder>();
-        services.AddSingleton<IValueBinderFactory, ValueBinderFactory>();
-        services.AddKeyedSingleton<IIdentifierQuoter, SqlServerIdentifierQuoter>("sqlserver");
-        services.AddKeyedSingleton<IParameterPlaceholderFactory, SqlServerParameterPlaceholderFactory>("sqlserver");
+
+        services.AddSingleton<SqlServerIdentifierQuoter>();
+        services.AddSingleton<SqlServerParameterPlaceholderFactory>();
         services.AddSingleton<IValueBinder, SqlServerValueBinder>();
+
+        services.AddSingleton<IValueBinderFactory, ValueBinderFactory>();
     }
 
     private static void AddRenderers(IServiceCollection services)
     {
-        RegisterRenderersFor(services, "postgres", DbProvider.PostgreSql);
-        RegisterRenderersFor(services, "sqlserver", DbProvider.SqlServer);
+        services.AddSingleton<IClauseRenderer, PostgresSelectClauseRenderer>();
+        services.AddSingleton<IClauseRenderer, PostgresFromClauseRenderer>();
+        services.AddSingleton<IClauseRenderer, PostgresWhereClauseRenderer>();
+
+        services.AddSingleton<IClauseRenderer, SqlServerSelectClauseRenderer>();
+        services.AddSingleton<IClauseRenderer, SqlServerFromClauseRenderer>();
+        services.AddSingleton<IClauseRenderer, SqlServerWhereClauseRenderer>();
+
         services.AddSingleton<IClauseRendererRegistryFactory, ClauseRendererRegistryFactory>();
-    }
-
-    private static void RegisterRenderersFor(IServiceCollection services, string dialectKey, DbProvider provider)
-    {
-        services.AddKeyedSingleton<IClauseRenderer>(dialectKey, (sp, key) =>
-            new SelectClauseRenderer(sp.GetRequiredKeyedService<IIdentifierQuoter>(dialectKey)));
-
-        services.AddKeyedSingleton<IClauseRenderer>(dialectKey, (sp, key) =>
-            new FromClauseRenderer(sp.GetRequiredKeyedService<IIdentifierQuoter>(dialectKey)));
-
-        services.AddKeyedSingleton<IClauseRenderer>(dialectKey, (sp, key) =>
-            new WhereClauseRenderer(
-                sp.GetRequiredKeyedService<IIdentifierQuoter>(dialectKey),
-                sp.GetRequiredKeyedService<IParameterPlaceholderFactory>(dialectKey)));
-
-        services.AddSingleton<ClauseRendererRegistry>(sp =>
-            new ClauseRendererRegistry(provider, sp.GetKeyedServices<IClauseRenderer>(dialectKey)));
     }
 
     private static void AddCompilers(IServiceCollection services)
