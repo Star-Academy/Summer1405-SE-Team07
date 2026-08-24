@@ -1,6 +1,3 @@
-﻿using System.Data.Common;
-using Npgsql;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using QueryLib.Compilers;
 using QueryLib.Compilers.Abstractions;
@@ -73,25 +70,25 @@ public static class ServiceCollectionExtensions
 
     private static void AddQueryRunners(IServiceCollection services)
     {
-        services.AddKeyedSingleton<IQueryRunner, PostgresQueryRunner>("postgres");
-        services.AddKeyedSingleton<IQueryRunner, SqlServerQueryRunner>("sqlserver");
+        services.AddSingleton<IQueryRunner, QueryRunner>();
     }
 
     private static void AddConnectionFactories(IServiceCollection services)
     {
-        services.AddKeyedSingleton<IDbConnectionFactoryProvider>("postgres", (sp, key) =>
-            new ConnectionFactoryProvider(
-                sp.GetRequiredKeyedService<Func<string, DbConnection>>("postgres")));
+        services.AddKeyedSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>("postgres");
+        services.AddKeyedSingleton<IDbConnectionFactory, SqlServerConnectionFactory>("sqlserver");
 
-        services.AddKeyedSingleton<IDbConnectionFactoryProvider>("sqlserver", (sp, key) =>
-            new ConnectionFactoryProvider(
-                sp.GetRequiredKeyedService<Func<string, DbConnection>>("sqlserver")));
+        services.AddSingleton<IReadOnlyDictionary<DbProvider, IDbConnectionFactory>>(sp =>
+            new Dictionary<DbProvider, IDbConnectionFactory>
+            {
+                [DbProvider.PostgreSql] = sp.GetRequiredKeyedService<IDbConnectionFactory>("postgres"),
+                [DbProvider.SqlServer] = sp.GetRequiredKeyedService<IDbConnectionFactory>("sqlserver"),
+            });
     }
 
     private static void AddExecutionServices(IServiceCollection services)
     {
         services.AddSingleton<IDatabaseQueryExecutor, DatabaseQueryExecutor>();
-        services.AddSingleton<IQueryExecutionDependencyFactory, QueryExecutionDependencyFactory>();
         services.AddSingleton<IQueryExecutionReporter, ConsoleQueryExecutionReporter>();
         services.AddSingleton<IResultPrinter, ConsoleResultPrinter>();
         services.AddSingleton<QueryExecutionService>();

@@ -6,16 +6,16 @@ namespace QueryLib.Demo.Execution;
 
 public sealed class DatabaseQueryExecutor : IDatabaseQueryExecutor
 {
-    private readonly IQueryExecutionDependencyFactory _dependencyFactory;
+    private readonly IReadOnlyDictionary<DbProvider, IDbConnectionFactory> _connectionFactories;
     private readonly ICompiler _compiler;
     private readonly IQueryRunner _runner;
 
     public DatabaseQueryExecutor(
-        IQueryExecutionDependencyFactory dependencyFactory,
+        IReadOnlyDictionary<DbProvider, IDbConnectionFactory> connectionFactories,
         ICompiler compiler,
         IQueryRunner runner)
     {
-        _dependencyFactory = dependencyFactory ?? throw new ArgumentNullException(nameof(dependencyFactory));
+        _connectionFactories = connectionFactories ?? throw new ArgumentNullException(nameof(connectionFactories));
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
     }
@@ -25,8 +25,16 @@ public sealed class DatabaseQueryExecutor : IDatabaseQueryExecutor
         ArgumentNullException.ThrowIfNull(query);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        await using var connection = _dependencyFactory.Create(configuration);
-        var compiledQuery = _compiler.Compile(query);
+        if (!_connectionFactories.TryGetValue(configuration.Provider, out var factory))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(configuration.Provider),
+                configuration.Provider,
+                "Unsupported database provider.");
+        }
+
+        await using var connection = factory.Create(configuration.ConnectionString);
+        var compiledQuery = _compiler.Compile(query, configuration.Provider);
 
         await connection.OpenAsync();
 

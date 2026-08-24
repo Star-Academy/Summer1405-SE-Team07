@@ -28,6 +28,7 @@ public sealed class SqlCompiler : ICompiler
 
         var boundValues = renderedQuery.Bindings
             .Select(_valueBinderFactory.GetBinder("postgres").Bind)
+            .Select(_valueBinderFactory.GetBinder(dbProvider).Bind)
             .ToList();
 
         return new CompiledQuery(renderedQuery.Sql, boundValues);

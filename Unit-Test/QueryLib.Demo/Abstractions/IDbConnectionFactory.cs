@@ -2,7 +2,7 @@ using System.Data.Common;
 
 namespace QueryLib.Demo.Abstractions;
 
-public interface IDbConnectionFactoryProvider
+public interface IDbConnectionFactory
 {
-    DbConnection CreateConnection(DbConfiguration configuration);
+    DbConnection Create(string connectionString);
 }
