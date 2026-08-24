@@ -6,22 +6,13 @@ public sealed class ClauseRendererRegistryFactory : IClauseRendererRegistryFacto
 {
     private readonly Dictionary<DbProvider, ClauseRendererRegistry> _registries;
 
-    public ClauseRendererRegistryFactory(IEnumerable<IClauseRenderer> renderers)
+    public ClauseRendererRegistryFactory(IEnumerable<ClauseRendererRegistry> registries)
     {
-        _registries = renderers
-            .GroupBy(renderer => renderer.Provider)
-            .ToDictionary(
-                group => group.Key,
-                group => new ClauseRendererRegistry(group.Key, group));
+        _registries = registries.ToDictionary(registry => registry.Provider);
     }
 
-    public ClauseRendererRegistry GetRegistry(DbProvider provider)
-    {
-        if (_registries.TryGetValue(provider, out var registry))
-        {
-            return registry;
-        }
-
-        throw new KeyNotFoundException($"No renderer registry registered for provider {provider}.");
-    }
+    public ClauseRendererRegistry GetRegistry(DbProvider provider) =>
+        _registries.TryGetValue(provider, out var registry)
+            ? registry
+            : throw new KeyNotFoundException($"No renderer registry registered for provider {provider}.");
 }

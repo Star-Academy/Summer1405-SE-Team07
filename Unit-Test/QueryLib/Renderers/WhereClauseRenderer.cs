@@ -5,12 +5,13 @@ using QueryLib.Renderers.Abstractions;
 
 namespace QueryLib.Renderers;
 
-public class WhereClauseRenderer : IClauseRenderer
+public sealed class WhereClauseRenderer : IClauseRenderer
 {
     private readonly IIdentifierQuoter _quoter;
     private readonly IParameterPlaceholderFactory _placeholders;
 
     public DbProvider Provider { get; }
+    public ClauseKind ClauseKind => ClauseKind.Where;
 
     public WhereClauseRenderer(
         DbProvider provider,
@@ -22,12 +23,6 @@ public class WhereClauseRenderer : IClauseRenderer
         _placeholders = placeholders ?? throw new ArgumentNullException(nameof(placeholders));
     }
 
-    public WhereClauseRenderer(IIdentifierQuoter quoter, IParameterPlaceholderFactory placeholders)
-        : this(DbProvider.SqlServer, quoter, placeholders)
-    {
-    }
-
-    public ClauseKind ClauseKind => ClauseKind.Where;
 
     public RenderOutput Render(IQueryClause clause)
     {

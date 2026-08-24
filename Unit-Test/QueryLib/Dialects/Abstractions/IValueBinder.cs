@@ -3,6 +3,5 @@
 public interface IValueBinder
 {
     object? Bind(object? value);
-
     DbProvider DbType { get; }
 }

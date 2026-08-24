@@ -5,24 +5,18 @@ using QueryLib.Renderers.Abstractions;
 
 namespace QueryLib.Renderers;
 
-public class FromClauseRenderer : IClauseRenderer
+public sealed class FromClauseRenderer : IClauseRenderer
 {
     private readonly IIdentifierQuoter _quoter;
 
     public DbProvider Provider { get; }
-
+    public ClauseKind ClauseKind => ClauseKind.From;
+    
     public FromClauseRenderer(DbProvider provider, IIdentifierQuoter quoter)
     {
         Provider = provider;
         _quoter = quoter ?? throw new ArgumentNullException(nameof(quoter));
     }
-
-    public FromClauseRenderer(IIdentifierQuoter quoter)
-        : this(DbProvider.SqlServer, quoter)
-    {
-    }
-
-    public ClauseKind ClauseKind => ClauseKind.From;
 
     public RenderOutput Render(IQueryClause clause)
     {

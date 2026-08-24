@@ -14,11 +14,6 @@ public sealed class ClauseRendererRegistry
         _renderers = renderers.ToDictionary(renderer => renderer.ClauseKind);
     }
 
-    public ClauseRendererRegistry(IEnumerable<IClauseRenderer> renderers)
-        : this(DbProvider.SqlServer, renderers)
-    {
-    }
-
     public IClauseRenderer GetRenderer(IQueryClause clause)
     {
         if (!_renderers.TryGetValue(clause.Kind, out var renderer))
