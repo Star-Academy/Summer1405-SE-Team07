@@ -11,7 +11,7 @@ namespace QueryBuilder.Test.Renderers;
 public class ClauseRendererRegistryTests
 {
     [Fact]
-    public void Provider_ShouldReturnConfiguredProvider()
+    public void Provider_ShouldReturnConfiguredProvider_WhenConstructed()
     {
         // Arrange
         const DbProvider expected = DbProvider.PostgreSql;

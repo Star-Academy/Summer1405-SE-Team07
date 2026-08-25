@@ -14,7 +14,7 @@ public class SqlServerIdentifierQuoterTests
     }
 
     [Fact]
-    public void Provider_ShouldBeSqlServer()
+    public void Provider_ShouldBeSqlServer_WhenAccessed()
     {
         // Arrange
         const DbProvider expected = DbProvider.SqlServer;
@@ -27,7 +27,7 @@ public class SqlServerIdentifierQuoterTests
     }
 
     [Fact]
-    public void Quote_ShouldWrapIdentifierInBrackets()
+    public void Quote_ShouldWrapIdentifierInBrackets_WhenCalled()
     {
         // Arrange
         const string expected = "[column_name]";
@@ -39,4 +39,3 @@ public class SqlServerIdentifierQuoterTests
         result.Should().Be(expected);
     }
 }
-

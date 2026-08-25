@@ -14,7 +14,7 @@ public class PostgresValueBinderTests
     }
 
     [Fact]
-    public void DbType_ShouldBePostgreSql()
+    public void DbType_ShouldBePostgreSql_WhenAccessed()
     {
         // Arrange
         const DbProvider expected = DbProvider.PostgreSql;
@@ -31,13 +31,14 @@ public class PostgresValueBinderTests
     [InlineData(42)]
     [InlineData(true)]
     [InlineData(null)]
-    public void Bind_ShouldReturnValueAsIs(object? value)
+    public void Bind_ShouldReturnValueAsIs_WhenCalled(object? value)
     {
-        // Arrange & Act
-        var result = _sut.Bind(value);
+        // Arrange 
 
+        // Act
+        var result = _sut.Bind(value);
+        
         // Assert
         result.Should().Be(value);
     }
 }
-

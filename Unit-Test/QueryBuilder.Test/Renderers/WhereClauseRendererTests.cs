@@ -34,7 +34,7 @@ public class WhereClauseRendererTests
     }
 
     [Fact]
-    public void ClauseKind_ShouldBeWhere()
+    public void ClauseKind_ShouldBeWhere_WhenAccessed()
     {
         // Arrange
         var sut = new WhereClauseRenderer(DbProvider.PostgreSql, _quoter, _placeholders);
@@ -49,7 +49,7 @@ public class WhereClauseRendererTests
     [Theory]
     [InlineData(DbProvider.PostgreSql)]
     [InlineData(DbProvider.SqlServer)]
-    public void Provider_ShouldReturnConfiguredProvider(DbProvider provider)
+    public void Provider_ShouldReturnConfiguredProvider_WhenConstructed(DbProvider provider)
     {
         // Arrange
         var sut = new WhereClauseRenderer(provider, _quoter, _placeholders);
@@ -103,7 +103,7 @@ public class WhereClauseRendererTests
     [Theory]
     [InlineData(DbProvider.PostgreSql)]
     [InlineData(DbProvider.SqlServer)]
-    public void Render_ShouldJoinWithAnd_AndPreserveBindingOrder_WhenMultipleConditionsExist(DbProvider provider)
+    public void Render_ShouldJoinWithAnd_WhenMultipleConditionsExist(DbProvider provider)
     {
         // Arrange
         var sut = new WhereClauseRenderer(provider, _quoter, _placeholders);

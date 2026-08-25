@@ -25,7 +25,9 @@ public class QueryExecutionServiceTests
         // Arrange
         var act = () => new QueryExecutionService(null!, _reporter);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("queryExecutor");
     }
 
@@ -35,7 +37,9 @@ public class QueryExecutionServiceTests
         // Arrange
         var act = () => new QueryExecutionService(_queryExecutor, null!);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("reporter");
     }
 
@@ -45,7 +49,9 @@ public class QueryExecutionServiceTests
         // Arrange
         var act = () => _sut.ExecuteAsync(null!, []);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("query");
     }
 
@@ -56,7 +62,9 @@ public class QueryExecutionServiceTests
         var query = new Query().From("student").Select("id");
         var act = () => _sut.ExecuteAsync(query, null!);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("configurations");
     }
 
@@ -104,4 +112,5 @@ public class QueryExecutionServiceTests
             _reporter.ReportCompleted();
         });
     }
+
 }

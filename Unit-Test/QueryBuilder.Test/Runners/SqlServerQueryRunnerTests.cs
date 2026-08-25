@@ -19,7 +19,7 @@ public class SqlServerQueryRunnerTests
     }
 
     [Fact]
-    public void Provider_ShouldBeSqlServer()
+    public void Provider_ShouldBeSqlServer_WhenAccessed()
     {
         // Arrange
         const DbProvider expected = DbProvider.SqlServer;

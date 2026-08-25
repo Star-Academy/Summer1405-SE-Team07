@@ -24,7 +24,9 @@ public class ConsoleQueryExecutionReporterTests
         // Arrange
         var act = () => new ConsoleQueryExecutionReporter(null!);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("resultPrinter");
     }
 
@@ -34,7 +36,9 @@ public class ConsoleQueryExecutionReporterTests
         // Arrange
         var act = () => _sut.ReportSucceededAsync(DbProvider.PostgreSql, null!);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("executionResult");
     }
 
@@ -59,7 +63,9 @@ public class ConsoleQueryExecutionReporterTests
         // Arrange
         var act = () => _sut.ReportFailed(DbProvider.SqlServer, null!);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("exception");
     }
 
@@ -69,7 +75,9 @@ public class ConsoleQueryExecutionReporterTests
         // Arrange
         var act = () => _sut.ReportFailed(DbProvider.SqlServer, new InvalidOperationException("error"));
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().NotThrow();
     }
 
@@ -79,7 +87,9 @@ public class ConsoleQueryExecutionReporterTests
         // Arrange
         var act = () => _sut.ReportStarted(DbProvider.PostgreSql);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().NotThrow();
     }
 
@@ -89,7 +99,9 @@ public class ConsoleQueryExecutionReporterTests
         // Arrange
         var act = () => _sut.ReportCompleted();
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().NotThrow();
     }
 }

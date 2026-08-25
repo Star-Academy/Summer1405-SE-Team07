@@ -86,7 +86,7 @@ public class QueryTests
     }
 
     [Fact]
-    public void From_Select_Where_ShouldReturnSameInstance_ForFluentChaining()
+    public void From_ShouldReturnSameQueryInstance_WhenCalledInFluentChaining()
     {
         // Arrange
         var expected = _sut;

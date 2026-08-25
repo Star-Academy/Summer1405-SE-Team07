@@ -37,7 +37,9 @@ public class SqlCompilerTests
         // Arrange
         var act = () => new SqlCompiler(null!, _registryFactory);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("valueBinderFactory");
     }
 
@@ -47,7 +49,9 @@ public class SqlCompilerTests
         // Arrange
         var act = () => new SqlCompiler(_valueBinderFactory, null!);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("registryFactory");
     }
 
@@ -57,7 +61,9 @@ public class SqlCompilerTests
         // Arrange
         var act = () => _sut.Compile(null!, DbProvider.PostgreSql);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("query");
     }
 

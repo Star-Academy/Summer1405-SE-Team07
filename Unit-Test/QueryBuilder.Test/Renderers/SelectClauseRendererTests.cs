@@ -23,7 +23,7 @@ public class SelectClauseRendererTests
     }
 
     [Fact]
-    public void ClauseKind_ShouldBeSelect()
+    public void ClauseKind_ShouldBeSelect_WhenAccessed()
     {
         // Arrange
         var sut = new SelectClauseRenderer(DbProvider.PostgreSql, _quoter);
@@ -38,7 +38,7 @@ public class SelectClauseRendererTests
     [Theory]
     [InlineData(DbProvider.PostgreSql)]
     [InlineData(DbProvider.SqlServer)]
-    public void Provider_ShouldReturnConfiguredProvider(DbProvider provider)
+    public void Provider_ShouldReturnConfiguredProvider_WhenConstructed(DbProvider provider)
     {
         // Arrange
         var sut = new SelectClauseRenderer(provider, _quoter);

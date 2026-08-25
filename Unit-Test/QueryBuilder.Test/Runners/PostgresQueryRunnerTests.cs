@@ -19,7 +19,7 @@ public class PostgresQueryRunnerTests
     }
 
     [Fact]
-    public void Provider_ShouldBePostgreSql()
+    public void Provider_ShouldBePostgreSql_WhenAccessed()
     {
         // Arrange
         const DbProvider expected = DbProvider.PostgreSql;
