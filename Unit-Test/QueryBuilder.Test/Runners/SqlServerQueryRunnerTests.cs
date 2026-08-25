@@ -1,15 +1,13 @@
-﻿
-
-using System.Data.Common;
 using System.Data;
+using System.Data.Common;
 using FluentAssertions;
 using NSubstitute;
+using QueryLib;
 using QueryLib.Compilers;
 using QueryLib.Demo.Abstractions;
 using QueryLib.Demo.QueryRunners;
 
 namespace QueryBuilder.Test.Runners;
-
 
 public class SqlServerQueryRunnerTests
 {
@@ -21,13 +19,27 @@ public class SqlServerQueryRunnerTests
     }
 
     [Fact]
+    public void Provider_ShouldBeSqlServer()
+    {
+        // Arrange
+        const DbProvider expected = DbProvider.SqlServer;
+
+        // Act
+        var provider = _sut.Provider;
+
+        // Assert
+        provider.Should().Be(expected);
+    }
+
+    [Fact]
     public async Task RunAsync_ShouldThrowInvalidOperationException_WhenConnectionIsClosed()
     {
         // Arrange
         var query = new CompiledQuery("SELECT * FROM TestTable", new List<object?>());
         var connection = Substitute.For<DbConnection>();
-        connection.State.Returns(System.Data.ConnectionState.Closed);
+        connection.State.Returns(ConnectionState.Closed);
         var expected = "The provided connection is not open.*";
+
         // Act
         var act = () => _sut.RunAsync(query, connection);
 

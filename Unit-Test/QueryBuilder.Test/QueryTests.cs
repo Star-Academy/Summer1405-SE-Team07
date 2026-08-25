@@ -1,7 +1,6 @@
 using FluentAssertions;
 using QueryLib;
 using QueryLib.Clauses;
-using QueryLib.Clauses.Abstractions;
 
 namespace QueryBuilder.Test;
 
@@ -11,53 +10,14 @@ public class QueryTests
 
     public QueryTests()
     {
-        _sut =  new Query();
+        _sut = new Query();
     }
 
     [Fact]
-    public void Table_ShouldReturnSetTableName_WhenFromWasCalled()
+    public void Clauses_ShouldContainOnlySelectClause_WhenQueryIsConstructed()
     {
         // Arrange
-        _sut.From("student");
-
-        // Act
-        var table = _sut.Table;
-
-        // Assert
-        table.Should().Be("student");
-    }
-
-    [Fact]
-    public void Columns_ShouldContainAddedColumns_WhenSelectIsCalledWithColumns()
-    {
-        // Arrange
-        _sut.Select("id", "name");
-
-        // Act
-        var columns = _sut.Columns;
-
-        // Assert
-        columns.Should().Equal("id", "name");
-    }
-
-    [Fact]
-    public void Columns_ShouldRemainEmpty_WhenSelectIsCalledWithNull()
-    {
-        // Arrange
-        _sut.Select(null);
-
-        // Act
-        var columns = _sut.Columns;
-
-        // Assert
-        columns.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void Clauses_ShouldContainSelectAndFromClause_WhenQueryIsConstructed()
-    {
-        // Arrange
-        var expected = new[] { typeof(SelectClause), typeof(FromClause) };
+        var expected = new[] { typeof(SelectClause) };
 
         // Act
         var clauseTypes = _sut.Clauses.Select(clause => clause.GetType());
@@ -67,47 +27,62 @@ public class QueryTests
     }
 
     [Fact]
+    public void From_ShouldAddFromClauseWithSpecifiedTable_WhenCalled()
+    {
+        // Arrange
+        const string expectedTable = "student";
+        _sut.From(expectedTable);
+
+        // Act
+        var fromClause = _sut.Clauses.OfType<FromClause>().Single();
+
+        // Assert
+        fromClause.Table.Should().Be(expectedTable);
+    }
+
+    [Fact]
+    public void Select_ShouldAddColumnsToSelectClause_WhenCalledWithColumns()
+    {
+        // Arrange
+        var expected = new[] { "id", "name" };
+        _sut.Select("id", "name");
+
+        // Act
+        var selectClause = _sut.Clauses.OfType<SelectClause>().Single();
+
+        // Assert
+        selectClause.Columns.Should().Equal(expected);
+    }
+
+    [Fact]
+    public void Select_ShouldNotAddColumns_WhenCalledWithNull()
+    {
+        // Arrange
+        _sut.Select(null);
+
+        // Act
+        var selectClause = _sut.Clauses.OfType<SelectClause>().Single();
+
+        // Assert
+        selectClause.Columns.Should().BeEmpty();
+    }
+
+    [Fact]
     public void Where_ShouldAddSingleWhereClauseWithAllConditions_WhenCalledMultipleTimes()
     {
         // Arrange
+        var expected = new[]
+        {
+            new Condition { Column = "name", Value = "kourosh" },
+            new Condition { Column = "age", Value = 20 }
+        };
         _sut.Where("name", "kourosh").Where("age", 20);
 
         // Act
-        var whereClause = (WhereClause)_sut.Clauses.Single(clause => clause is WhereClause);
+        var whereClause = _sut.Clauses.OfType<WhereClause>().Single();
 
         // Assert
-        whereClause.Conditions.Should()
-            .BeEquivalentTo(new[]
-            {
-                new Condition { Column = "name", Value = "kourosh" },
-                new Condition { Column = "age", Value = 20 }
-            });
-    }
-
-    [Fact]
-    public void AddClause_ShouldThrowArgumentNullException_WhenClauseIsNull()
-    {
-        // Arrange
-        IQueryClause? clause = null;
-
-        // Act
-        var act = () => _sut.AddClause(clause!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName("clause");
-    }
-
-    [Fact]
-    public void AddClause_ShouldAppendClauseToClauses_WhenClauseIsProvided()
-    {
-        // Arrange
-        var customClause = new FromClause();
-
-        // Act
-        _sut.AddClause(customClause);
-
-        // Assert
-        _sut.Clauses.Should().Contain(customClause);
+        whereClause.Conditions.Should().BeEquivalentTo(expected);
     }
 
     [Fact]

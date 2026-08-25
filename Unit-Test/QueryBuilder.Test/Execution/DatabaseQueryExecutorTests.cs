@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Data.Common;
 using FluentAssertions;
 using NSubstitute;
@@ -8,19 +8,49 @@ using QueryLib.Compilers.Abstractions;
 using QueryLib.Demo;
 using QueryLib.Demo.Abstractions;
 using QueryLib.Demo.Execution;
-using QueryLib.Demo.Execution.Abstractions;
 
 namespace QueryBuilder.Test.Execution;
 
 public class DatabaseQueryExecutorTests
 {
-    private readonly IQueryExecutionDependencyFactory _dependencyFactory =
-        Substitute.For<IQueryExecutionDependencyFactory>();
+    private readonly IDbConnectionFactoryResolver _connectionFactoryResolver = Substitute.For<IDbConnectionFactoryResolver>();
+    private readonly IQueryRunnerFactory _runnerFactory = Substitute.For<IQueryRunnerFactory>();
+    private readonly ICompiler _compiler = Substitute.For<ICompiler>();
     private readonly DatabaseQueryExecutor _sut;
 
     public DatabaseQueryExecutorTests()
     {
-        _sut = new DatabaseQueryExecutor(_dependencyFactory);
+        _sut = new DatabaseQueryExecutor(_connectionFactoryResolver, _runnerFactory, _compiler);
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenResolverIsNull()
+    {
+        // Arrange
+        var act = () => new DatabaseQueryExecutor(null!, _runnerFactory, _compiler);
+
+        // Act & Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("connectionFactoryResolver");
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenRunnerFactoryIsNull()
+    {
+        // Arrange
+        var act = () => new DatabaseQueryExecutor(_connectionFactoryResolver, null!, _compiler);
+
+        // Act & Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("runnerFactory");
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenCompilerIsNull()
+    {
+        // Arrange
+        var act = () => new DatabaseQueryExecutor(_connectionFactoryResolver, _runnerFactory, null!);
+
+        // Act & Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("compiler");
     }
 
     [Fact]
@@ -55,18 +85,18 @@ public class DatabaseQueryExecutorTests
         // Arrange
         var query = new Query().From("student").Select("id");
         var configuration = new DbConfiguration(DbProvider.PostgreSql, "conn");
-        var compiler = Substitute.For<ICompiler>();
         var runner = Substitute.For<IQueryRunner>();
         var connectionFactory = Substitute.For<IDbConnectionFactory>();
         var fakeConnection = new FakeDbConnection();
         var compiledQuery = new CompiledQuery("SELECT 1", []);
         var queryResult = new QueryResult { ColumnNames = [], Rows = [] };
 
-        compiler.Compile(query).Returns(compiledQuery);
-        connectionFactory.CreateConnectionAsync().Returns(Task.FromResult<DbConnection>(fakeConnection));
-        runner.RunAsync(compiledQuery, fakeConnection, null).Returns(Task.FromResult(queryResult));
-        _dependencyFactory.Create(configuration)
-            .Returns(new QueryExecutionDependencies(compiler, runner, connectionFactory));
+        _connectionFactoryResolver.GetFactory(DbProvider.PostgreSql).Returns(connectionFactory);
+        _runnerFactory.GetRunner(DbProvider.PostgreSql).Returns(runner);
+        connectionFactory.Create(configuration.ConnectionString).Returns(fakeConnection);
+        _compiler.Compile(query, DbProvider.PostgreSql).Returns(compiledQuery);
+        runner.RunAsync(compiledQuery, fakeConnection).Returns(Task.FromResult(queryResult));
+
         var expected = new QueryExecutionResult(compiledQuery, queryResult);
 
         // Act
@@ -81,6 +111,7 @@ public class DatabaseQueryExecutorTests
     {
         public bool WasOpened { get; private set; }
 
+        [System.Diagnostics.CodeAnalysis.AllowNull]
         public override string ConnectionString { get; set; } = string.Empty;
         public override string Database => string.Empty;
         public override string DataSource => string.Empty;

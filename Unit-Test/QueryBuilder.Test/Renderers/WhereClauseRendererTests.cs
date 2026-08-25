@@ -1,5 +1,6 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using NSubstitute;
+using QueryLib;
 using QueryLib.Clauses;
 using QueryLib.Clauses.Abstractions;
 using QueryLib.Dialects.Abstractions;
@@ -11,62 +12,101 @@ public class WhereClauseRendererTests
 {
     private readonly IIdentifierQuoter _quoter = Substitute.For<IIdentifierQuoter>();
     private readonly IParameterPlaceholderFactory _placeholders = Substitute.For<IParameterPlaceholderFactory>();
-    private readonly WhereClauseRenderer _sut;
 
-    public WhereClauseRendererTests()
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenQuoterIsNull()
     {
-        _sut = new WhereClauseRenderer(_quoter, _placeholders);
+        // Arrange
+        var act = () => new WhereClauseRenderer(DbProvider.PostgreSql, null!, _placeholders);
+
+        // Act & Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("quoter");
     }
 
     [Fact]
-    public void ClauseType_ShouldBeWhereClause()
+    public void Constructor_ShouldThrowArgumentNullException_WhenPlaceholdersIsNull()
     {
         // Arrange
-        
+        var act = () => new WhereClauseRenderer(DbProvider.PostgreSql, _quoter, null!);
+
+        // Act & Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("placeholders");
+    }
+
+    [Fact]
+    public void ClauseKind_ShouldBeWhere()
+    {
+        // Arrange
+        var sut = new WhereClauseRenderer(DbProvider.PostgreSql, _quoter, _placeholders);
+
         // Act
-        
+        var kind = sut.ClauseKind;
+
         // Assert
-        _sut.ClauseType.Should().Be(typeof(WhereClause));
+        kind.Should().Be(ClauseKind.Where);
     }
 
-    [Fact]
-    public void Render_ShouldReturnEmptySql_AndPreserveExistingBindings_WhenNoConditionsExist()
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Provider_ShouldReturnConfiguredProvider(DbProvider provider)
     {
         // Arrange
+        var sut = new WhereClauseRenderer(provider, _quoter, _placeholders);
+
+        // Act
+        var result = sut.Provider;
+
+        // Assert
+        result.Should().Be(provider);
+    }
+
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Render_ShouldReturnEmptySql_WhenNoConditionsExist(DbProvider provider)
+    {
+        // Arrange
+        var sut = new WhereClauseRenderer(provider, _quoter, _placeholders);
         var clause = new WhereClause { Conditions = [] };
-        var existingBindings = new object?[] { 10 };
+        var expected = new RenderOutput(string.Empty, Array.Empty<object?>());
 
         // Act
-        var output = _sut.Render(clause, existingBindings);
+        var output = sut.Render(clause);
 
         // Assert
-        output.Sql.Should().BeEmpty();
-        output.Bindings.Should().Equal(existingBindings);
+        output.Should().BeEquivalentTo(expected);
     }
 
-    [Fact]
-    public void Render_ShouldGenerateWhereClauseAndBinding_WhenOneConditionExists()
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Render_ShouldGenerateWhereClauseAndBinding_WhenOneConditionExists(DbProvider provider)
     {
         // Arrange
+        var sut = new WhereClauseRenderer(provider, _quoter, _placeholders);
         var clause = new WhereClause
         {
             Conditions = [new Condition { Column = "name", Value = "kourosh" }]
         };
         _quoter.Quote("name").Returns("\"name\"");
         _placeholders.MakePlaceholder(1).Returns("$1");
+        var expected = new RenderOutput("WHERE \"name\" = $1", new object?[] { "kourosh" });
 
         // Act
-        var output = _sut.Render(clause, Array.Empty<object?>());
+        var output = sut.Render(clause);
 
         // Assert
-        output.Sql.Should().Be("WHERE \"name\" = $1");
-        output.Bindings.Should().Equal("kourosh");
+        output.Should().BeEquivalentTo(expected);
     }
 
-    [Fact]
-    public void Render_ShouldJoinWithAnd_AndPreserveBindingOrder_WhenMultipleConditionsExist()
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Render_ShouldJoinWithAnd_AndPreserveBindingOrder_WhenMultipleConditionsExist(DbProvider provider)
     {
         // Arrange
+        var sut = new WhereClauseRenderer(provider, _quoter, _placeholders);
         var clause = new WhereClause
         {
             Conditions =
@@ -79,34 +119,12 @@ public class WhereClauseRendererTests
         _quoter.Quote("age").Returns("\"age\"");
         _placeholders.MakePlaceholder(1).Returns("$1");
         _placeholders.MakePlaceholder(2).Returns("$2");
+        var expected = new RenderOutput("WHERE \"name\" = $1 AND \"age\" = $2", new object?[] { "kourosh", 20 });
 
         // Act
-        var output = _sut.Render(clause, Array.Empty<object?>());
+        var output = sut.Render(clause);
 
         // Assert
-        output.Sql.Should().Be("WHERE \"name\" = $1 AND \"age\" = $2");
-        output.Bindings.Should().Equal("kourosh", 20);
-    }
-
-    [Fact]
-    public void Render_ShouldContinuePlaceholderNumbering_AndNotModifyInput_WhenBindingsAlreadyExist()
-    {
-        // Arrange
-        var existingBindings = new List<object?> { 10 };
-        var clause = new WhereClause
-        {
-            Conditions = [new Condition { Column = "name", Value = "kourosh" }]
-        };
-        _quoter.Quote("name").Returns("\"name\"");
-        _placeholders.MakePlaceholder(2).Returns("$2");
-
-        // Act
-        var output = _sut.Render(clause, existingBindings);
-
-        // Assert
-        existingBindings.Should().Equal(10);
-        output.Sql.Should().Be("WHERE \"name\" = $2");
-        output.Bindings.Should().Equal(10, "kourosh");
-        _placeholders.Received(1).MakePlaceholder(2);
+        output.Should().BeEquivalentTo(expected);
     }
 }

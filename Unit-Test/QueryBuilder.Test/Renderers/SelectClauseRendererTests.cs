@@ -1,6 +1,8 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using NSubstitute;
+using QueryLib;
 using QueryLib.Clauses;
+using QueryLib.Clauses.Abstractions;
 using QueryLib.Dialects.Abstractions;
 using QueryLib.Renderers;
 
@@ -9,51 +11,78 @@ namespace QueryBuilder.Test.Renderers;
 public class SelectClauseRendererTests
 {
     private readonly IIdentifierQuoter _quoter = Substitute.For<IIdentifierQuoter>();
-    private readonly SelectClauseRenderer _sut;
 
-    public SelectClauseRendererTests()
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenQuoterIsNull()
     {
-        _sut = new SelectClauseRenderer(_quoter);
+        // Arrange
+        var act = () => new SelectClauseRenderer(DbProvider.PostgreSql, null!);
+
+        // Act & Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("quoter");
     }
 
     [Fact]
-    public void ClauseType_ShouldBeSelectClause()
+    public void ClauseKind_ShouldBeSelect()
     {
         // Arrange
-        
+        var sut = new SelectClauseRenderer(DbProvider.PostgreSql, _quoter);
+
         // Act
-        
+        var kind = sut.ClauseKind;
+
         // Assert
-        _sut.ClauseType.Should().Be(typeof(SelectClause));
+        kind.Should().Be(ClauseKind.Select);
     }
 
-    [Fact]
-    public void Render_ShouldSelectAllColumns_WhenNoColumnsProvided()
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Provider_ShouldReturnConfiguredProvider(DbProvider provider)
     {
         // Arrange
+        var sut = new SelectClauseRenderer(provider, _quoter);
+
+        // Act
+        var result = sut.Provider;
+
+        // Assert
+        result.Should().Be(provider);
+    }
+
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Render_ShouldSelectAllColumns_WhenNoColumnsProvided(DbProvider provider)
+    {
+        // Arrange
+        var sut = new SelectClauseRenderer(provider, _quoter);
         var clause = new SelectClause { Columns = [] };
+        var expected = new RenderOutput("SELECT *", Array.Empty<object?>());
 
         // Act
-        var output = _sut.Render(clause, Array.Empty<object?>());
+        var output = sut.Render(clause);
 
         // Assert
-        output.Sql.Should().Be("SELECT *");
+        output.Should().BeEquivalentTo(expected);
     }
 
-    [Fact]
-    public void Render_ShouldQuoteEveryColumn_AndPreserveBindings_WhenColumnsProvided()
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Render_ShouldQuoteEveryColumn_WhenColumnsProvided(DbProvider provider)
     {
         // Arrange
+        var sut = new SelectClauseRenderer(provider, _quoter);
         var clause = new SelectClause { Columns = ["id", "name"] };
         _quoter.Quote("id").Returns("\"id\"");
         _quoter.Quote("name").Returns("\"name\"");
-        var bindings = new object?[] { 5 };
+        var expected = new RenderOutput("SELECT \"id\", \"name\"", Array.Empty<object?>());
 
         // Act
-        var output = _sut.Render(clause, bindings);
+        var output = sut.Render(clause);
 
         // Assert
-        output.Sql.Should().Be("SELECT \"id\", \"name\"");
-        output.Bindings.Should().BeSameAs(bindings);
+        output.Should().BeEquivalentTo(expected);
     }
 }

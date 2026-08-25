@@ -7,59 +7,48 @@ namespace QueryBuilder.Test.Clauses;
 public class FromClauseTests
 {
     private readonly FromClause _sut;
+
     public FromClauseTests()
     {
-        _sut =  new FromClause();
-    }
-        
-    [Fact]
-    public void SetTable_ShouldThrowArgumentException_WhenTableNameIsWhitespace()
-    {
-        // Arrange
-        const string table = " ";
-        const string expected = "table";
-
-        // Act
-        var act = () => _sut.SetTable(table);
-
-        // Assert
-        act.Should().Throw<ArgumentException>().WithParameterName(expected);
+        _sut = new FromClause { Table = "student" };
     }
 
     [Fact]
-    public void Table_ShouldThrowInvalidOperationException_WhenTableIsNotSet()
+    public void Table_ShouldReturnSetValue_WhenConstructed()
     {
         // Arrange
-        const string expected = "From(...) must be called before compiling the query.";
-
-        // Act
-        var act = () => _sut.Table;
-
-        // Assert
-        act.Should().Throw<InvalidOperationException>().WithMessage(expected);
-    }
-
-    [Fact]
-    public void Table_ShouldReturnSetValue_WhenSetTableWasCalled()
-    {
-        // Arrange
-        _sut.SetTable("student");
+        const string expected = "student";
 
         // Act
         var table = _sut.Table;
 
         // Assert
-        table.Should().Be("student");
+        table.Should().Be(expected);
     }
 
     [Fact]
-    public void Order_ShouldBe10()
+    public void Order_ShouldBe1()
     {
         // Arrange
+        const int expected = 1;
 
         // Act
-        
+        var order = _sut.Order;
+
         // Assert
-        _sut.Order.Should().Be(10);
+        order.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Kind_ShouldBeFrom()
+    {
+        // Arrange
+        const ClauseKind expected = ClauseKind.From;
+
+        // Act
+        var kind = _sut.Kind;
+
+        // Assert
+        kind.Should().Be(expected);
     }
 }

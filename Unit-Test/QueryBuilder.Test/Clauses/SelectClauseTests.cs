@@ -1,5 +1,6 @@
 using FluentAssertions;
 using QueryLib.Clauses;
+using QueryLib.Clauses.Abstractions;
 
 namespace QueryBuilder.Test.Clauses;
 
@@ -9,23 +10,41 @@ public class SelectClauseTests
     public void Columns_ShouldReturnProvidedColumns_WhenSet()
     {
         // Arrange
-        var clause = new SelectClause { Columns = ["id", "name"] };
+        var expected = new[] { "id", "name" };
+        var sut = new SelectClause { Columns = expected };
 
         // Act
-        
+        var columns = sut.Columns;
+
         // Assert
-        clause.Columns.Should().Equal("id", "name");
+        columns.Should().Equal(expected);
     }
 
     [Fact]
     public void Order_ShouldBe0()
     {
         // Arrange
-        var clause = new SelectClause { Columns = [] };
+        const int expected = 0;
+        var sut = new SelectClause { Columns = [] };
 
         // Act
-        
+        var order = sut.Order;
+
         // Assert
-        clause.Order.Should().Be(0);
+        order.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Kind_ShouldBeSelect()
+    {
+        // Arrange
+        const ClauseKind expected = ClauseKind.Select;
+        var sut = new SelectClause { Columns = [] };
+
+        // Act
+        var kind = sut.Kind;
+
+        // Assert
+        kind.Should().Be(expected);
     }
 }

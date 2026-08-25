@@ -1,5 +1,6 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using NSubstitute;
+using QueryLib;
 using QueryLib.Clauses;
 using QueryLib.Clauses.Abstractions;
 using QueryLib.Renderers;
@@ -10,12 +11,26 @@ namespace QueryBuilder.Test.Renderers;
 public class ClauseRendererRegistryTests
 {
     [Fact]
-    public void GetRenderer_ShouldReturnMatchingRenderer_WhenRegisteredForClauseType()
+    public void Provider_ShouldReturnConfiguredProvider()
+    {
+        // Arrange
+        const DbProvider expected = DbProvider.PostgreSql;
+        var sut = new ClauseRendererRegistry(expected, []);
+
+        // Act
+        var provider = sut.Provider;
+
+        // Assert
+        provider.Should().Be(expected);
+    }
+
+    [Fact]
+    public void GetRenderer_ShouldReturnMatchingRenderer_WhenRegisteredForClauseKind()
     {
         // Arrange
         var selectRenderer = Substitute.For<IClauseRenderer>();
-        selectRenderer.ClauseType.Returns(typeof(SelectClause));
-        var sut = new ClauseRendererRegistry([selectRenderer]);
+        selectRenderer.ClauseKind.Returns(ClauseKind.Select);
+        var sut = new ClauseRendererRegistry(DbProvider.PostgreSql, [selectRenderer]);
         var clause = new SelectClause { Columns = [] };
 
         // Act
@@ -26,17 +41,17 @@ public class ClauseRendererRegistryTests
     }
 
     [Fact]
-    public void GetRenderer_ShouldThrowInvalidOperationException_WhenNoRendererRegisteredForClauseType()
+    public void GetRenderer_ShouldThrowInvalidOperationException_WhenNoRendererRegisteredForClauseKind()
     {
         // Arrange
-        var sut = new ClauseRendererRegistry([]);
-        var clause = new FromClause();
+        var sut = new ClauseRendererRegistry(DbProvider.PostgreSql, []);
+        var clause = new FromClause { Table = "student" };
 
         // Act
         var act = () => sut.GetRenderer(clause);
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("No renderer registered for FromClause.");
+            .WithMessage("No renderer registered for From.");
     }
 }

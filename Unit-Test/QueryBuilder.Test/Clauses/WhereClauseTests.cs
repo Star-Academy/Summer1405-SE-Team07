@@ -1,5 +1,6 @@
 using FluentAssertions;
 using QueryLib.Clauses;
+using QueryLib.Clauses.Abstractions;
 
 namespace QueryBuilder.Test.Clauses;
 
@@ -9,38 +10,70 @@ public class WhereClauseTests
     public void HasConditions_ShouldBeFalse_WhenConditionsIsEmpty()
     {
         // Arrange
-        var clause = new WhereClause { Conditions = [] };
+        var sut = new WhereClause { Conditions = [] };
 
         // Act
-        
+        var hasConditions = sut.HasConditions;
+
         // Assert
-        clause.HasConditions.Should().BeFalse();
+        hasConditions.Should().BeFalse();
     }
 
     [Fact]
     public void HasConditions_ShouldBeTrue_WhenConditionsIsNotEmpty()
     {
         // Arrange
-        var clause = new WhereClause
+        var sut = new WhereClause
         {
             Conditions = [new Condition { Column = "name", Value = "kourosh" }]
         };
 
         // Act
-        
+        var hasConditions = sut.HasConditions;
+
         // Assert
-        clause.HasConditions.Should().BeTrue();
+        hasConditions.Should().BeTrue();
     }
 
     [Fact]
-    public void Order_ShouldBe20()
+    public void Order_ShouldBe2()
     {
         // Arrange
-        var clause = new WhereClause { Conditions = [] };
+        const int expected = 2;
+        var sut = new WhereClause { Conditions = [] };
 
         // Act
-        
+        var order = sut.Order;
+
         // Assert
-        clause.Order.Should().Be(20);
+        order.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Kind_ShouldBeWhere()
+    {
+        // Arrange
+        const ClauseKind expected = ClauseKind.Where;
+        var sut = new WhereClause { Conditions = [] };
+
+        // Act
+        var kind = sut.Kind;
+
+        // Assert
+        kind.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Conditions_ShouldReturnProvidedConditions_WhenSet()
+    {
+        // Arrange
+        var expected = new[] { new Condition { Column = "name", Value = "kourosh" } };
+        var sut = new WhereClause { Conditions = expected };
+
+        // Act
+        var conditions = sut.Conditions;
+
+        // Assert
+        conditions.Should().Equal(expected);
     }
 }
