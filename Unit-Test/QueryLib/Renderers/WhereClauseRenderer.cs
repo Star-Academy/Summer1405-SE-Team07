@@ -5,7 +5,7 @@ using QueryLib.Renderers.Abstractions;
 
 namespace QueryLib.Renderers;
 
-public sealed class WhereClauseRenderer : IClauseRenderer
+public abstract class WhereClauseRenderer : IClauseRenderer
 {
     private readonly IIdentifierQuoter _quoter;
     private readonly IParameterPlaceholderFactory _placeholders;
@@ -13,7 +13,7 @@ public sealed class WhereClauseRenderer : IClauseRenderer
     public DbProvider Provider { get; }
     public ClauseKind ClauseKind => ClauseKind.Where;
 
-    public WhereClauseRenderer(
+    protected WhereClauseRenderer(
         DbProvider provider,
         IIdentifierQuoter quoter,
         IParameterPlaceholderFactory placeholders)
@@ -24,7 +24,7 @@ public sealed class WhereClauseRenderer : IClauseRenderer
     }
 
 
-    public RenderOutput Render(IQueryClause clause)
+    public virtual RenderOutput Render(IQueryClause clause)
     {
         var whereClause = (WhereClause)clause;
 
