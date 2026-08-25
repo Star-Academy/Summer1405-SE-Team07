@@ -1,0 +1,5 @@
+# Completely ignored files and folders
+node_modules/
+__pycache__/
+.env
+.ds_store
