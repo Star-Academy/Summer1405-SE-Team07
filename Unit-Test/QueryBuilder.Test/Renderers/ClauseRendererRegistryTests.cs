@@ -18,10 +18,10 @@ public class ClauseRendererRegistryTests
         var sut = new ClauseRendererRegistry(expected, []);
 
         // Act
-        var provider = sut.Provider;
+        var actual = sut.Provider;
 
         // Assert
-        provider.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 
     [Fact]
@@ -34,10 +34,10 @@ public class ClauseRendererRegistryTests
         var clause = new SelectClause { Columns = [] };
 
         // Act
-        var result = sut.GetRenderer(clause);
+        var actual = sut.GetRenderer(clause);
 
         // Assert
-        result.Should().BeSameAs(selectRenderer);
+        actual.Should().BeSameAs(selectRenderer);
     }
 
     [Fact]

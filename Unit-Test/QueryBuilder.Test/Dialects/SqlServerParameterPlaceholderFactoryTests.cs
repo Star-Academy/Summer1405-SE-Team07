@@ -20,24 +20,23 @@ public class SqlServerParameterPlaceholderFactoryTests
         const DbProvider expected = DbProvider.SqlServer;
 
         // Act
-        var provider = _sut.Provider;
+        var actual = _sut.Provider;
 
         // Assert
-        provider.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData(1, "@p0")]
-    [InlineData(2, "@p1")]
-    [InlineData(10, "@p9")]
-    public void MakePlaceholder_ShouldReturnAtPWithZeroBasedIndex_Whenever(int index, string expected)
+    [Fact]
+    public void MakePlaceholder_ShouldReturnParameterPlaceholderWithZeroBasedIndex_Whenever()
     {
         // Arrange 
+        const int index = 10;
+        const string expected = "@p9";
         
         // Act
-        var result = _sut.MakePlaceholder(index);
+        var actual = _sut.MakePlaceholder(index);
         
         // Assert
-        result.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 }

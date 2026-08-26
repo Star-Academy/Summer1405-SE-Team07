@@ -20,10 +20,10 @@ public class PostgresParameterPlaceholderFactoryTests
         const DbProvider expected = DbProvider.PostgreSql;
 
         // Act
-        var provider = _sut.Provider;
+        var actual = _sut.Provider;
 
         // Assert
-        provider.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 
     [Fact]
@@ -34,9 +34,9 @@ public class PostgresParameterPlaceholderFactoryTests
         const string expected = "$1";
         
         // Act
-        var result = _sut.MakePlaceholder(index);
+        var actual = _sut.MakePlaceholder(index);
         
         // Assert
-        result.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 }

@@ -20,22 +20,23 @@ public class SqlServerIdentifierQuoterTests
         const DbProvider expected = DbProvider.SqlServer;
 
         // Act
-        var provider = _sut.Provider;
+        var actual = _sut.Provider;
 
         // Assert
-        provider.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 
     [Fact]
     public void Quote_ShouldWrapIdentifierInBrackets_Whenever()
     {
         // Arrange
-        const string expected = "[column_name]";
+        const string identifier = "column_name";
+        const string expected = "[" + identifier + "]";
 
         // Act
-        var result = _sut.Quote("column_name");
+        var actual = _sut.Quote("column_name");
 
         // Assert
-        result.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 }

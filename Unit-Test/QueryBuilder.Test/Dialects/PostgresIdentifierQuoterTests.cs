@@ -20,10 +20,10 @@ public class PostgresIdentifierQuoterTests
         const DbProvider expected = DbProvider.PostgreSql;
 
         // Act
-        var provider = _sut.Provider;
+        var actual = _sut.Provider;
 
         // Assert
-        provider.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 
     [Fact]
@@ -34,9 +34,9 @@ public class PostgresIdentifierQuoterTests
         const string expected = "\"" + identifier + "\"";
 
         // Act
-        var result = _sut.Quote(identifier);
+        var actual = _sut.Quote(identifier);
 
         // Assert
-        result.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 }

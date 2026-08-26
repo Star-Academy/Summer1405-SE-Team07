@@ -20,10 +20,10 @@ public class SqlServerValueBinderTests
         const DbProvider expected = DbProvider.SqlServer;
 
         // Act
-        var dbType = _sut.DbType;
+        var actual = _sut.DbType;
 
         // Assert
-        dbType.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 
     [Fact]
@@ -32,10 +32,10 @@ public class SqlServerValueBinderTests
         // Arrange 
         
         //Act
-        var result = _sut.Bind(true);
+        var actual = _sut.Bind(true);
         
         // Assert
-        result.Should().Be(1);
+        actual.Should().Be(1);
     }
 
     [Fact]
@@ -44,10 +44,10 @@ public class SqlServerValueBinderTests
         // Arrange
 
         // Act
-        var result = _sut.Bind(false);
+        var actual = _sut.Bind(false);
         
         // Assert
-        result.Should().Be(0);
+        actual.Should().Be(0);
     }
 
     [Theory]
@@ -59,9 +59,9 @@ public class SqlServerValueBinderTests
         // Arrange 
         
         // Act
-        var result = _sut.Bind(value);
+        var actual = _sut.Bind(value);
         
         // Assert
-        result.Should().Be(value);
+        actual.Should().Be(value);
     }
 }

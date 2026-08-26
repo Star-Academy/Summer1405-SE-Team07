@@ -31,10 +31,10 @@ public class FromClauseRendererTests
         var sut = new FromClauseRenderer(DbProvider.PostgreSql, _quoter);
 
         // Act
-        var kind = sut.ClauseKind;
+        var actual = sut.ClauseKind;
 
         // Assert
-        kind.Should().Be(ClauseKind.From);
+        actual.Should().Be(ClauseKind.From);
     }
 
     [Theory]
@@ -46,10 +46,10 @@ public class FromClauseRendererTests
         var sut = new FromClauseRenderer(provider, _quoter);
 
         // Act
-        var result = sut.Provider;
+        var actual = sut.Provider;
 
         // Assert
-        result.Should().Be(provider);
+        actual.Should().Be(provider);
     }
 
     [Theory]
@@ -64,9 +64,9 @@ public class FromClauseRendererTests
         var expected = new RenderOutput("FROM \"student\"", Array.Empty<object?>());
 
         // Act
-        var output = sut.Render(clause);
+        var actual = sut.Render(clause);
 
         // Assert
-        output.Should().BeEquivalentTo(expected);
+        actual.Should().BeEquivalentTo(expected);
     }
 }

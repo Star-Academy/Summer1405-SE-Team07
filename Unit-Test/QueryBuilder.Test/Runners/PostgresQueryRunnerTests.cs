@@ -25,10 +25,10 @@ public class PostgresQueryRunnerTests
         const DbProvider expected = DbProvider.PostgreSql;
 
         // Act
-        var provider = _sut.Provider;
+        var actual = _sut.Provider;
 
         // Assert
-        provider.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class PostgresQueryRunnerTests
         reader.GetValue(1).Returns(DBNull.Value);
 
         // Act
-        var result = await _sut.RunAsync(query, connection, transaction);
+        var actual = await _sut.RunAsync(query, connection, transaction);
 
         // Assert
         command.CommandText.Should().Be(query.Sql);
@@ -90,8 +90,8 @@ public class PostgresQueryRunnerTests
         parameters.Received(1).Add(idParameter);
         parameters.Received(1).Add(nameParameter);
 
-        result.ColumnNames.Should().Equal("id", "name");
-        var row = result.Rows.Should().ContainSingle().Which;
+        actual.ColumnNames.Should().Equal("id", "name");
+        var row = actual.Rows.Should().ContainSingle().Which;
         row["id"].Should().Be(42);
         row["name"].Should().BeNull();
     }

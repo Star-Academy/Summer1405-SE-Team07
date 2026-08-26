@@ -82,10 +82,10 @@ public class SqlCompilerTests
         var expected = new CompiledQuery("SELECT \"id\" FROM \"student\"", new object?[] { "bound-select", "bound-from" });
 
         // Act
-        var result = _sut.Compile(query, DbProvider.PostgreSql);
+        var actual = _sut.Compile(query, DbProvider.PostgreSql);
 
         // Assert
-        result.Should().BeEquivalentTo(expected);
+        actual.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -101,9 +101,9 @@ public class SqlCompilerTests
         var expected = new CompiledQuery("FROM \"student\"", new List<object?>());
 
         // Act
-        var result = _sut.Compile(query, DbProvider.PostgreSql);
+        var actual = _sut.Compile(query, DbProvider.PostgreSql);
 
         // Assert
-        result.Should().BeEquivalentTo(expected);
+        actual.Should().BeEquivalentTo(expected);
     }
 }

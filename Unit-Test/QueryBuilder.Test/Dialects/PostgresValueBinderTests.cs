@@ -20,10 +20,10 @@ public class PostgresValueBinderTests
         const DbProvider expected = DbProvider.PostgreSql;
 
         // Act
-        var dbType = _sut.DbType;
+        var actual = _sut.DbType;
 
         // Assert
-        dbType.Should().Be(expected);
+        actual.Should().Be(expected);
     }
 
     [Theory]
@@ -36,9 +36,9 @@ public class PostgresValueBinderTests
         // Arrange 
 
         // Act
-        var result = _sut.Bind(value);
+        var actual = _sut.Bind(value);
         
         // Assert
-        result.Should().Be(value);
+        actual.Should().Be(value);
     }
 }

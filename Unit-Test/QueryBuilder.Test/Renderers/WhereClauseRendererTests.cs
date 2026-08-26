@@ -44,10 +44,10 @@ public class WhereClauseRendererTests
         var sut = new WhereClauseRenderer(DbProvider.PostgreSql, _quoter, _placeholders);
 
         // Act
-        var kind = sut.ClauseKind;
+        var actual = sut.ClauseKind;
 
         // Assert
-        kind.Should().Be(ClauseKind.Where);
+        actual.Should().Be(ClauseKind.Where);
     }
 
     [Theory]
@@ -76,10 +76,10 @@ public class WhereClauseRendererTests
         var expected = new RenderOutput(string.Empty, Array.Empty<object?>());
 
         // Act
-        var output = sut.Render(clause);
+        var actual = sut.Render(clause);
 
         // Assert
-        output.Should().BeEquivalentTo(expected);
+        actual.Should().BeEquivalentTo(expected);
     }
 
     [Theory]
@@ -98,10 +98,10 @@ public class WhereClauseRendererTests
         var expected = new RenderOutput("WHERE \"name\" = $1", new object?[] { "kourosh" });
 
         // Act
-        var output = sut.Render(clause);
+        var actual = sut.Render(clause);
 
         // Assert
-        output.Should().BeEquivalentTo(expected);
+        actual.Should().BeEquivalentTo(expected);
     }
 
     [Theory]
@@ -126,9 +126,9 @@ public class WhereClauseRendererTests
         var expected = new RenderOutput("WHERE \"name\" = $1 AND \"age\" = $2", new object?[] { "kourosh", 20 });
 
         // Act
-        var output = sut.Render(clause);
+        var actual = sut.Render(clause);
 
         // Assert
-        output.Should().BeEquivalentTo(expected);
+        actual.Should().BeEquivalentTo(expected);
     }
 }

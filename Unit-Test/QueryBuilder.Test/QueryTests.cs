@@ -20,10 +20,10 @@ public class QueryTests
         var expected = new[] { typeof(SelectClause) };
 
         // Act
-        var clauseTypes = _sut.Clauses.Select(clause => clause.GetType());
+        var actual = _sut.Clauses.Select(clause => clause.GetType());
 
         // Assert
-        clauseTypes.Should().Equal(expected);
+        actual.Should().Equal(expected);
     }
 
     [Fact]
@@ -34,10 +34,10 @@ public class QueryTests
         _sut.From(expectedTable);
 
         // Act
-        var fromClause = _sut.Clauses.OfType<FromClause>().Single();
+        var actual = _sut.Clauses.OfType<FromClause>().Single();
 
         // Assert
-        fromClause.Table.Should().Be(expectedTable);
+        actual.Table.Should().Be(expectedTable);
     }
 
     [Fact]
@@ -48,10 +48,10 @@ public class QueryTests
         _sut.Select("id", "name");
 
         // Act
-        var selectClause = _sut.Clauses.OfType<SelectClause>().Single();
+        var actual = _sut.Clauses.OfType<SelectClause>().Single();
 
         // Assert
-        selectClause.Columns.Should().Equal(expected);
+        actual.Columns.Should().Equal(expected);
     }
 
     [Fact]
@@ -61,10 +61,10 @@ public class QueryTests
         _sut.Select(null);
 
         // Act
-        var selectClause = _sut.Clauses.OfType<SelectClause>().Single();
+        var actual = _sut.Clauses.OfType<SelectClause>().Single();
 
         // Assert
-        selectClause.Columns.Should().BeEmpty();
+        actual.Columns.Should().BeEmpty();
     }
 
     [Fact]
@@ -79,10 +79,10 @@ public class QueryTests
         _sut.Where("name", "kourosh").Where("age", 20);
 
         // Act
-        var whereClause = _sut.Clauses.OfType<WhereClause>().Single();
+        var actual = _sut.Clauses.OfType<WhereClause>().Single();
 
         // Assert
-        whereClause.Conditions.Should().BeEquivalentTo(expected);
+        actual.Conditions.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -92,9 +92,9 @@ public class QueryTests
         var expected = _sut;
 
         // Act
-        var result = _sut.From("student").Select("id").Where("id", 1);
+        var actual = _sut.From("student").Select("id").Where("id", 1);
 
         // Assert
-        result.Should().BeSameAs(expected);
+        actual.Should().BeSameAs(expected);
     }
 }

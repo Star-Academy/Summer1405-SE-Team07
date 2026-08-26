@@ -31,10 +31,10 @@ public class SelectClauseRendererTests
         var sut = new SelectClauseRenderer(DbProvider.PostgreSql, _quoter);
 
         // Act
-        var kind = sut.ClauseKind;
+        var actual = sut.ClauseKind;
 
         // Assert
-        kind.Should().Be(ClauseKind.Select);
+        actual.Should().Be(ClauseKind.Select);
     }
 
     [Theory]
@@ -46,10 +46,10 @@ public class SelectClauseRendererTests
         var sut = new SelectClauseRenderer(provider, _quoter);
 
         // Act
-        var result = sut.Provider;
+        var actual = sut.Provider;
 
         // Assert
-        result.Should().Be(provider);
+        actual.Should().Be(provider);
     }
 
     [Theory]
@@ -63,10 +63,10 @@ public class SelectClauseRendererTests
         var expected = new RenderOutput("SELECT *", Array.Empty<object?>());
 
         // Act
-        var output = sut.Render(clause);
+        var actual = sut.Render(clause);
 
         // Assert
-        output.Should().BeEquivalentTo(expected);
+        actual.Should().BeEquivalentTo(expected);
     }
 
     [Theory]
@@ -82,9 +82,9 @@ public class SelectClauseRendererTests
         var expected = new RenderOutput("SELECT \"id\", \"name\"", Array.Empty<object?>());
 
         // Act
-        var output = sut.Render(clause);
+        var actual = sut.Render(clause);
 
         // Assert
-        output.Should().BeEquivalentTo(expected);
+        actual.Should().BeEquivalentTo(expected);
     }
 }
