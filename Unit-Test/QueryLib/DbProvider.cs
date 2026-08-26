@@ -1,4 +1,4 @@
-namespace QueryLib.Demo;
+namespace QueryLib;
 
 public enum DbProvider
 {

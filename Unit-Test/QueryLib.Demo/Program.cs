@@ -1,6 +1,6 @@
-using QueryLib.Compilers;
+using Microsoft.Extensions.DependencyInjection;
+using QueryLib.Demo.Extensions;
 using QueryLib.Demo.Execution;
-using QueryLib.Demo.Printers;
 
 namespace QueryLib.Demo;
 
@@ -15,14 +15,18 @@ public static class Program
 
         var dbConfigurations = new List<DbConfiguration>
         {
-            new(DbProvider.PostgreSql, "Host=localhost;Port=5442;Username=postgres;Password=postgres;Database=mohaymen"),
-            new(DbProvider.SqlServer, "Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;Encrypt=False;TrustServerCertificate=True"),
+            new(DbProvider.PostgreSql,
+                "Host=localhost;Port=5442;Username=postgres;Password=postgres;Database=mohaymen"),
+            new(DbProvider.SqlServer,
+                "Server=localhost,1433;Database=master;User Id=sa;Password=Your_strong_Password123;Encrypt=False;TrustServerCertificate=True"),
         };
 
-        var dependencyFactory = new QueryExecutionDependencyFactory(new SqlCompilerFactory());
-        var queryExecutor = new DatabaseQueryExecutor(dependencyFactory);
-        var reporter = new ConsoleQueryExecutionReporter(new ConsoleResultPrinter());
-        var executionService = new QueryExecutionService(queryExecutor, reporter);
+        var services = new ServiceCollection();
+        services.AddQueryLibServices();
+
+        await using var serviceProvider = services.BuildServiceProvider();
+
+        var executionService = serviceProvider.GetRequiredService<QueryExecutionService>();
 
         await executionService.ExecuteAsync(query, dbConfigurations);
     }

@@ -1,12 +1,10 @@
 using FluentAssertions;
-using NSubstitute;
 using QueryLib;
 using QueryLib.Clauses;
-using QueryLib.Clauses.Abstractions;
 
 namespace QueryBuilder.Test;
 
-public sealed class QueryTests
+public class QueryTests
 {
     private readonly Query _sut;
 
@@ -16,130 +14,87 @@ public sealed class QueryTests
     }
 
     [Fact]
-    public void Constructor_ShouldInitializeSelectAndFromClauses_WhenCalled()
+    public void Clauses_ShouldContainOnlySelectClause_WhenQueryIsConstructed()
     {
         // Arrange
-        const int expectedClauseCount = 2;
+        var expected = new[] { typeof(SelectClause) };
 
         // Act
-        var query = new Query();
+        var actual = _sut.Clauses.Select(clause => clause.GetType());
 
         // Assert
-        query.Clauses.Should().HaveCount(expectedClauseCount);
-        query.Clauses.ElementAt(0).Should().BeOfType<SelectClause>();
-        query.Clauses.ElementAt(1).Should().BeOfType<FromClause>();
-        query.Columns.Should().BeEmpty();
+        actual.Should().Equal(expected);
     }
 
     [Fact]
-    public void From_ShouldReplacePreviouslySelectedTable_WhenCalledMoreThanOnce()
+    public void From_ShouldAddFromClauseWithSpecifiedTable_Whenever()
     {
         // Arrange
-        _sut.From("student");
+        const string expectedTable = "student";
+        _sut.From(expectedTable);
 
         // Act
-        _sut.From("teacher");
+        var actual = _sut.Clauses.OfType<FromClause>().Single();
 
         // Assert
-        _sut.Table.Should().Be("teacher");
+        actual.Table.Should().Be(expectedTable);
     }
 
     [Fact]
-    public void Select_ShouldAddColumnsAndReturnSameQuery_WhenColumnsAreProvided()
+    public void Select_ShouldAddColumnsToSelectClause_WhenCalledWithColumns()
     {
         // Arrange
-        var columns = new[] { "id", "name" };
+        var expected = new[] { "id", "name" };
+        _sut.Select("id", "name");
 
         // Act
-        var result = _sut.Select(columns);
+        var actual = _sut.Clauses.OfType<SelectClause>().Single();
 
         // Assert
-        result.Should().BeSameAs(_sut);
-        _sut.Columns.Should().Equal("id", "name");
+        actual.Columns.Should().Equal(expected);
     }
 
     [Fact]
-    public void Select_ShouldAppendColumns_WhenCalledMoreThanOnce()
+    public void Select_ShouldNotAddColumns_WhenCalledWithNull()
     {
         // Arrange
-        _sut.Select("id");
+        _sut.Select(null);
 
         // Act
-        _sut.Select("name", "age");
+        var actual = _sut.Clauses.OfType<SelectClause>().Single();
 
         // Assert
-        _sut.Columns.Should().Equal("id", "name", "age");
+        actual.Columns.Should().BeEmpty();
     }
 
     [Fact]
-    public void Select_ShouldIgnoreColumnsAndReturnSameQuery_WhenColumnsAreNull()
+    public void Where_ShouldAddSingleWhereClauseWithAllConditions_WhenCalledMultipleTimes()
     {
         // Arrange
-        string[]? columns = null;
+        var expected = new[]
+        {
+            new Condition { Column = "name", Value = "kourosh" },
+            new Condition { Column = "age", Value = 20 }
+        };
+        _sut.Where("name", "kourosh").Where("age", 20);
 
         // Act
-        var result = _sut.Select(columns);
+        var actual = _sut.Clauses.OfType<WhereClause>().Single();
 
         // Assert
-        result.Should().BeSameAs(_sut);
-        _sut.Columns.Should().BeEmpty();
+        actual.Conditions.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
-    public void Where_ShouldAddWhereClauseAndReturnSameQuery_WhenCalledForFirstCondition()
+    public void From_ShouldReturnSameQueryInstance_WhenCalledInFluentChaining()
     {
         // Arrange
-        const string column = "id";
-        const int value = 10;
+        var expected = _sut;
 
         // Act
-        var result = _sut.Where(column, value);
+        var actual = _sut.From("student").Select("id").Where("id", 1);
 
         // Assert
-        result.Should().BeSameAs(_sut);
-        _sut.Clauses.Should().HaveCount(3);
-        _sut.Clauses.OfType<WhereClause>().Should().ContainSingle();
-    }
-
-    [Fact]
-    public void Where_ShouldReuseExistingWhereClause_WhenCalledMoreThanOnce()
-    {
-        // Arrange
-        _sut.Where("id", 10);
-
-        // Act
-        _sut.Where("name", "kourosh");
-
-        // Assert
-        _sut.Clauses.Should().HaveCount(3);
-        _sut.Clauses.OfType<WhereClause>().Should().ContainSingle();
-    }
-
-    [Fact]
-    public void AddClause_ShouldAddClauseAndReturnSameQuery_WhenClauseIsProvided()
-    {
-        // Arrange
-        var clause = Substitute.For<IQueryClause>();
-
-        // Act
-        var result = _sut.AddClause(clause);
-
-        // Assert
-        result.Should().BeSameAs(_sut);
-        _sut.Clauses.Should().Contain(clause);
-    }
-
-    [Fact]
-    public void AddClause_ShouldThrowArgumentNullException_WhenClauseIsNull()
-    {
-        // Arrange
-        IQueryClause? clause = null;
-
-        // Act
-        var act = () => _sut.AddClause(clause!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("clause");
+        actual.Should().BeSameAs(expected);
     }
 }

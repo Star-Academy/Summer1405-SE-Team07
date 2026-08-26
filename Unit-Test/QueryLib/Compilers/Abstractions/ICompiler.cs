@@ -1,11 +1,6 @@
-using System.Collections.Generic;
-using QueryLib.Compilers;
-
 namespace QueryLib.Compilers.Abstractions;
 
 public interface ICompiler
 {
-    CompiledQuery Compile(Query query);
+    CompiledQuery Compile(Query query, DbProvider dbProvider);
 }
-
-

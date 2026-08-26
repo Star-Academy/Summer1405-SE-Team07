@@ -1,0 +1,90 @@
+using FluentAssertions;
+using NSubstitute;
+using QueryLib;
+using QueryLib.Clauses;
+using QueryLib.Clauses.Abstractions;
+using QueryLib.Dialects.Abstractions;
+using QueryLib.Renderers;
+
+namespace QueryBuilder.Test.Renderers;
+
+public class SelectClauseRendererTests
+{
+    private readonly IIdentifierQuoter _quoter = Substitute.For<IIdentifierQuoter>();
+
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenQuoterIsNull()
+    {
+        // Arrange
+
+        // Act
+        var act = () => new SelectClauseRenderer(DbProvider.PostgreSql, null!);
+        
+        // Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("quoter");
+    }
+
+    [Fact]
+    public void ClauseKind_ShouldBeSelect_Whenever()
+    {
+        // Arrange
+        var sut = new SelectClauseRenderer(DbProvider.PostgreSql, _quoter);
+
+        // Act
+        var actual = sut.ClauseKind;
+
+        // Assert
+        actual.Should().Be(ClauseKind.Select);
+    }
+
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Provider_ShouldReturnConfiguredProvider_WhenConstructed(DbProvider provider)
+    {
+        // Arrange
+        var sut = new SelectClauseRenderer(provider, _quoter);
+
+        // Act
+        var actual = sut.Provider;
+
+        // Assert
+        actual.Should().Be(provider);
+    }
+
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Render_ShouldSelectAllColumns_WhenNoColumnsProvided(DbProvider provider)
+    {
+        // Arrange
+        var sut = new SelectClauseRenderer(provider, _quoter);
+        var clause = new SelectClause { Columns = [] };
+        var expected = new RenderOutput("SELECT *", Array.Empty<object?>());
+
+        // Act
+        var actual = sut.Render(clause);
+
+        // Assert
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Theory]
+    [InlineData(DbProvider.PostgreSql)]
+    [InlineData(DbProvider.SqlServer)]
+    public void Render_ShouldQuoteEveryColumn_WhenColumnsProvided(DbProvider provider)
+    {
+        // Arrange
+        var sut = new SelectClauseRenderer(provider, _quoter);
+        var clause = new SelectClause { Columns = ["id", "name"] };
+        _quoter.Quote("id").Returns("\"id\"");
+        _quoter.Quote("name").Returns("\"name\"");
+        var expected = new RenderOutput("SELECT \"id\", \"name\"", Array.Empty<object?>());
+
+        // Act
+        var actual = sut.Render(clause);
+
+        // Assert
+        actual.Should().BeEquivalentTo(expected);
+    }
+}

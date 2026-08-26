@@ -1,222 +1,129 @@
 using FluentAssertions;
 using NSubstitute;
 using QueryLib;
+using QueryLib.Clauses;
 using QueryLib.Clauses.Abstractions;
 using QueryLib.Compilers;
 using QueryLib.Dialects.Abstractions;
+using QueryLib.Renderers;
+using QueryLib.Renderers.Abstractions;
 
 namespace QueryBuilder.Test.Compilers;
 
-public sealed class SqlCompilerTests
+public class SqlCompilerTests
 {
-    private readonly IIdentifierQuoter _quoter = Substitute.For<IIdentifierQuoter>();
-    private readonly IParameterPlaceholderFactory _placeholders =
-        Substitute.For<IParameterPlaceholderFactory>();
+    private readonly IValueBinderFactory _valueBinderFactory = Substitute.For<IValueBinderFactory>();
+    private readonly IClauseRendererRegistryFactory _registryFactory = Substitute.For<IClauseRendererRegistryFactory>();
     private readonly IValueBinder _binder = Substitute.For<IValueBinder>();
+    private readonly IClauseRenderer _selectRenderer = Substitute.For<IClauseRenderer>();
+    private readonly IClauseRenderer _fromRenderer = Substitute.For<IClauseRenderer>();
     private readonly SqlCompiler _sut;
 
     public SqlCompilerTests()
     {
-        _sut = new SqlCompiler(_quoter, _placeholders, _binder);
+        _selectRenderer.ClauseKind.Returns(ClauseKind.Select);
+        _fromRenderer.ClauseKind.Returns(ClauseKind.From);
+
+        var registry = new ClauseRendererRegistry(DbProvider.PostgreSql, [_selectRenderer, _fromRenderer]);
+        _registryFactory.GetRegistry(DbProvider.PostgreSql).Returns(registry);
+        _valueBinderFactory.GetBinder(DbProvider.PostgreSql).Returns(_binder);
+
+        _sut = new SqlCompiler(_valueBinderFactory, _registryFactory);
     }
 
     [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenQuoterIsNull()
+    public void Constructor_ShouldThrowArgumentNullException_WhenValueBinderFactoryIsNull()
     {
         // Arrange
-        IIdentifierQuoter? quoter = null;
 
         // Act
-        var act = () => new SqlCompiler(quoter!, _placeholders, _binder);
-
+        var act = () => new SqlCompiler(null!, _registryFactory);
+        
         // Assert
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("quoter");
+        act.Should().Throw<ArgumentNullException>().WithParameterName("valueBinderFactory");
     }
 
     [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenPlaceholderFactoryIsNull()
+    public void Constructor_ShouldThrowArgumentNullException_WhenRegistryFactoryIsNull()
     {
         // Arrange
-        IParameterPlaceholderFactory? placeholders = null;
 
         // Act
-        var act = () => new SqlCompiler(_quoter, placeholders!, _binder);
-
+        var act = () => new SqlCompiler(_valueBinderFactory, null!);
+        
         // Assert
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("placeholders");
-    }
-
-    [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenBinderIsNull()
-    {
-        // Arrange
-        IValueBinder? binder = null;
-
-        // Act
-        var act = () => new SqlCompiler(_quoter, _placeholders, binder!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("binder");
+        act.Should().Throw<ArgumentNullException>().WithParameterName("registryFactory");
     }
 
     [Fact]
     public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Arrange
-        Query? query = null;
 
         // Act
-        var act = () => _sut.Compile(query!);
-
+        var act = () => _sut.Compile(null!, DbProvider.PostgreSql);
+        
         // Assert
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("query");
+        act.Should().Throw<ArgumentNullException>().WithParameterName("query");
     }
 
     [Fact]
-    public void Compile_ShouldThrowInvalidOperationException_WhenFromClauseIsMissing()
+    public void Compile_ShouldJoinRenderedClausesInOrderAndBindValues_WhenClausesProduceSql()
     {
         // Arrange
-        var query = new Query();
+        var query = new Query().From("student").Select("id");
+        
+        _selectRenderer.Render(
+                Arg.Is<IQueryClause>(clause => clause.Kind == ClauseKind.Select)
+            )
+            .Returns(new RenderOutput(
+                "SELECT \"id\"",
+                new object?[] { "raw-select" }
+            ));
+        
+        _fromRenderer.Render(
+            Arg.Is<IQueryClause>(clause => clause.Kind == ClauseKind.From)
+            )
+            .Returns(new RenderOutput(
+                "FROM \"student\"", 
+                new object?[] { "raw-from" }));
+        
+        _binder.Bind("raw-select").Returns("bound-select");
+        _binder.Bind("raw-from").Returns("bound-from");
+
+        var expected = new CompiledQuery("SELECT \"id\" FROM \"student\"", new object?[] { "bound-select", "bound-from" });
 
         // Act
-        var act = () => _sut.Compile(query);
+        var actual = _sut.Compile(query, DbProvider.PostgreSql);
 
         // Assert
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("From(...) must be called before compiling the query.");
+        actual.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
-    public void Compile_ShouldUseWildcardAndReturnNoBindings_WhenNoColumnsAreSelected()
+    public void Compile_ShouldOmitBlankSqlParts_WhenARendererReturnsWhitespaceSql()
     {
         // Arrange
-        var query = new Query().From("student");
-        _quoter.Quote("student").Returns("\"student\"");
+        var query = new Query().From("student").Select("id");
+        _selectRenderer.Render(Arg.Is<IQueryClause>(clause => clause.Kind == ClauseKind.Select)
+            )
+            .Returns(new RenderOutput(
+                string.Empty,
+                Array.Empty<object?>()));
+        
+        _fromRenderer.Render(Arg.Is<IQueryClause>(clause => clause.Kind == ClauseKind.From)
+            )
+            .Returns(
+                new RenderOutput(
+                    "FROM \"student\"",
+                    Array.Empty<object?>()));
+
+        var expected = new CompiledQuery("FROM \"student\"", new List<object?>());
 
         // Act
-        var result = _sut.Compile(query);
+        var actual = _sut.Compile(query, DbProvider.PostgreSql);
 
         // Assert
-        result.Sql.Should().Be("SELECT * FROM \"student\"");
-        result.Bindings.Should().BeEmpty();
-        _binder.DidNotReceive().Bind(Arg.Any<object?>());
-    }
-
-    [Fact]
-    public void Compile_ShouldCompileSqlAndBindValues_WhenColumnsAndConditionsExist()
-    {
-        // Arrange
-        var query = new Query()
-            .From("student")
-            .Select("id", "name")
-            .Where("id", 10)
-            .Where("status", "active");
-
-        _quoter.Quote(Arg.Any<string>())
-            .Returns(call => $"\"{call.Arg<string>()}\"");
-        _placeholders.MakePlaceholder(1).Returns("@p1");
-        _placeholders.MakePlaceholder(2).Returns("@p2");
-        _binder.Bind(10).Returns("bound-id");
-        _binder.Bind("active").Returns("bound-status");
-
-        // Act
-        var result = _sut.Compile(query);
-
-        // Assert
-        result.Sql.Should().Be(
-            "SELECT \"id\", \"name\" FROM \"student\" " +
-            "WHERE \"id\" = @p1 AND \"status\" = @p2");
-        result.Bindings.Should().Equal("bound-id", "bound-status");
-    }
-
-    [Fact]
-    public void Compile_ShouldRenderByClauseOrder_WhenClausesAreAddedOutOfOrder()
-    {
-        // Arrange
-        var query = new Query().From("student");
-        var orderByClause = CreateClause(30, "ORDER BY name");
-        var whereClause = CreateClause(20, "WHERE age > @p1");
-        _quoter.Quote("student").Returns("\"student\"");
-
-        query.AddClause(orderByClause);
-        query.AddClause(whereClause);
-
-        // Act
-        var result = _sut.Compile(query);
-
-        // Assert
-        result.Sql.Should().Be(
-            "SELECT * FROM \"student\" WHERE age > @p1 ORDER BY name");
-    }
-
-    [Fact]
-    public void Compile_ShouldPassBindingsBetweenClauses_WhenMultipleClausesProduceBindings()
-    {
-        // Arrange
-        var query = new Query().From("student");
-        var firstClause = Substitute.For<IQueryClause>();
-        var secondClause = Substitute.For<IQueryClause>();
-        firstClause.Order.Returns(20);
-        secondClause.Order.Returns(30);
-        _quoter.Quote("student").Returns("\"student\"");
-
-        firstClause.Render(
-                _quoter,
-                _placeholders,
-                Arg.Is<IReadOnlyCollection<object?>>(values => values.Count == 0))
-            .Returns(new RenderOutput("FIRST", new object?[] { 10 }));
-
-        secondClause.Render(
-                _quoter,
-                _placeholders,
-                Arg.Is<IReadOnlyCollection<object?>>(values => values.SequenceEqual(new object?[] { 10 })))
-            .Returns(new RenderOutput("SECOND", new object?[] { 10, 20 }));
-
-        _binder.Bind(10).Returns("bound-10");
-        _binder.Bind(20).Returns("bound-20");
-        query.AddClause(secondClause);
-        query.AddClause(firstClause);
-
-        // Act
-        var result = _sut.Compile(query);
-
-        // Assert
-        result.Sql.Should().Be("SELECT * FROM \"student\" FIRST SECOND");
-        result.Bindings.Should().Equal("bound-10", "bound-20");
-    }
-
-    [Fact]
-    public void Compile_ShouldExcludeClauseFromSql_WhenClauseRendersBlankSql()
-    {
-        // Arrange
-        var query = new Query().From("student");
-        var blankClause = CreateClause(20, "   ");
-        _quoter.Quote("student").Returns("\"student\"");
-        query.AddClause(blankClause);
-
-        // Act
-        var result = _sut.Compile(query);
-
-        // Assert
-        result.Sql.Should().Be("SELECT * FROM \"student\"");
-    }
-
-    private IQueryClause CreateClause(int order, string sql)
-    {
-        var clause = Substitute.For<IQueryClause>();
-        clause.Order.Returns(order);
-        clause.Render(
-                _quoter,
-                _placeholders,
-                Arg.Any<IReadOnlyCollection<object?>>())
-            .Returns(call => new RenderOutput(
-                sql,
-                call.ArgAt<IReadOnlyCollection<object?>>(2)));
-
-        return clause;
+        actual.Should().BeEquivalentTo(expected);
     }
 }

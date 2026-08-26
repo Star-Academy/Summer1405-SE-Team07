@@ -1,11 +1,9 @@
-﻿
-
-namespace QueryLib.Dialects.Abstractions;
-
+﻿namespace QueryLib.Dialects.Abstractions;
 
 public interface IParameterPlaceholderFactory
 {
     string MakePlaceholder(int index);
+    DbProvider Provider { get; }
 }
 
 
