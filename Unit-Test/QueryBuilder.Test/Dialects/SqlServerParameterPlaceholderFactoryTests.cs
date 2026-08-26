@@ -14,7 +14,7 @@ public class SqlServerParameterPlaceholderFactoryTests
     }
 
     [Fact]
-    public void Provider_ShouldBeSqlServer_WhenAccessed()
+    public void Provider_ShouldBeSqlServer_Whenever()
     {
         // Arrange
         const DbProvider expected = DbProvider.SqlServer;
@@ -30,7 +30,7 @@ public class SqlServerParameterPlaceholderFactoryTests
     [InlineData(1, "@p0")]
     [InlineData(2, "@p1")]
     [InlineData(10, "@p9")]
-    public void MakePlaceholder_ShouldReturnAtPWithZeroBasedIndex_WhenCalled(int index, string expected)
+    public void MakePlaceholder_ShouldReturnAtPWithZeroBasedIndex_Whenever(int index, string expected)
     {
         // Arrange 
         

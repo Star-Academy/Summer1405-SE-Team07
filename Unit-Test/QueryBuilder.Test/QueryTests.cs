@@ -27,7 +27,7 @@ public class QueryTests
     }
 
     [Fact]
-    public void From_ShouldAddFromClauseWithSpecifiedTable_WhenCalled()
+    public void From_ShouldAddFromClauseWithSpecifiedTable_Whenever()
     {
         // Arrange
         const string expectedTable = "student";

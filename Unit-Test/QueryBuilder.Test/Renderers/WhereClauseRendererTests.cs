@@ -38,7 +38,7 @@ public class WhereClauseRendererTests
     }
 
     [Fact]
-    public void ClauseKind_ShouldBeWhere_WhenAccessed()
+    public void ClauseKind_ShouldBeWhere_Whenever()
     {
         // Arrange
         var sut = new WhereClauseRenderer(DbProvider.PostgreSql, _quoter, _placeholders);

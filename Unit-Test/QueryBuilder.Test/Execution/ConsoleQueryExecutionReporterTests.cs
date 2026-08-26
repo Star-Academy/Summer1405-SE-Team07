@@ -82,7 +82,7 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public void ReportStarted_ShouldNotThrow_WhenCalled()
+    public void ReportStarted_ShouldNotThrow_Whenever()
     {
         // Arrange
         var act = () => _sut.ReportStarted(DbProvider.PostgreSql);
@@ -94,7 +94,7 @@ public class ConsoleQueryExecutionReporterTests
     }
 
     [Fact]
-    public void ReportCompleted_ShouldNotThrow_WhenCalled()
+    public void ReportCompleted_ShouldNotThrow_Whenever()
     {
         // Arrange
         var act = () => _sut.ReportCompleted();

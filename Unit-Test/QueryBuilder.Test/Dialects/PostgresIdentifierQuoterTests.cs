@@ -14,7 +14,7 @@ public class PostgresIdentifierQuoterTests
     }
 
     [Fact]
-    public void Provider_ShouldBePostgreSql_WhenAccessed()
+    public void Provider_ShouldBePostgreSql_Whenever()
     {
         // Arrange
         const DbProvider expected = DbProvider.PostgreSql;
@@ -27,13 +27,14 @@ public class PostgresIdentifierQuoterTests
     }
 
     [Fact]
-    public void Quote_ShouldWrapIdentifierInDoubleQuotes_WhenCalled()
+    public void Quote_ShouldWrapIdentifierInDoubleQuotes_Whenever()
     {
         // Arrange
-        const string expected = "\"column_name\"";
+        const string identifier = "column_name";
+        const string expected = "\"" + identifier + "\"";
 
         // Act
-        var result = _sut.Quote("column_name");
+        var result = _sut.Quote(identifier);
 
         // Assert
         result.Should().Be(expected);

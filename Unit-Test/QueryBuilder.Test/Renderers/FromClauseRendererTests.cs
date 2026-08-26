@@ -25,7 +25,7 @@ public class FromClauseRendererTests
     }
 
     [Fact]
-    public void ClauseKind_ShouldBeFrom_WhenAccessed()
+    public void ClauseKind_ShouldBeFrom_Whenever()
     {
         // Arrange
         var sut = new FromClauseRenderer(DbProvider.PostgreSql, _quoter);
@@ -55,7 +55,7 @@ public class FromClauseRendererTests
     [Theory]
     [InlineData(DbProvider.PostgreSql)]
     [InlineData(DbProvider.SqlServer)]
-    public void Render_ShouldReturnQuotedTableName_WhenCalled(DbProvider provider)
+    public void Render_ShouldReturnQuotedTableName_Whenever(DbProvider provider)
     {
         // Arrange
         var sut = new FromClauseRenderer(provider, _quoter);

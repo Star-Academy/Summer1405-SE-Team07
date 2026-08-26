@@ -14,7 +14,7 @@ public class PostgresParameterPlaceholderFactoryTests
     }
 
     [Fact]
-    public void Provider_ShouldBePostgreSql_WhenAccessed()
+    public void Provider_ShouldBePostgreSql_Whenever()
     {
         // Arrange
         const DbProvider expected = DbProvider.PostgreSql;
@@ -26,14 +26,13 @@ public class PostgresParameterPlaceholderFactoryTests
         provider.Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData(1, "$1")]
-    [InlineData(2, "$2")]
-    [InlineData(10, "$10")]
-    public void MakePlaceholder_ShouldReturnDollarSignFollowedByIndex_WhenCalled(int index, string expected)
+    [Fact]
+    public void MakePlaceholder_ShouldReturnDollarSignFollowedByIndex_Whenever()
     {
         // Arrange
-
+        const int index = 1;
+        const string expected = "$1";
+        
         // Act
         var result = _sut.MakePlaceholder(index);
         

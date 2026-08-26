@@ -14,7 +14,7 @@ public class SqlServerIdentifierQuoterTests
     }
 
     [Fact]
-    public void Provider_ShouldBeSqlServer_WhenAccessed()
+    public void Provider_ShouldBeSqlServer_Whenever()
     {
         // Arrange
         const DbProvider expected = DbProvider.SqlServer;
@@ -27,7 +27,7 @@ public class SqlServerIdentifierQuoterTests
     }
 
     [Fact]
-    public void Quote_ShouldWrapIdentifierInBrackets_WhenCalled()
+    public void Quote_ShouldWrapIdentifierInBrackets_Whenever()
     {
         // Arrange
         const string expected = "[column_name]";

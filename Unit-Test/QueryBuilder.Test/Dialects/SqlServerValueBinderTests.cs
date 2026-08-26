@@ -14,7 +14,7 @@ public class SqlServerValueBinderTests
     }
 
     [Fact]
-    public void DbType_ShouldBeSqlServer_WhenAccessed()
+    public void DbType_ShouldBeSqlServer_Whenever()
     {
         // Arrange
         const DbProvider expected = DbProvider.SqlServer;
@@ -27,7 +27,7 @@ public class SqlServerValueBinderTests
     }
 
     [Fact]
-    public void Bind_ShouldConvertTrueToOne_WhenCalled()
+    public void Bind_ShouldConvertTrueToOne_Whenever()
     {
         // Arrange 
         
@@ -39,7 +39,7 @@ public class SqlServerValueBinderTests
     }
 
     [Fact]
-    public void Bind_ShouldConvertFalseToZero_WhenCalled()
+    public void Bind_ShouldConvertFalseToZero_Whenever()
     {
         // Arrange
 
@@ -54,7 +54,7 @@ public class SqlServerValueBinderTests
     [InlineData("test")]
     [InlineData(42)]
     [InlineData(null)]
-    public void Bind_ShouldReturnNonBooleanValuesAsIs_WhenCalled(object? value)
+    public void Bind_ShouldReturnNonBooleanValuesAsIs_Whenever(object? value)
     {
         // Arrange 
         

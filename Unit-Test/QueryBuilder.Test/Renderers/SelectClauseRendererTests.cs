@@ -25,7 +25,7 @@ public class SelectClauseRendererTests
     }
 
     [Fact]
-    public void ClauseKind_ShouldBeSelect_WhenAccessed()
+    public void ClauseKind_ShouldBeSelect_Whenever()
     {
         // Arrange
         var sut = new SelectClauseRenderer(DbProvider.PostgreSql, _quoter);
