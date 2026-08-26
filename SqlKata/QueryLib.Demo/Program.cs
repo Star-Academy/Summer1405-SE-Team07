@@ -33,7 +33,7 @@ public static class Program
         //SqlKataDemo1.Run();
 
         SqlKataDemo2.Run();
-        
+
         await SqlKataDemo3.RunAsync();
     }
 }
