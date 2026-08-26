@@ -123,7 +123,9 @@ public class WhereClauseRendererTests
         _quoter.Quote("age").Returns("\"age\"");
         _placeholders.MakePlaceholder(1).Returns("$1");
         _placeholders.MakePlaceholder(2).Returns("$2");
-        var expected = new RenderOutput("WHERE \"name\" = $1 AND \"age\" = $2", new object?[] { "kourosh", 20 });
+        var expected = new RenderOutput(
+            "WHERE \"name\" = $1 AND \"age\" = $2",
+            new object?[] { "kourosh", 20 });
 
         // Act
         var actual = sut.Render(clause);

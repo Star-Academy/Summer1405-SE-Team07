@@ -72,10 +72,22 @@ public class SqlCompilerTests
     {
         // Arrange
         var query = new Query().From("student").Select("id");
-        _selectRenderer.Render(Arg.Any<IQueryClause>())
-            .Returns(new RenderOutput("SELECT \"id\"", new object?[] { "raw-select" }));
-        _fromRenderer.Render(Arg.Any<IQueryClause>())
-            .Returns(new RenderOutput("FROM \"student\"", new object?[] { "raw-from" }));
+        
+        _selectRenderer.Render(
+                Arg.Is<IQueryClause>(clause => clause.Kind == ClauseKind.Select)
+            )
+            .Returns(new RenderOutput(
+                "SELECT \"id\"",
+                new object?[] { "raw-select" }
+            ));
+        
+        _fromRenderer.Render(
+            Arg.Is<IQueryClause>(clause => clause.Kind == ClauseKind.From)
+            )
+            .Returns(new RenderOutput(
+                "FROM \"student\"", 
+                new object?[] { "raw-from" }));
+        
         _binder.Bind("raw-select").Returns("bound-select");
         _binder.Bind("raw-from").Returns("bound-from");
 
@@ -93,10 +105,18 @@ public class SqlCompilerTests
     {
         // Arrange
         var query = new Query().From("student").Select("id");
-        _selectRenderer.Render(Arg.Any<IQueryClause>())
-            .Returns(new RenderOutput(string.Empty, Array.Empty<object?>()));
-        _fromRenderer.Render(Arg.Any<IQueryClause>())
-            .Returns(new RenderOutput("FROM \"student\"", Array.Empty<object?>()));
+        _selectRenderer.Render(Arg.Is<IQueryClause>(clause => clause.Kind == ClauseKind.Select)
+            )
+            .Returns(new RenderOutput(
+                string.Empty,
+                Array.Empty<object?>()));
+        
+        _fromRenderer.Render(Arg.Is<IQueryClause>(clause => clause.Kind == ClauseKind.From)
+            )
+            .Returns(
+                new RenderOutput(
+                    "FROM \"student\"",
+                    Array.Empty<object?>()));
 
         var expected = new CompiledQuery("FROM \"student\"", new List<object?>());
 
