@@ -18,7 +18,9 @@ public class FromClauseRendererTests
         // Arrange
         var act = () => new FromClauseRenderer(DbProvider.PostgreSql, null!);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("quoter");
     }
 

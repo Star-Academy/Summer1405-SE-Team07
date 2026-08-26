@@ -19,7 +19,9 @@ public class WhereClauseRendererTests
         // Arrange
         var act = () => new WhereClauseRenderer(DbProvider.PostgreSql, null!, _placeholders);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("quoter");
     }
 
@@ -29,7 +31,9 @@ public class WhereClauseRendererTests
         // Arrange
         var act = () => new WhereClauseRenderer(DbProvider.PostgreSql, _quoter, null!);
 
-        // Act & Assert
+        // Act
+        
+        // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("placeholders");
     }
 
