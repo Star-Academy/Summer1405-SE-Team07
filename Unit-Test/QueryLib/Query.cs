@@ -16,11 +16,7 @@ public sealed class Query
     {
         _selectClause = new SelectClause { Columns = _columns };
     }
-
-    public string Table => _fromClause?.Table ?? string.Empty;
-
-    public IReadOnlyCollection<string> Columns => _columns;
-
+    
     public IReadOnlyCollection<IQueryClause> Clauses
     {
         get

@@ -31,12 +31,12 @@ public static class ServiceCollectionExtensions
 
     private static void AddDialects(IServiceCollection services)
     {
-        services.AddSingleton<PostgresIdentifierQuoter>();
-        services.AddSingleton<PostgresParameterPlaceholderFactory>();
+        services.AddKeyedSingleton<IIdentifierQuoter, PostgresIdentifierQuoter>(DbProvider.PostgreSql);
+        services.AddKeyedSingleton<IParameterPlaceholderFactory, PostgresParameterPlaceholderFactory>(DbProvider.PostgreSql);
         services.AddSingleton<IValueBinder, PostgresValueBinder>();
 
-        services.AddSingleton<SqlServerIdentifierQuoter>();
-        services.AddSingleton<SqlServerParameterPlaceholderFactory>();
+        services.AddKeyedSingleton<IIdentifierQuoter, SqlServerIdentifierQuoter>(DbProvider.SqlServer);
+        services.AddKeyedSingleton<IParameterPlaceholderFactory, SqlServerParameterPlaceholderFactory>(DbProvider.SqlServer);
         services.AddSingleton<IValueBinder, SqlServerValueBinder>();
 
         services.AddSingleton<IValueBinderFactory, ValueBinderFactory>();
@@ -44,8 +44,27 @@ public static class ServiceCollectionExtensions
 
     private static void AddRenderers(IServiceCollection services)
     {
+        foreach (var provider in new[] { DbProvider.PostgreSql, DbProvider.SqlServer })
+        {
+            services.AddSingleton(sp => BuildRegistry(sp, provider));
+        }
 
         services.AddSingleton<IClauseRendererRegistryFactory, ClauseRendererRegistryFactory>();
+    }
+
+    private static ClauseRendererRegistry BuildRegistry(IServiceProvider sp, DbProvider provider)
+    {
+        var quoter = sp.GetRequiredKeyedService<IIdentifierQuoter>(provider);
+        var placeholders = sp.GetRequiredKeyedService<IParameterPlaceholderFactory>(provider);
+
+        var renderers = new IClauseRenderer[]
+        {
+            new SelectClauseRenderer(provider, quoter),
+            new FromClauseRenderer(provider, quoter),
+            new WhereClauseRenderer(provider, quoter, placeholders),
+        };
+
+        return new ClauseRendererRegistry(provider, renderers);
     }
 
     private static void AddCompilers(IServiceCollection services)

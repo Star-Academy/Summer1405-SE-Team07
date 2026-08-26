@@ -1,15 +1,13 @@
-﻿
-
-using System.Data.Common;
 using System.Data;
+using System.Data.Common;
 using FluentAssertions;
 using NSubstitute;
+using QueryLib;
 using QueryLib.Compilers;
 using QueryLib.Demo.Abstractions;
 using QueryLib.Demo.QueryRunners;
 
 namespace QueryBuilder.Test.Runners;
-
 
 public class SqlServerQueryRunnerTests
 {
@@ -21,13 +19,27 @@ public class SqlServerQueryRunnerTests
     }
 
     [Fact]
+    public void Provider_ShouldBeSqlServer_Whenever()
+    {
+        // Arrange
+        const DbProvider expected = DbProvider.SqlServer;
+
+        // Act
+        var actual = _sut.Provider;
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    [Fact]
     public async Task RunAsync_ShouldThrowInvalidOperationException_WhenConnectionIsClosed()
     {
         // Arrange
         var query = new CompiledQuery("SELECT * FROM TestTable", new List<object?>());
         var connection = Substitute.For<DbConnection>();
-        connection.State.Returns(System.Data.ConnectionState.Closed);
+        connection.State.Returns(ConnectionState.Closed);
         var expected = "The provided connection is not open.*";
+
         // Act
         var act = () => _sut.RunAsync(query, connection);
 
@@ -68,7 +80,7 @@ public class SqlServerQueryRunnerTests
         reader.GetValue(1).Returns(DBNull.Value);
 
         // Act
-        var result = await _sut.RunAsync(query, connection, transaction);
+        var actual = await _sut.RunAsync(query, connection, transaction);
 
         // Assert
         command.CommandText.Should().Be(query.Sql);
@@ -80,8 +92,8 @@ public class SqlServerQueryRunnerTests
         parameters.Received(1).Add(idParameter);
         parameters.Received(1).Add(nameParameter);
 
-        result.ColumnNames.Should().Equal("id", "name");
-        var row = result.Rows.Should().ContainSingle().Which;
+        actual.ColumnNames.Should().Equal("id", "name");
+        var row = actual.Rows.Should().ContainSingle().Which;
         row["id"].Should().Be(42);
         row["name"].Should().BeNull();
     }

@@ -20,13 +20,37 @@ public class QueryExecutionServiceTests
     }
 
     [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenQueryExecutorIsNull()
+    {
+        // Arrange
+
+        // Act
+        var act = () => new QueryExecutionService(null!, _reporter);
+        
+        // Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("queryExecutor");
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenReporterIsNull()
+    {
+        // Arrange
+
+        // Act
+        var act = () => new QueryExecutionService(_queryExecutor, null!);
+        
+        // Assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("reporter");
+    }
+
+    [Fact]
     public async Task ExecuteAsync_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Arrange
 
         // Act
         var act = () => _sut.ExecuteAsync(null!, []);
-
+        
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("query");
     }
@@ -39,7 +63,7 @@ public class QueryExecutionServiceTests
 
         // Act
         var act = () => _sut.ExecuteAsync(query, null!);
-
+        
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("configurations");
     }

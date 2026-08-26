@@ -1,5 +1,6 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using NSubstitute;
+using QueryLib;
 using QueryLib.Clauses;
 using QueryLib.Clauses.Abstractions;
 using QueryLib.Renderers;
@@ -10,33 +11,47 @@ namespace QueryBuilder.Test.Renderers;
 public class ClauseRendererRegistryTests
 {
     [Fact]
-    public void GetRenderer_ShouldReturnMatchingRenderer_WhenRegisteredForClauseType()
+    public void Provider_ShouldReturnConfiguredProvider_WhenConstructed()
     {
         // Arrange
-        var selectRenderer = Substitute.For<IClauseRenderer>();
-        selectRenderer.ClauseType.Returns(typeof(SelectClause));
-        var sut = new ClauseRendererRegistry([selectRenderer]);
-        var clause = new SelectClause { Columns = [] };
+        const DbProvider expected = DbProvider.PostgreSql;
+        var sut = new ClauseRendererRegistry(expected, []);
 
         // Act
-        var result = sut.GetRenderer(clause);
+        var actual = sut.Provider;
 
         // Assert
-        result.Should().BeSameAs(selectRenderer);
+        actual.Should().Be(expected);
     }
 
     [Fact]
-    public void GetRenderer_ShouldThrowInvalidOperationException_WhenNoRendererRegisteredForClauseType()
+    public void GetRenderer_ShouldReturnMatchingRenderer_WhenRegisteredForClauseKind()
     {
         // Arrange
-        var sut = new ClauseRendererRegistry([]);
-        var clause = new FromClause();
+        var selectRenderer = Substitute.For<IClauseRenderer>();
+        selectRenderer.ClauseKind.Returns(ClauseKind.Select);
+        var sut = new ClauseRendererRegistry(DbProvider.PostgreSql, [selectRenderer]);
+        var clause = new SelectClause { Columns = [] };
+
+        // Act
+        var actual = sut.GetRenderer(clause);
+
+        // Assert
+        actual.Should().BeSameAs(selectRenderer);
+    }
+
+    [Fact]
+    public void GetRenderer_ShouldThrowInvalidOperationException_WhenNoRendererRegisteredForClauseKind()
+    {
+        // Arrange
+        var sut = new ClauseRendererRegistry(DbProvider.PostgreSql, []);
+        var clause = new FromClause { Table = "student" };
 
         // Act
         var act = () => sut.GetRenderer(clause);
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("No renderer registered for FromClause.");
+            .WithMessage("No renderer registered for From.");
     }
 }
