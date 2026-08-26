@@ -35,9 +35,9 @@ public class SqlCompilerTests
     public void Constructor_ShouldThrowArgumentNullException_WhenValueBinderFactoryIsNull()
     {
         // Arrange
-        var act = () => new SqlCompiler(null!, _registryFactory);
 
         // Act
+        var act = () => new SqlCompiler(null!, _registryFactory);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("valueBinderFactory");
@@ -47,9 +47,9 @@ public class SqlCompilerTests
     public void Constructor_ShouldThrowArgumentNullException_WhenRegistryFactoryIsNull()
     {
         // Arrange
-        var act = () => new SqlCompiler(_valueBinderFactory, null!);
 
         // Act
+        var act = () => new SqlCompiler(_valueBinderFactory, null!);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("registryFactory");
@@ -59,9 +59,9 @@ public class SqlCompilerTests
     public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Arrange
-        var act = () => _sut.Compile(null!, DbProvider.PostgreSql);
 
         // Act
+        var act = () => _sut.Compile(null!, DbProvider.PostgreSql);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("query");

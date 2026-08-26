@@ -16,9 +16,9 @@ public class SelectClauseRendererTests
     public void Constructor_ShouldThrowArgumentNullException_WhenQuoterIsNull()
     {
         // Arrange
-        var act = () => new SelectClauseRenderer(DbProvider.PostgreSql, null!);
 
         // Act
+        var act = () => new SelectClauseRenderer(DbProvider.PostgreSql, null!);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("quoter");

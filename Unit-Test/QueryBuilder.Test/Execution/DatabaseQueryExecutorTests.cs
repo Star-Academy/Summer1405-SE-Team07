@@ -27,9 +27,9 @@ public class DatabaseQueryExecutorTests
     public void Constructor_ShouldThrowArgumentNullException_WhenResolverIsNull()
     {
         // Arrange
-        var act = () => new DatabaseQueryExecutor(null!, _runnerFactory, _compiler);
 
         // Act
+        var act = () => new DatabaseQueryExecutor(null!, _runnerFactory, _compiler);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("connectionFactoryResolver");
@@ -39,9 +39,9 @@ public class DatabaseQueryExecutorTests
     public void Constructor_ShouldThrowArgumentNullException_WhenRunnerFactoryIsNull()
     {
         // Arrange
-        var act = () => new DatabaseQueryExecutor(_connectionFactoryResolver, null!, _compiler);
 
         // Act
+        var act = () => new DatabaseQueryExecutor(_connectionFactoryResolver, null!, _compiler);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("runnerFactory");
@@ -51,9 +51,9 @@ public class DatabaseQueryExecutorTests
     public void Constructor_ShouldThrowArgumentNullException_WhenCompilerIsNull()
     {
         // Arrange
-        var act = () => new DatabaseQueryExecutor(_connectionFactoryResolver, _runnerFactory, null!);
 
         // Act
+        var act = () => new DatabaseQueryExecutor(_connectionFactoryResolver, _runnerFactory, null!);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("compiler");

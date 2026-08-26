@@ -22,9 +22,9 @@ public class ConsoleQueryExecutionReporterTests
     public void Constructor_ShouldThrowArgumentNullException_WhenResultPrinterIsNull()
     {
         // Arrange
-        var act = () => new ConsoleQueryExecutionReporter(null!);
 
         // Act
+        var act = () => new ConsoleQueryExecutionReporter(null!);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("resultPrinter");
@@ -34,9 +34,9 @@ public class ConsoleQueryExecutionReporterTests
     public async Task ReportSucceededAsync_ShouldThrowArgumentNullException_WhenExecutionResultIsNull()
     {
         // Arrange
-        var act = () => _sut.ReportSucceededAsync(DbProvider.PostgreSql, null!);
 
         // Act
+        var act = () => _sut.ReportSucceededAsync(DbProvider.PostgreSql, null!);
         
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("executionResult");
@@ -61,9 +61,9 @@ public class ConsoleQueryExecutionReporterTests
     public void ReportFailed_ShouldThrowArgumentNullException_WhenExceptionIsNull()
     {
         // Arrange
-        var act = () => _sut.ReportFailed(DbProvider.SqlServer, null!);
 
         // Act
+        var act = () => _sut.ReportFailed(DbProvider.SqlServer, null!);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("exception");
@@ -73,9 +73,9 @@ public class ConsoleQueryExecutionReporterTests
     public void ReportFailed_ShouldNotThrow_WhenExceptionIsProvided()
     {
         // Arrange
-        var act = () => _sut.ReportFailed(DbProvider.SqlServer, new InvalidOperationException("error"));
 
         // Act
+        var act = () => _sut.ReportFailed(DbProvider.SqlServer, new InvalidOperationException("error"));
         
         // Assert
         act.Should().NotThrow();
@@ -85,9 +85,9 @@ public class ConsoleQueryExecutionReporterTests
     public void ReportStarted_ShouldNotThrow_Whenever()
     {
         // Arrange
-        var act = () => _sut.ReportStarted(DbProvider.PostgreSql);
 
         // Act
+        var act = () => _sut.ReportStarted(DbProvider.PostgreSql);
         
         // Assert
         act.Should().NotThrow();
@@ -97,9 +97,9 @@ public class ConsoleQueryExecutionReporterTests
     public void ReportCompleted_ShouldNotThrow_Whenever()
     {
         // Arrange
-        var act = () => _sut.ReportCompleted();
 
         // Act
+        var act = () => _sut.ReportCompleted();
         
         // Assert
         act.Should().NotThrow();

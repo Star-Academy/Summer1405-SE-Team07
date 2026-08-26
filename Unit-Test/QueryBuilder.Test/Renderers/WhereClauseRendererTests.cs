@@ -17,9 +17,9 @@ public class WhereClauseRendererTests
     public void Constructor_ShouldThrowArgumentNullException_WhenQuoterIsNull()
     {
         // Arrange
-        var act = () => new WhereClauseRenderer(DbProvider.PostgreSql, null!, _placeholders);
 
         // Act
+        var act = () => new WhereClauseRenderer(DbProvider.PostgreSql, null!, _placeholders);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("quoter");
@@ -29,9 +29,9 @@ public class WhereClauseRendererTests
     public void Constructor_ShouldThrowArgumentNullException_WhenPlaceholdersIsNull()
     {
         // Arrange
-        var act = () => new WhereClauseRenderer(DbProvider.PostgreSql, _quoter, null!);
 
         // Act
+        var act = () => new WhereClauseRenderer(DbProvider.PostgreSql, _quoter, null!);
         
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("placeholders");
