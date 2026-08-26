@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-
-namespace QueryLib;
+namespace QueryLib.Clauses;
 
 public sealed class Condition
 {
     public required string Column { get; init; }
-    public  object? Value { get; init; }
+    public required object? Value { get; init; }
 }
 

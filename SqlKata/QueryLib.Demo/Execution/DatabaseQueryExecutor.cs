@@ -1,14 +1,23 @@
+using QueryLib.Compilers.Abstractions;
+using QueryLib.Demo.Abstractions;
 using QueryLib.Demo.Execution.Abstractions;
 
 namespace QueryLib.Demo.Execution;
 
 public sealed class DatabaseQueryExecutor : IDatabaseQueryExecutor
 {
-    private readonly IQueryExecutionDependencyFactory _dependencyFactory;
+    private readonly IDbConnectionFactoryResolver _connectionFactoryResolver;
+    private readonly IQueryRunnerFactory _runnerFactory;
+    private readonly ICompiler _compiler;
 
-    public DatabaseQueryExecutor(IQueryExecutionDependencyFactory dependencyFactory)
+    public DatabaseQueryExecutor(
+        IDbConnectionFactoryResolver connectionFactoryResolver,
+        IQueryRunnerFactory runnerFactory,
+        ICompiler compiler)
     {
-        _dependencyFactory = dependencyFactory ?? throw new ArgumentNullException(nameof(dependencyFactory));
+        _connectionFactoryResolver = connectionFactoryResolver ?? throw new ArgumentNullException(nameof(connectionFactoryResolver));
+        _runnerFactory = runnerFactory ?? throw new ArgumentNullException(nameof(runnerFactory));
+        _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
     }
 
     public async Task<QueryExecutionResult> ExecuteAsync(Query query, DbConfiguration configuration)
@@ -16,13 +25,15 @@ public sealed class DatabaseQueryExecutor : IDatabaseQueryExecutor
         ArgumentNullException.ThrowIfNull(query);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var dependencies = _dependencyFactory.Create(configuration);
-        var compiledQuery = dependencies.Compiler.Compile(query);
+        var factory = _connectionFactoryResolver.GetFactory(configuration.Provider);
+        var runner = _runnerFactory.GetRunner(configuration.Provider);
 
-        await using var connection = await dependencies.ConnectionFactory.CreateConnectionAsync();
+        await using var connection = factory.Create(configuration.ConnectionString);
+        var compiledQuery = _compiler.Compile(query, configuration.Provider);
+
         await connection.OpenAsync();
 
-        var queryResult = await dependencies.Runner.RunAsync(compiledQuery, connection);
+        var queryResult = await runner.RunAsync(compiledQuery, connection);
         return new QueryExecutionResult(compiledQuery, queryResult);
     }
 }

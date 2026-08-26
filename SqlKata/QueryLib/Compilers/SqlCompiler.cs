@@ -1,44 +1,50 @@
 using QueryLib.Clauses.Abstractions;
 using QueryLib.Compilers.Abstractions;
 using QueryLib.Dialects.Abstractions;
+using QueryLib.Renderers;
+using QueryLib.Renderers.Abstractions;
 
 namespace QueryLib.Compilers;
 
 public sealed class SqlCompiler : ICompiler
 {
-    private readonly IIdentifierQuoter _quoter;
-    private readonly IParameterPlaceholderFactory _placeholders;
-    private readonly IValueBinder _binder;
+    private readonly IValueBinderFactory _valueBinderFactory;
+    private readonly IClauseRendererRegistryFactory _registryFactory;
 
     public SqlCompiler(
-        IIdentifierQuoter quoter,
-        IParameterPlaceholderFactory placeholders,
-        IValueBinder binder)
+        IValueBinderFactory valueBinderFactory,
+        IClauseRendererRegistryFactory registryFactory)
     {
-        _quoter = quoter ?? throw new ArgumentNullException(nameof(quoter));
-        _placeholders = placeholders ?? throw new ArgumentNullException(nameof(placeholders));
-        _binder = binder ?? throw new ArgumentNullException(nameof(binder));
+        _valueBinderFactory = valueBinderFactory ?? throw new ArgumentNullException(nameof(valueBinderFactory));
+        _registryFactory = registryFactory ?? throw new ArgumentNullException(nameof(registryFactory));
     }
 
-    public CompiledQuery Compile(Query query)
+    public CompiledQuery Compile(Query query, DbProvider dbProvider)
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var renderedQuery = ClauseRender(query.Clauses);
-        var boundValues = renderedQuery.Bindings.Select(_binder.Bind).ToList();
+        var rendererRegistry = _registryFactory.GetRegistry(dbProvider);
+        var renderedQuery = ClauseRender(query.Clauses, rendererRegistry);
+
+        var binder = _valueBinderFactory.GetBinder(dbProvider);
+        var boundValues = renderedQuery.Bindings
+            .Select(binder.Bind)
+            .ToList();
 
         return new CompiledQuery(renderedQuery.Sql, boundValues);
     }
 
-    private RenderOutput ClauseRender(IEnumerable<IQueryClause> clauses)
+    private static RenderOutput ClauseRender(IEnumerable<IQueryClause> clauses, ClauseRendererRegistry rendererRegistry)
     {
-        IReadOnlyCollection<object?> bindings = Array.Empty<object?>();
+        var allBindings = new List<object?>();
         var sqlParts = new List<string>();
 
         foreach (var clause in clauses.OrderBy(clause => clause.Order))
         {
-            var output = clause.Render(_quoter, _placeholders, bindings);
-            bindings = output.Bindings;
+            var renderer = rendererRegistry.GetRenderer(clause);
+            var output = renderer.Render(clause);
+
+            allBindings.AddRange(output.Bindings);
 
             if (!string.IsNullOrWhiteSpace(output.Sql))
             {
@@ -46,6 +52,6 @@ public sealed class SqlCompiler : ICompiler
             }
         }
 
-        return new RenderOutput(string.Join(" ", sqlParts), bindings);
+        return new RenderOutput(string.Join(" ", sqlParts), allBindings);
     }
 }
