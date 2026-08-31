@@ -4,9 +4,9 @@ namespace QueryLib.Demo.EFCore;
 
 public static class EfCoreDemo
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(string connectionString)
     {
-        await using var db = new AppDbContext();
+        await using var db = new AppDbContext(connectionString);
 
         var students = await db.Students
             .Where(s => s.IsMale)
