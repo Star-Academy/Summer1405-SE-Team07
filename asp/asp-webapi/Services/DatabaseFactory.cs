@@ -1,47 +1,30 @@
-﻿using System.Data;
-using Microsoft.Data.SqlClient;
-using Npgsql;
-using SqlKata.Compilers;
+﻿using asp_webapi.Exceptions;
 using SqlKata.Execution;
+using asp_webapi.Services.Abstractions;
 
 namespace asp_webapi.Services;
 
 public class DatabaseFactory : IDatabaseFactory
 {
-    private readonly IConfiguration _configuration;
+    private readonly IServiceProvider _serviceProvider;
 
-    public DatabaseFactory(IConfiguration configuration)
+    public DatabaseFactory(IServiceProvider serviceProvider)
     {
-        _configuration = configuration;
+        _serviceProvider = serviceProvider;
     }
 
     public QueryFactory CreateQueryFactory(string? dbType)
     {
         if (string.IsNullOrWhiteSpace(dbType))
         {
-            throw new ArgumentException("Database type not provided.");
+            throw new UnsupportedDatabaseTypeException(dbType);
         }
 
-        dbType = dbType.Trim().ToLowerInvariant();
+        var normalized = dbType.Trim().ToLowerInvariant();
 
-        switch (dbType)
-        {
-            case "sqlserver":
-            {
-                var connectionString = _configuration.GetConnectionString("SqlServerConnection");
-                IDbConnection connection = new SqlConnection(connectionString);
-                var compiler = new SqlServerCompiler();
-                return new QueryFactory(connection, compiler);
-            }
-            case "postgres":
-            {
-                var connectionString = _configuration.GetConnectionString("PostgresConnection");
-                IDbConnection connection = new NpgsqlConnection(connectionString);
-                var compiler = new PostgresCompiler();
-                return new QueryFactory(connection, compiler);
-            }
-            default:
-                throw new ArgumentException($"Database type {dbType} is not supported.");
-        }
+        var provider = _serviceProvider.GetKeyedService<IDbConnectionProvider>(normalized)
+                       ?? throw new UnsupportedDatabaseTypeException(dbType);
+
+        return new QueryFactory(provider.CreateConnection(), provider.CreateCompiler());
     }
 }

@@ -1,6 +1,6 @@
 ﻿using SqlKata.Execution;
 
-namespace asp_webapi.Services;
+namespace asp_webapi.Services.Abstractions;
 
 public interface IDatabaseFactory
 {
