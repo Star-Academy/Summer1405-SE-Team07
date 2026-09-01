@@ -1,7 +1,8 @@
 ﻿using asp_webapi.Exceptions;
 using SqlKata.Execution;
 using asp_webapi.Services.Abstractions;
-
+using SqlKata.Compilers;
+using SqlKata.Execution;
 namespace asp_webapi.Services;
 
 public class DatabaseFactory : IDatabaseFactory
@@ -22,9 +23,12 @@ public class DatabaseFactory : IDatabaseFactory
 
         var normalized = dbType.Trim().ToLowerInvariant();
 
-        var provider = _serviceProvider.GetKeyedService<IDbConnectionProvider>(normalized)
+        var connectionProvider = _serviceProvider.GetKeyedService<IDbConnectionProvider>(normalized)
+                                 ?? throw new UnsupportedDatabaseTypeException(dbType);
+
+        var compiler = _serviceProvider.GetKeyedService<Compiler>(normalized)
                        ?? throw new UnsupportedDatabaseTypeException(dbType);
 
-        return new QueryFactory(provider.CreateConnection(), provider.CreateCompiler());
+        return new QueryFactory(connectionProvider.CreateConnection(), compiler);
     }
 }
