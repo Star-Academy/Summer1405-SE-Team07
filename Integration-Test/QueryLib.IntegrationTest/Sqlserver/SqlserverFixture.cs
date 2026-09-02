@@ -1,22 +1,32 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
+using QueryLib.Demo.Extensions;
 using Testcontainers.MsSql;
 using Xunit;
 
 namespace QueryLib.IntegrationTest.SqlServer;
 
-public sealed class SqlServerDatabaseFixture : IAsyncLifetime
+public sealed class SqlServerFixture : IAsyncLifetime
 {
     private MsSqlContainer MsSqlContainer { get; set; } = null!;
     public string ConnectionString => MsSqlContainer.GetConnectionString();
+    
+    public ServiceProvider? ServiceProvider { get; private set; }
+
 
     public async Task InitializeAsync()
     {
-        MsSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
-            .WithPassword("sqlserver")
+        MsSqlContainer = new MsSqlBuilder()
+            .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+            .WithPassword("Your_strong_Password123")
             .Build();
 
         await MsSqlContainer.StartAsync();
         await SeedDatabaseAsync();
+        
+        var services = new ServiceCollection();
+        services.AddQueryLibServices();
+        ServiceProvider = services.BuildServiceProvider();
     }
 
     private async Task SeedDatabaseAsync()
@@ -70,6 +80,12 @@ public sealed class SqlServerDatabaseFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+        
+        if (ServiceProvider is not null)
+        {
+            await ServiceProvider.DisposeAsync();
+        }
+        
         await MsSqlContainer.DisposeAsync();
     }
 }

@@ -1,4 +1,6 @@
-﻿using Npgsql;
+using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using QueryLib.Demo.Extensions;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -8,10 +10,12 @@ public sealed class PostgresFixture : IAsyncLifetime
 {
     private PostgreSqlContainer PostgresContainer { get; set; } = null!;
     public string ConnectionString => PostgresContainer.GetConnectionString();
+    public ServiceProvider? ServiceProvider { get; private set; }
 
     public async Task InitializeAsync()
     {
-        PostgresContainer = new PostgreSqlBuilder("postgres:16-alpine")
+        PostgresContainer = new PostgreSqlBuilder()
+            .WithImage("postgres:16-alpine")
             .WithDatabase("postgresDB")
             .WithUsername("postgres")
             .WithPassword("postgres")
@@ -19,6 +23,10 @@ public sealed class PostgresFixture : IAsyncLifetime
 
         await PostgresContainer.StartAsync();
         await SeedDatabaseAsync();
+
+        var services = new ServiceCollection();
+        services.AddQueryLibServices();
+        ServiceProvider = services.BuildServiceProvider();
     }
 
     private async Task SeedDatabaseAsync()
@@ -29,20 +37,20 @@ public sealed class PostgresFixture : IAsyncLifetime
         await using var command = connection.CreateCommand();
 
         command.CommandText = """
-            DROP TABLE IF EXISTS ""Student"";
+            DROP TABLE IF EXISTS "Student";
 
-            CREATE TABLE ""Student""
+            CREATE TABLE "Student"
             (
-                ""StudentNumber"" VARCHAR(8) NOT NULL,
-                ""Grade"" FLOAT,
-                ""FirstName"" VARCHAR(20) NOT NULL,
-                ""LastName"" VARCHAR(20) NOT NULL,
-                ""IsMale"" BOOLEAN NOT NULL,
-                ""DateOfBirth"" TIMESTAMP NOT NULL,
-                ""LeftUnitsCount"" INT NOT NULL
+                "StudentNumber" VARCHAR(8) NOT NULL,
+                "Grade" FLOAT,
+                "FirstName" VARCHAR(20) NOT NULL,
+                "LastName" VARCHAR(20) NOT NULL,
+                "IsMale" BOOLEAN NOT NULL,
+                "DateOfBirth" TIMESTAMP NOT NULL,
+                "LeftUnitsCount" INT NOT NULL
             );
 
-            INSERT INTO ""Student""
+            INSERT INTO "Student"
             VALUES
             ('98100200', 13.234, 'John', 'Smith', TRUE, '2001-01-22', 92),
             ('98100201', 17.850, 'Michael', 'Johnson', TRUE, '2000-05-14', 45),
@@ -71,6 +79,13 @@ public sealed class PostgresFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+        if (ServiceProvider is not null)
+        {
+            await ServiceProvider.DisposeAsync();
+        }
+
+        
         await PostgresContainer.DisposeAsync();
+        
     }
 }
