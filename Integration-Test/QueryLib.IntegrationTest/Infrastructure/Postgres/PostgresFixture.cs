@@ -1,16 +1,19 @@
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using QueryLib.Compilers.Abstractions;
 using QueryLib.Demo.Extensions;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace QueryLib.IntegrationTest.Postgres;
+namespace QueryLib.IntegrationTest.Infrastructure.Postgres;
 
 public sealed class PostgresFixture : IAsyncLifetime
 {
     private PostgreSqlContainer PostgresContainer { get; set; } = null!;
     public string ConnectionString => PostgresContainer.GetConnectionString();
     public ServiceProvider? ServiceProvider { get; private set; }
+
+    public ICompiler Compiler => ServiceProvider!.GetRequiredService<ICompiler>();
 
     public async Task InitializeAsync()
     {
@@ -24,6 +27,7 @@ public sealed class PostgresFixture : IAsyncLifetime
         await PostgresContainer.StartAsync();
         await SeedDatabaseAsync();
 
+
         var services = new ServiceCollection();
         services.AddQueryLibServices();
         ServiceProvider = services.BuildServiceProvider();
@@ -33,7 +37,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     {
         await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
-        
+
         await using var command = connection.CreateCommand();
 
         command.CommandText = """
@@ -84,8 +88,8 @@ public sealed class PostgresFixture : IAsyncLifetime
             await ServiceProvider.DisposeAsync();
         }
 
-        
         await PostgresContainer.DisposeAsync();
-        
     }
 }
+
+
