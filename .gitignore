@@ -15,3 +15,9 @@ obj/
 
 #jetbrains
 .idea/
+
+
+#cursor 
+docs/
+AGENTS.md
+CONTEXT.md

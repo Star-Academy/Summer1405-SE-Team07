@@ -1,0 +1,4 @@
+# Metadata only (Content will be omitted)
+package-lock.json
+*.css
+*.json
