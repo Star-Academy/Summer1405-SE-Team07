@@ -1,24 +1,25 @@
 using FluentAssertions;
 using QueryLib.Compilers.Abstractions;
+using QueryLib.IntegrationTest.Infrastructure;
 using QueryLib.IntegrationTest.Infrastructure.SqlServer;
 using Xunit;
 
 namespace QueryLib.IntegrationTest.Tests.SqlServer;
 
-public class SqlServerIntegrationTests : IClassFixture<SqlServerFixture>, IAsyncLifetime
+public class SqlServerQueryCompilerTests : IClassFixture<SqlServerFixture>, IClassFixture<CompilerFixture>, IAsyncLifetime
 {
     private readonly SqlServerFixture _sqlServerFixture;
-    private ICompiler _sut = null!;
+    private readonly ICompiler _sut;
     private SqlServerCompiledQueryExecutor _executor = null!;
 
-    public SqlServerIntegrationTests(SqlServerFixture fixture)
+    public SqlServerQueryCompilerTests(SqlServerFixture sqlServerFixture, CompilerFixture compilerFixture)
     {
-        _sqlServerFixture = fixture;
+        _sqlServerFixture = sqlServerFixture;
+        _sut = compilerFixture.Compiler;
     }
 
     public async Task InitializeAsync()
     {
-        _sut = _sqlServerFixture.Compiler;
         _executor = new SqlServerCompiledQueryExecutor(_sqlServerFixture.ConnectionString);
         await _executor.OpenAsync();
     }

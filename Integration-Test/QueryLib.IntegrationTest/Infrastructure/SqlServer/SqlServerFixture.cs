@@ -1,7 +1,4 @@
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.DependencyInjection;
-using QueryLib.Compilers.Abstractions;
-using QueryLib.Demo.Extensions;
 using Testcontainers.MsSql;
 using Xunit;
 
@@ -11,9 +8,6 @@ public sealed class SqlServerFixture : IAsyncLifetime
 {
     private MsSqlContainer MsSqlContainer { get; set; } = null!;
     public string ConnectionString => MsSqlContainer.GetConnectionString();
-    public ServiceProvider? ServiceProvider { get; private set; }
-
-    public ICompiler Compiler => ServiceProvider!.GetRequiredService<ICompiler>();
 
     public async Task InitializeAsync()
     {
@@ -24,10 +18,6 @@ public sealed class SqlServerFixture : IAsyncLifetime
 
         await MsSqlContainer.StartAsync();
         await SeedDatabaseAsync();
-
-        var services = new ServiceCollection();
-        services.AddQueryLibServices();
-        ServiceProvider = services.BuildServiceProvider();
     }
 
     private async Task SeedDatabaseAsync()
@@ -81,11 +71,6 @@ public sealed class SqlServerFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        if (ServiceProvider is not null)
-        {
-            await ServiceProvider.DisposeAsync();
-        }
-
         await MsSqlContainer.DisposeAsync();
     }
 }

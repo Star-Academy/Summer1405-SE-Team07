@@ -1,24 +1,25 @@
 using FluentAssertions;
 using QueryLib.Compilers.Abstractions;
+using QueryLib.IntegrationTest.Infrastructure;
 using QueryLib.IntegrationTest.Infrastructure.Postgres;
 using Xunit;
 
 namespace QueryLib.IntegrationTest.Tests.Postgres;
 
-public class PostgresIntegrationTests : IClassFixture<PostgresFixture>, IAsyncLifetime
+public class PostgresQueryCompilerTests : IClassFixture<PostgresFixture>, IClassFixture<CompilerFixture>, IAsyncLifetime
 {
     private readonly PostgresFixture _postgresFixture;
-    private ICompiler _sut = null!;
+    private readonly ICompiler _sut;
     private PostgresCompiledQueryExecutor _executor = null!;
 
-    public PostgresIntegrationTests(PostgresFixture fixture)
+    public PostgresQueryCompilerTests(PostgresFixture postgresFixture, CompilerFixture compilerFixture)
     {
-        _postgresFixture = fixture;
+        _postgresFixture = postgresFixture;
+        _sut = compilerFixture.Compiler;
     }
 
     public async Task InitializeAsync()
     {
-        _sut = _postgresFixture.Compiler;
         _executor = new PostgresCompiledQueryExecutor(_postgresFixture.ConnectionString);
         await _executor.OpenAsync();
     }
